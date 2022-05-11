@@ -7,7 +7,7 @@ import { globals } from '../globals';
 interface Props {
   boardStatus: BoardStatus;
   functions: {
-    addDefaultBlocks: () => void;
+    createRandomBoard: () => void;
     clearBlocks: () => void;
     doStep: () => void;
     undoStep: () => void;
@@ -27,29 +27,17 @@ const Buttons: FunctionComponent<Props> = ({
   status,
   setStatus,
 }) => {
-  const { addDefaultBlocks, clearBlocks, doStep, undoStep, solve } = functions;
+  const { createRandomBoard, clearBlocks, doStep, undoStep, solve } = functions;
 
   const randomizeButton = (
     <Button
       variant="outlined"
       onClick={() => {
         setStatus(Status.AlgoBuild);
-        addDefaultBlocks();
+        createRandomBoard();
       }}
     >
-      Randomize
-    </Button>
-  );
-
-  const solveForMeButton = (
-    <Button
-      variant="outlined"
-      onClick={() => {
-        setStatus(Status.AlgoSolve);
-        solve();
-      }}
-    >
-      Solve For Me
+      Create board for me
     </Button>
   );
 
@@ -80,10 +68,13 @@ const Buttons: FunctionComponent<Props> = ({
       <Button
         sx={{ marginLeft: '1rem' }}
         variant="outlined"
-        onClick={() => setStatus(Status.ReadyToSolve)}
         disabled={!boardStatus.isValid}
+        onClick={() => {
+          setStatus(Status.AlgoSolve);
+          solve();
+        }}
       >
-        Continue
+        Solve board for me
       </Button>
     </>
   );
@@ -107,8 +98,6 @@ const Buttons: FunctionComponent<Props> = ({
         return buildButtons;
       case Status.AlgoBuild:
         return buildButtons;
-      case Status.ReadyToSolve:
-        return solveForMeButton;
       case Status.Solved:
         return showSolutionButtons;
       case Status.StepThroughSolution:

@@ -25,7 +25,13 @@ const BlockSelector: FunctionComponent<BSProps> = ({ block, addBlock }) => {
           color: colors.grey[800],
         },
       }}
-      onClick={() => addBlock()}
+      onClick={() => {
+        try {
+          addBlock();
+        } catch {
+          alert('Add block failed!');
+        }
+      }}
     >
       <h3>
         {block.height()}×{block.width()}

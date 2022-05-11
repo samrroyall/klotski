@@ -77,6 +77,16 @@ export class Board {
       .map(() => Array(Board.cols).fill(0));
   }
 
+  public getBlocks() {
+    return [
+      ...this.blocks.map((pos_block) => new PositionedBlock(pos_block.block, pos_block.minPos())),
+    ];
+  }
+
+  public getGrid() {
+    return [...this.grid.map((row) => [...row])];
+  }
+
   public numCellsFilled = (): number => this.blocks.reduce((acc, b) => acc + b.area(), 0);
 
   public numTwoByTwos = (): number =>
