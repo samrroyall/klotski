@@ -1,18 +1,28 @@
 import { FunctionComponent, useState, useEffect } from 'react';
-import { Box, colors } from '@mui/material';
+import { Box } from '@mui/material';
 import { globals } from '../globals';
-import { Status } from '../App';
-import { PositionedBlock } from '../models/PositionedBlock';
+import { BoardStatus, Status } from '../App';
+import { Block } from '../models/Block';
+import { Pos, PositionedBlock } from '../models/PositionedBlock';
 import { Board } from '../models/Board';
 import BlockUI from './BlockUI';
+import Cell from './Cell';
 
 interface Props {
+  boardStatus: BoardStatus;
   blocks: PositionedBlock[];
+  addBlock: (block: Block, pos: Pos) => void;
   status: Status;
   setStatus: React.Dispatch<React.SetStateAction<Status>>;
 }
 
-const BoardUI: FunctionComponent<Props> = ({ blocks, status, setStatus }) => {
+const BoardUI: FunctionComponent<Props> = ({
+  boardStatus,
+  blocks,
+  addBlock,
+  status,
+  setStatus,
+}) => {
   // Styling Objects
 
   const boardWidth = Board.cols * globals.cellSize;
@@ -21,26 +31,18 @@ const BoardUI: FunctionComponent<Props> = ({ blocks, status, setStatus }) => {
 
   // Board Methods
 
-  const isWinningCell = (i: number, j: number) =>
-    (i === Board.winningPos.row || i === Board.winningPos.row + 1) &&
-    (j === Board.winningPos.col || j === Board.winningPos.col + 1);
-
   const grid = [];
   for (let i = 0; i < Board.rows; i++) {
     for (let j = 0; j < Board.cols; j++)
       grid.push(
-        <Box
+        <Cell
           key={`cell-${i}-${j}`}
-          sx={{
-            height: `${globals.cellSize}rem`,
-            width: `${globals.cellSize}rem`,
-            borderTop: 1,
-            borderBottom: i === Board.rows - 1 ? 1 : 0,
-            borderLeft: 1,
-            borderRight: j === Board.cols - 1 ? 1 : 0,
-            borderColor: colors.grey[500],
-            backgroundColor: isWinningCell(i, j) ? colors.red[100] : null,
-          }}
+          row={i}
+          col={j}
+          boardStatus={boardStatus}
+          addBlock={addBlock}
+          status={status}
+          setStatus={setStatus}
         />
       );
   }
