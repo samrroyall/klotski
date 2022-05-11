@@ -17,7 +17,6 @@ export enum Status {
   Start,
   ManualBuild,
   AlgoBuild,
-  ReadyToSolve,
   ManualSolve,
   AlgoSolve,
   Solved,
@@ -36,23 +35,15 @@ export interface BoardStatus {
 
 const App: FunctionComponent = () => {
   // Status State
-
-  const [status, setStatus] = useState(Status.Start);
+  const initialStatus = Status.Start;
+  const [status, setStatus] = useState(initialStatus);
 
   // Board/Blocks State
 
-  const initialBoardStatus = {
-    isValid: false,
-    isValidDebug: { numCellsFilled: 0, numTwoByTwos: 0 },
-  };
-  const [boardStatus, setBoardStatus] = useState(initialBoardStatus);
-
-  const initialBlocks: PositionedBlock[] = [];
-  const [blocks, setBlocks] = useState(initialBlocks);
-
   const [board, _] = useState(new Board());
+  const [blocks, setBlocks] = useState(board.getBlocks());
 
-  // Board/Blocks Helpers
+  // Board Status
 
   const validateBoard = (): BoardStatus => {
     return {
@@ -64,66 +55,56 @@ const App: FunctionComponent = () => {
     };
   };
 
+  const [boardStatus, setBoardStatus] = useState({ ...validateBoard() });
+
+  // Board/Blocks Helpers
+
   const addBlock = (block: Block, pos: Pos) => {
-    try {
-      board.addBlock(block, pos);
-
-      const newBlock = new PositionedBlock(block, pos);
-      setBlocks([...blocks, newBlock]);
-
-      const validation = validateBoard();
-      setBoardStatus({
-        isValid: validation.isValid,
-        isValidDebug: {
-          numTwoByTwos: validation.isValidDebug.numTwoByTwos,
-          numCellsFilled: validation.isValidDebug.numCellsFilled,
-        },
-      });
-    } catch {
-      alert('Add block failed!');
-    }
+    board.addBlock(block, pos);
+    setBlocks(board.getBlocks());
+    setBoardStatus({ ...validateBoard() });
   };
 
-  const addDefaultBlocks = () => {
-    const defaultBlocks = [
-      { block: Block.TWO_BY_ONE, pos: { row: 0, col: 0 } },
-      { block: Block.TWO_BY_TWO, pos: { row: 0, col: 1 } },
-      { block: Block.TWO_BY_ONE, pos: { row: 0, col: 3 } },
-      { block: Block.TWO_BY_ONE, pos: { row: 2, col: 0 } },
-      { block: Block.ONE_BY_TWO, pos: { row: 2, col: 1 } },
-      { block: Block.TWO_BY_ONE, pos: { row: 2, col: 3 } },
-      { block: Block.ONE_BY_ONE, pos: { row: 3, col: 1 } },
-      { block: Block.ONE_BY_ONE, pos: { row: 3, col: 2 } },
-      { block: Block.ONE_BY_ONE, pos: { row: 4, col: 0 } },
-      { block: Block.ONE_BY_ONE, pos: { row: 4, col: 3 } },
+  const getRandomAvailableCoords = (
+    maxRow: number = Board.rows,
+    maxCol: number = Board.cols
+  ): { row: number; col: number } => {
+    const getRandomCoords = () => [
+      Math.floor(Math.random() * maxRow),
+      Math.floor(Math.random() * maxCol),
     ];
-    try {
-      board.addBlocks(defaultBlocks);
 
-      setBlocks([
-        ...blocks,
-        ...defaultBlocks.map(({ block, pos }) => new PositionedBlock(block, pos)),
-      ]);
-
-      const validation = validateBoard();
-      setBoardStatus({
-        isValid: validation.isValid,
-        isValidDebug: {
-          numTwoByTwos: validation.isValidDebug.numTwoByTwos,
-          numCellsFilled: validation.isValidDebug.numCellsFilled,
-        },
-      });
-    } catch {
-      alert('Adding default blocks failed!');
-      board.reset();
+    const grid = board.getGrid();
+    let [i, j] = getRandomCoords();
+    while (grid[i][j] !== 0) {
+      [i, j] = getRandomCoords();
     }
+
+    return { row: i, col: j };
   };
 
-  const clearBlocks = () => {
-    board.reset();
-    setBlocks([]);
-    setStatus(Status.Start);
-    setBoardStatus(initialBoardStatus);
+  const numCellsAvailable = () => Board.rows * Board.cols - 2 - board.numCellsFilled();
+
+  const getRandomBlock = (): Block | null => {
+    const cellsAvailable = numCellsAvailable();
+    if (cellsAvailable <= 0) return null;
+
+    let availableBlocks: Block[] = [];
+    if (board.numTwoByTwos() === 0) availableBlocks = [Block.TWO_BY_TWO];
+    else if (cellsAvailable === 1) availableBlocks = [Block.ONE_BY_ONE];
+    else availableBlocks = [Block.ONE_BY_ONE, Block.ONE_BY_TWO, Block.TWO_BY_ONE];
+
+    return availableBlocks[Math.floor(Math.random() * availableBlocks.length)];
+  };
+
+  const createRandomBoard = () => {
+    while (numCellsAvailable() > 0) {
+      try {
+        addBlock(getRandomBlock()!, getRandomAvailableCoords());
+      } catch {
+        continue;
+      }
+    }
   };
 
   const moveBlock = (move: Move) => {
@@ -150,7 +131,7 @@ const App: FunctionComponent = () => {
 
   useEffect(() => {
     if (moves.length > 0 && moveIdx < 0) setStatus(Status.Done);
-  }, [moveIdx]);
+  }, [moveIdx, moves, moves.length]);
 
   const solve = () => {
     const solution = solveBoard(board);
@@ -159,9 +140,9 @@ const App: FunctionComponent = () => {
       return;
     }
 
-    setStatus(Status.Solved);
     setMoves(solution);
     setMoveIdx(solution.length - 1);
+    setStatus(Status.Solved);
   };
 
   const undoStep = () => {
@@ -178,7 +159,6 @@ const App: FunctionComponent = () => {
 
   const doStep = () => {
     const currMove = moves[moveIdx];
-
     moveBlock(currMove);
     setMoveIdx(moveIdx - 1);
   };
@@ -188,15 +168,27 @@ const App: FunctionComponent = () => {
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    let newMsg = '';
-    if (status === Status.Solved)
-      newMsg = `An optional solution of length ${moves.length} was found!`;
+    if (status === Status.Start) setMsg('Hover over the board to add blocks');
+    else if (status === Status.ManualBuild)
+      setMsg(`A valid board has exactly one 2x2 block and two empty cells`);
+    else if (status === Status.Solved)
+      setMsg(`An optional solution of length ${moves.length} was found!`);
     else if (status === Status.StepThroughSolution)
-      newMsg = `${moves.length - moveIdx - 1}/${moves.length}`;
-    else if (status === Status.Done) newMsg = moves.length === 0 ? 'No Solution Found :(' : 'Done!';
-
-    setMsg(newMsg);
+      setMsg(`${moves.length - moveIdx - 1}/${moves.length}`);
+    else if (status === Status.Done) setMsg(moves.length === 0 ? 'No Solution Found :(' : 'Done!');
+    else setMsg('');
   }, [status, moves, moveIdx]);
+
+  // resetState
+
+  const resetState = () => {
+    board.reset();
+    setBlocks(board.getBlocks());
+    setStatus(initialStatus);
+    setMoves(initialMoves);
+    setMoveIdx(initialMoveIdx);
+    setBoardStatus(validateBoard());
+  };
 
   return (
     <Box className="App">
@@ -213,8 +205,8 @@ const App: FunctionComponent = () => {
         <Buttons
           boardStatus={boardStatus}
           functions={{
-            addDefaultBlocks,
-            clearBlocks,
+            createRandomBoard,
+            clearBlocks: resetState,
             doStep,
             undoStep,
             solve,
