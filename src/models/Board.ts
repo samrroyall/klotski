@@ -31,8 +31,8 @@ export class Board {
   static readonly winningPos: Pos = { row: 3, col: 1 };
   private static logLevel: LogLevel = LogLevel.Warn;
 
-  readonly blocks: PositionedBlock[];
-  readonly grid: (BlockId | 0)[][];
+  private blocks: PositionedBlock[];
+  private grid: (BlockId | 0)[][];
 
   readonly parent: Board | null = null;
   readonly initialMove: Move | null = null;
@@ -70,35 +70,30 @@ export class Board {
     if (Board.logLevel <= LogLevel.Warn) console.warn(msg);
   }
 
-  public isValid(): boolean {
-    // ensure board has exactly two empty spaces
-    const cellsFilled = this.blocks.reduce((acc, block) => acc + block.area(), 0);
-    if (cellsFilled !== Board.rows * Board.cols - 2) {
-      this._warn(`isValid() :: There are not two empty spaces (${cellsFilled}).`);
-      return false;
-    }
-    // ensure board has exactly one 2x2 block
-    const numTwoByTwoBlocks = this.blocks.reduce(
-      (acc, block) => acc + Number(block.toBlockId() === BlockId.TwoByTwo),
-      0
-    );
-    if (numTwoByTwoBlocks !== 1) {
-      this._warn(`isValid() :: There is not one (${numTwoByTwoBlocks}) 2x2 block.`);
-      return false;
-    }
-    return true;
+  public reset() {
+    this.blocks = [];
+    this.grid = Array(Board.rows)
+      .fill(null)
+      .map(() => Array(Board.cols).fill(0));
   }
+
+  public numCellsFilled = (): number => this.blocks.reduce((acc, b) => acc + b.area(), 0);
+
+  public numTwoByTwos = (): number =>
+    this.blocks.reduce((acc, b) => acc + Number(b.area() === 4), 0);
+
+  public isValid = (): boolean =>
+    this.numCellsFilled() === Board.rows * Board.cols - 2 && this.numTwoByTwos() === 1;
 
   public isSolved(): boolean {
     const twoByTwoMinPos = this.blocks
       .find((block) => block.toBlockId() === BlockId.TwoByTwo)
       ?.minPos();
 
-    if (!twoByTwoMinPos)
-      throw Error('An attempt was made to check the solved status of a board without a 2x2 block.');
-
     return (
-      twoByTwoMinPos.row === Board.winningPos.row && twoByTwoMinPos.col === Board.winningPos.col
+      !!twoByTwoMinPos &&
+      twoByTwoMinPos.row === Board.winningPos.row &&
+      twoByTwoMinPos.col === Board.winningPos.col
     );
   }
 
@@ -178,9 +173,7 @@ export class Board {
   private _outOfBounds(block: PositionedBlock): boolean {
     const positions = [block.minPos(), block.maxPos()];
     for (let pos of positions) {
-      if (pos.row < 0 || pos.col < 0 || pos.row >= Board.rows || pos.col >= Board.cols) {
-        return true;
-      }
+      if (pos.row < 0 || pos.col < 0 || pos.row >= Board.rows || pos.col >= Board.cols) return true;
     }
     return false;
   }
@@ -197,21 +190,7 @@ export class Board {
   }
 
   private _isValidPlacement(newBlock: PositionedBlock): boolean {
-    // ensure block is on the board
-    if (this._outOfBounds(newBlock)) {
-      this._warn(
-        `Board.addBlock() :: Block (${newBlock.toString()}) placement is invalid -- out of bounds.`
-      );
-      return false;
-    }
-    // ensure block does not overlap another block
-    if (this._overlapsBlock(newBlock)) {
-      this._warn(
-        `Board.addBlock() :: Block (${newBlock.toString()}) placement is invalid -- overlap.`
-      );
-      return false;
-    }
-    return true;
+    return !(this._outOfBounds(newBlock) || this._overlapsBlock(newBlock));
   }
 
   private _addBlockToGrid(block: PositionedBlock): void {
@@ -237,11 +216,14 @@ export class Board {
 
   public addBlock(block: Block, pos: Pos): void {
     const newBlock = new PositionedBlock(block, pos);
-    // if the block placement is valid, add the block to the boards array and grid
-    if (this._isValidPlacement(newBlock)) {
-      this.blocks.push(newBlock);
-      this._addBlockToGrid(newBlock);
-    }
+    if (!this._isValidPlacement(newBlock)) throw Error('Block placement invalid');
+
+    this.blocks.push(newBlock);
+    this._addBlockToGrid(newBlock);
+  }
+
+  public addBlocks(blocksWithPos: { block: Block; pos: Pos }[]): void {
+    blocksWithPos.forEach(({ block, pos }) => this.addBlock(block, pos));
   }
 
   public moveBlock(move: Move): void {
