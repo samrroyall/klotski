@@ -27,24 +27,17 @@ export interface Pos {
   col: number;
 }
 
-export function updatePos(pos: Pos, dir: Dir): void {
+export function getNewPos(pos: Pos, dir: Dir): Pos {
+  const { row, col } = pos;
   switch (dir) {
-    case Dir.Left: {
-      pos.col--;
-      return;
-    }
-    case Dir.Right: {
-      pos.col++;
-      return;
-    }
-    case Dir.Up: {
-      pos.row--;
-      return;
-    }
-    case Dir.Down: {
-      pos.row++;
-      return;
-    }
+    case Dir.Left:
+      return { row, col: col - 1 };
+    case Dir.Right:
+      return { row, col: col + 1 };
+    case Dir.Up:
+      return { row: row - 1, col };
+    case Dir.Down:
+      return { row: row + 1, col };
   }
 }
 
@@ -57,15 +50,6 @@ export class PositionedBlock {
     this.block = block;
     this._pos = pos;
   }
-
-  public area = (): number => this.block.height() * this.block.width();
-
-  public minPos = (): Pos => ({ row: this._pos.row, col: this._pos.col });
-
-  public maxPos = (): Pos => ({
-    row: this._pos.row + this.block.height() - 1,
-    col: this._pos.col + this.block.width() - 1,
-  });
 
   public toBlockId(): BlockId {
     switch (this.block) {
@@ -82,7 +66,16 @@ export class PositionedBlock {
     }
   }
 
-  public move = (dirs: Dir[]): void => dirs.forEach((dir) => updatePos(this._pos, dir));
+  public area = (): number => this.block.height() * this.block.width();
+
+  public minPos = (): Pos => ({ row: this._pos.row, col: this._pos.col });
+
+  public maxPos = (): Pos => ({
+    row: this._pos.row + this.block.height() - 1,
+    col: this._pos.col + this.block.width() - 1,
+  });
+
+  public move = (newPos: Pos) => (this._pos = newPos);
 
   public toString = (): string =>
     `${this.block.height()}x${this.block.width()} block @ (${this._pos.row}, ${this._pos.col})`;

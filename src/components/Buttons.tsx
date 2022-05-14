@@ -11,7 +11,8 @@ interface Props {
     clearBlocks: () => void;
     doStep: () => void;
     undoStep: () => void;
-    solve: () => void;
+    algoSolve: () => void;
+    manualSolve: () => void;
   };
   moves: Move[];
   moveIdx: number;
@@ -27,7 +28,7 @@ const Buttons: FunctionComponent<Props> = ({
   status,
   setStatus,
 }) => {
-  const { createRandomBoard, clearBlocks, doStep, undoStep, solve } = functions;
+  const { createRandomBoard, clearBlocks, doStep, undoStep, algoSolve, manualSolve } = functions;
 
   const randomizeButton = (
     <Button
@@ -70,8 +71,19 @@ const Buttons: FunctionComponent<Props> = ({
         variant="outlined"
         disabled={!boardStatus.isValid}
         onClick={() => {
+          setStatus(Status.ManualSolve);
+          manualSolve();
+        }}
+      >
+        Solve myself
+      </Button>
+      <Button
+        sx={{ marginLeft: '1rem' }}
+        variant="outlined"
+        disabled={!boardStatus.isValid}
+        onClick={() => {
           setStatus(Status.AlgoSolve);
-          solve();
+          algoSolve();
         }}
       >
         Solve board for me
@@ -103,6 +115,8 @@ const Buttons: FunctionComponent<Props> = ({
       case Status.StepThroughSolution:
         return showSolutionButtons;
       case Status.Done:
+        return startOverButton;
+      case Status.Failed:
         return startOverButton;
       default:
         return <></>;
