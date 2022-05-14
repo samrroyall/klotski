@@ -78,8 +78,7 @@ export function solveBoard(board: Board): Move[] | null {
     }
 
     // if not, push child boards to the stack
-    const valid_moves = curr_board.allValidMoves();
-    for (let move of valid_moves) {
+    for (let move of curr_board.allValidMoves()) {
       const child_board = new Board(curr_board, move);
       const child_board_hash = child_board.getHash();
 

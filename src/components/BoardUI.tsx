@@ -11,7 +11,11 @@ import Cell from './Cell';
 interface Props {
   boardStatus: BoardStatus;
   blocks: PositionedBlock[];
-  addBlock: (block: Block, pos: Pos) => void;
+  functions: {
+    addBlock: (block: Block, pos: Pos) => void;
+    getPotentialNewPositions: (block: Block, pos: Pos) => Pos[];
+    moveBlockToPos: (pos_block: PositionedBlock, pos: Pos) => void;
+  };
   status: Status;
   setStatus: React.Dispatch<React.SetStateAction<Status>>;
 }
@@ -19,10 +23,12 @@ interface Props {
 const BoardUI: FunctionComponent<Props> = ({
   boardStatus,
   blocks,
-  addBlock,
+  functions,
   status,
   setStatus,
 }) => {
+  const { addBlock, getPotentialNewPositions, moveBlockToPos } = functions;
+
   // Styling Objects
 
   const boardWidth = Board.cols * globals.cellSize;
@@ -30,6 +36,9 @@ const BoardUI: FunctionComponent<Props> = ({
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
 
   // Board Methods
+
+  const [potentialPositions, setPotentialPositions] = useState<Pos[]>([]);
+  const [blockToMove, setBlockToMove] = useState<PositionedBlock | null>(null);
 
   const grid = [];
   for (let i = 0; i < Board.rows; i++) {
@@ -41,20 +50,38 @@ const BoardUI: FunctionComponent<Props> = ({
           col={j}
           boardStatus={boardStatus}
           addBlock={addBlock}
+          moveBlockToPos={(pos: Pos) => {
+            if (blockToMove) {
+              moveBlockToPos(blockToMove, pos);
+              setBlockToMove(null);
+              setPotentialPositions([]);
+            }
+          }}
           status={status}
           setStatus={setStatus}
+          potentialPositions={potentialPositions}
         />
       );
   }
 
   // UI Blocks
 
-  const initialUIBlocks: JSX.Element[] = [];
-  const [uiBlocks, setUiBlocks] = useState(initialUIBlocks);
+  const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
     const newUiBlocks = blocks.map((block, idx) => (
-      <BlockUI key={`block-${idx}`} block={block} status={status} />
+      <BlockUI
+        key={`block-${idx}`}
+        boardStatus={boardStatus}
+        block={block}
+        status={status}
+        setStatus={setStatus}
+        getPotentialNewPositions={getPotentialNewPositions}
+        setPotentialNewPositions={(block: Block, pos: Pos) => {
+          setBlockToMove(new PositionedBlock(block, pos));
+          setPotentialPositions(getPotentialNewPositions(block, pos));
+        }}
+      />
     ));
     setUiBlocks(newUiBlocks);
   }, [blocks, status]);
@@ -74,12 +101,11 @@ const BoardUI: FunctionComponent<Props> = ({
           display: 'grid',
           gridTemplateColumns: `repeat(${Board.cols}, 1fr)`,
           gap: 0,
-          zIndex: 1,
         }}
       >
         {grid}
       </Box>
-      <Box sx={{ ...boardSizing, ...boardPositioning, zIndex: 2 }}>{uiBlocks}</Box>
+      <Box sx={{ ...boardSizing, ...boardPositioning }}>{uiBlocks}</Box>
     </Box>
   );
 };
