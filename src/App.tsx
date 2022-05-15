@@ -28,6 +28,12 @@ export interface BoardStatus {
   };
 }
 
+export interface ManualMove {
+  block: Block;
+  oldPos: Pos;
+  newPos: Pos;
+}
+
 const App: FunctionComponent = () => {
   // Status State
 
@@ -101,6 +107,8 @@ const App: FunctionComponent = () => {
   // Solution State
 
   const [moves, setMoves] = useState<Move[]>([]);
+  const [manualMoves, setManualMoves] = useState<ManualMove[]>([]);
+  const [numMoves, setNumMoves] = useState(-1);
   const [algoMoveIdx, setAlgoMoveIdx] = useState(-1);
   const [manualMoveIdx, setManualMoveIdx] = useState(-1);
 
@@ -119,6 +127,7 @@ const App: FunctionComponent = () => {
     }
 
     setMoves(solution);
+    setNumMoves(solution.length);
     setAlgoMoveIdx(solution.length - 1);
     setStatus(Status.Solved);
   };
@@ -158,7 +167,7 @@ const App: FunctionComponent = () => {
       return;
     }
 
-    setMoves(solution);
+    setNumMoves(solution.length);
     setManualMoveIdx(0);
   };
 
@@ -166,11 +175,24 @@ const App: FunctionComponent = () => {
     // This call moves a block during the ManualSolve phase
     if (status !== Status.ManualSolve) return;
 
+    setManualMoves([
+      ...manualMoves,
+      { block: posBlock.block, oldPos: posBlock.minPos(), newPos: pos },
+    ]);
     board.moveBlockToPos(posBlock, pos);
     setBlocks(board.getBlocks());
     setManualMoveIdx(manualMoveIdx + 1);
 
     if (board.isSolved()) setStatus(Status.Done);
+  };
+
+  const undoMove = () => {
+    if (manualMoves.length === 0) return;
+
+    const { block, oldPos, newPos } = manualMoves.pop()!;
+    board.moveBlockToPos(new PositionedBlock(block, newPos), oldPos);
+    setBlocks(board.getBlocks());
+    setManualMoveIdx(manualMoveIdx - 1);
   };
 
   // Status Message
@@ -181,22 +203,23 @@ const App: FunctionComponent = () => {
       setMsg(`A valid board has exactly one 2x2 block and two empty cells`);
     else if (boardStatus.isValid && [Status.ManualBuild, Status.AlgoBuild].includes(status))
       setMsg(`The board is ready to solve`);
-    else if (status === Status.ManualSolve) setMsg(`${manualMoveIdx}/${moves.length}`);
+    else if (status === Status.ManualSolve)
+      setMsg(`Current Moves: ${manualMoveIdx} Fewest Possible Moves: ${numMoves}`);
     else if (status === Status.Solved)
-      setMsg(`An optional solution of length ${moves.length} was found!`);
+      setMsg(`An optional solution of length ${numMoves} was found!`);
     else if (status === Status.StepThroughSolution)
-      setMsg(`${moves.length - algoMoveIdx - 1}/${moves.length}`);
+      setMsg(`${numMoves - algoMoveIdx - 1}/${numMoves}`);
     else if (status === Status.Done)
       setMsg(
         manualMoveIdx > 0
-          ? manualMoveIdx === moves.length
-            ? 'You solved the board in the optimal number of moves!'
-            : `You solved the board in ${manualMoveIdx} moves!`
+          ? manualMoveIdx === numMoves
+            ? `You solved the board in ${manualMoveIdx} moves. That's the fewest moves possible!`
+            : `You solved the board in ${manualMoveIdx} moves`
           : 'Done!'
       );
     else if (status === Status.Failed) setMsg('No Solution Found :(');
     else setMsg('');
-  }, [status, boardStatus, moves, algoMoveIdx, manualMoveIdx]);
+  }, [status, boardStatus, numMoves, algoMoveIdx, manualMoveIdx]);
 
   // resetState
 
@@ -234,11 +257,13 @@ const App: FunctionComponent = () => {
             clearBlocks: resetState,
             doStep,
             undoStep,
+            undoMove,
             algoSolve,
             manualSolve,
           }}
-          moves={moves}
-          moveIdx={algoMoveIdx}
+          numMoves={numMoves}
+          algoMoveIdx={algoMoveIdx}
+          manualMoveIdx={manualMoveIdx}
           status={status}
           setStatus={setStatus}
         />

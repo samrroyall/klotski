@@ -1,6 +1,6 @@
 import { FunctionComponent } from 'react';
 import { Box, Button } from '@mui/material';
-import { Board, Move } from '../models/Board';
+import { Board } from '../models/Board';
 import { BoardStatus, Status } from '../App';
 import { globals } from '../globals';
 
@@ -11,11 +11,13 @@ interface Props {
     clearBlocks: () => void;
     doStep: () => void;
     undoStep: () => void;
+    undoMove: () => void;
     algoSolve: () => void;
     manualSolve: () => void;
   };
-  moves: Move[];
-  moveIdx: number;
+  numMoves: number;
+  algoMoveIdx: number;
+  manualMoveIdx: number;
   status: Status;
   setStatus: React.Dispatch<React.SetStateAction<Status>>;
 }
@@ -23,12 +25,14 @@ interface Props {
 const Buttons: FunctionComponent<Props> = ({
   boardStatus,
   functions,
-  moves,
-  moveIdx,
+  numMoves,
+  algoMoveIdx,
+  manualMoveIdx,
   status,
   setStatus,
 }) => {
-  const { createRandomBoard, clearBlocks, doStep, undoStep, algoSolve, manualSolve } = functions;
+  const { createRandomBoard, clearBlocks, doStep, undoStep, undoMove, algoSolve, manualSolve } =
+    functions;
 
   const randomizeButton = (
     <Button
@@ -42,9 +46,9 @@ const Buttons: FunctionComponent<Props> = ({
     </Button>
   );
 
-  const showSolutionButtons = (
+  const stepThroughSolutionButtons = (
     <>
-      <Button variant="outlined" onClick={() => undoStep()} disabled={moveIdx >= moves.length - 1}>
+      <Button variant="outlined" onClick={() => undoStep()} disabled={algoMoveIdx >= numMoves - 1}>
         Previous Step
       </Button>
       <Button
@@ -54,9 +58,20 @@ const Buttons: FunctionComponent<Props> = ({
           if (status !== Status.StepThroughSolution) setStatus(Status.StepThroughSolution);
           doStep();
         }}
-        disabled={moveIdx < 0}
+        disabled={algoMoveIdx < 0}
       >
         Next Step
+      </Button>
+    </>
+  );
+
+  const manualSolveButtons = (
+    <>
+      <Button variant="outlined" onClick={() => undoMove()} disabled={manualMoveIdx <= 0}>
+        Undo Move
+      </Button>
+      <Button sx={{ marginLeft: '1rem' }} variant="outlined" onClick={() => clearBlocks()}>
+        Clear Board
       </Button>
     </>
   );
@@ -111,9 +126,11 @@ const Buttons: FunctionComponent<Props> = ({
       case Status.AlgoBuild:
         return buildButtons;
       case Status.Solved:
-        return showSolutionButtons;
+        return stepThroughSolutionButtons;
       case Status.StepThroughSolution:
-        return showSolutionButtons;
+        return stepThroughSolutionButtons;
+      case Status.ManualSolve:
+        return manualSolveButtons;
       case Status.Done:
         return startOverButton;
       case Status.Failed:
