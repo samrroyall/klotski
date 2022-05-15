@@ -135,6 +135,8 @@ const Buttons: FunctionComponent<Props> = ({
         return startOverButton;
       case Status.Failed:
         return startOverButton;
+      case Status.AlreadySolved:
+        return startOverButton;
       default:
         return <></>;
     }

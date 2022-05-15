@@ -18,6 +18,7 @@ export enum Status {
   SimulateSolution,
   Done,
   Failed,
+  AlreadySolved,
 }
 
 export interface BoardStatus {
@@ -40,7 +41,7 @@ const App: FunctionComponent = () => {
   const [status, setStatus] = useState(Status.Start);
   const [board, _] = useState(new Board());
   const [blocks, setBlocks] = useState(board.getBlocks());
-  const [msg, setMsg] = useState('');
+  const [msg, setMsg] = useState<JSX.Element>(<></>);
 
   const validateBoard = (): BoardStatus => {
     return {
@@ -124,6 +125,9 @@ const App: FunctionComponent = () => {
     if (!solution) {
       setStatus(Status.Failed);
       return;
+    } else if (solution.length === 0) {
+      setStatus(Status.AlreadySolved);
+      return;
     }
 
     setMoves(solution);
@@ -165,6 +169,9 @@ const App: FunctionComponent = () => {
     if (!solution) {
       setStatus(Status.Failed);
       return;
+    } else if (solution.length === 0) {
+      setStatus(Status.AlreadySolved);
+      return;
     }
 
     setNumMoves(solution.length);
@@ -198,27 +205,51 @@ const App: FunctionComponent = () => {
   // Status Message
 
   useEffect(() => {
-    if (status === Status.Start) setMsg('Hover over the board to add blocks');
+    if (status === Status.Start) setMsg(<span>Hover over the board to add blocks</span>);
     else if (status === Status.ManualBuild && !boardStatus.isValid)
-      setMsg(`A valid board has exactly one 2x2 block and two empty cells`);
+      setMsg(<span>A valid board has exactly one 2x2 block and two empty cells</span>);
     else if (boardStatus.isValid && [Status.ManualBuild, Status.AlgoBuild].includes(status))
-      setMsg(`The board is ready to solve`);
+      setMsg(<span>The board is ready to solve</span>);
     else if (status === Status.ManualSolve)
-      setMsg(`Current Moves: ${manualMoveIdx} Fewest Possible Moves: ${numMoves}`);
+      setMsg(
+        <span>
+          Current Moves: <strong>{manualMoveIdx}</strong> Fewest Possible Moves:{' '}
+          <strong>{numMoves}</strong>
+        </span>
+      );
     else if (status === Status.Solved)
-      setMsg(`An optional solution of length ${numMoves} was found!`);
+      setMsg(
+        <span>
+          The optimal solution is <strong>{numMoves}</strong> steps long
+        </span>
+      );
     else if (status === Status.StepThroughSolution)
-      setMsg(`${numMoves - algoMoveIdx - 1}/${numMoves}`);
+      setMsg(
+        <span>
+          <strong>{numMoves - algoMoveIdx - 1}</strong>/<strong>{numMoves}</strong>
+        </span>
+      );
     else if (status === Status.Done)
       setMsg(
-        manualMoveIdx > 0
-          ? manualMoveIdx === numMoves
-            ? `You solved the board in ${manualMoveIdx} moves. That's the fewest moves possible!`
-            : `You solved the board in ${manualMoveIdx} moves`
-          : 'Done!'
+        manualMoveIdx > 0 ? (
+          manualMoveIdx === numMoves ? (
+            <span>
+              You solved the board in <strong>{manualMoveIdx}</strong> moves. That's the fewest
+              moves possible!
+            </span>
+          ) : (
+            <span>
+              You solved the board in <strong>{manualMoveIdx}</strong> moves!
+            </span>
+          )
+        ) : (
+          <span>Done!</span>
+        )
       );
-    else if (status === Status.Failed) setMsg('No Solution Found :(');
-    else setMsg('');
+    else if (status === Status.Failed) setMsg(<span>No Solution Found :(</span>);
+    else if (status === Status.AlreadySolved)
+      setMsg(<span>Oops! It looks like the board is already solved</span>);
+    else setMsg(<span></span>);
   }, [status, boardStatus, numMoves, algoMoveIdx, manualMoveIdx]);
 
   // resetState
@@ -236,7 +267,7 @@ const App: FunctionComponent = () => {
   return (
     <Box className="App">
       <h1 style={{ textAlign: 'center' }}>KLOTSKI SOLVER</h1>
-      <h4 style={{ textAlign: 'center', marginTop: '2rem', marginBottom: '2rem' }}>{msg}</h4>
+      <p style={{ display: 'block', textAlign: 'center', marginBottom: '2rem' }}>{msg}</p>
       <Box sx={{ position: 'relative', width: '100%' }}>
         <BoardUI
           boardStatus={boardStatus}
