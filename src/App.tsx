@@ -6,6 +6,7 @@ import { Board, Move } from './models/Board';
 import { solveBoard } from './models/Solver';
 import BoardUI from './components/BoardUI';
 import Buttons from './components/Buttons';
+import StatusMsg from './components/StatusMsg';
 
 export enum Status {
   Start,
@@ -41,7 +42,6 @@ const App: FunctionComponent = () => {
   const [status, setStatus] = useState(Status.Start);
   const [board, _] = useState(new Board());
   const [blocks, setBlocks] = useState(board.getBlocks());
-  const [msg, setMsg] = useState<JSX.Element>(<></>);
 
   const validateBoard = (): BoardStatus => {
     return {
@@ -202,56 +202,6 @@ const App: FunctionComponent = () => {
     setManualMoveIdx(manualMoveIdx - 1);
   };
 
-  // Status Message
-
-  useEffect(() => {
-    if (status === Status.Start) setMsg(<span>Hover over the board to add blocks</span>);
-    else if (status === Status.ManualBuild && !boardStatus.isValid)
-      setMsg(<span>A valid board has exactly one 2x2 block and two empty cells</span>);
-    else if (boardStatus.isValid && [Status.ManualBuild, Status.AlgoBuild].includes(status))
-      setMsg(<span>The board is ready to solve</span>);
-    else if (status === Status.ManualSolve)
-      setMsg(
-        <span>
-          Current Moves: <strong>{manualMoveIdx}</strong> Fewest Possible Moves:{' '}
-          <strong>{numMoves}</strong>
-        </span>
-      );
-    else if (status === Status.Solved)
-      setMsg(
-        <span>
-          The optimal solution is <strong>{numMoves}</strong> steps long
-        </span>
-      );
-    else if (status === Status.StepThroughSolution)
-      setMsg(
-        <span>
-          <strong>{numMoves - algoMoveIdx - 1}</strong>/<strong>{numMoves}</strong>
-        </span>
-      );
-    else if (status === Status.Done)
-      setMsg(
-        manualMoveIdx > 0 ? (
-          manualMoveIdx === numMoves ? (
-            <span>
-              You solved the board in <strong>{manualMoveIdx}</strong> moves. That's the fewest
-              moves possible!
-            </span>
-          ) : (
-            <span>
-              You solved the board in <strong>{manualMoveIdx}</strong> moves!
-            </span>
-          )
-        ) : (
-          <span>Done!</span>
-        )
-      );
-    else if (status === Status.Failed) setMsg(<span>No Solution Found :(</span>);
-    else if (status === Status.AlreadySolved)
-      setMsg(<span>Oops! It looks like the board is already solved</span>);
-    else setMsg(<span></span>);
-  }, [status, boardStatus, numMoves, algoMoveIdx, manualMoveIdx]);
-
   // resetState
 
   const resetState = () => {
@@ -267,7 +217,13 @@ const App: FunctionComponent = () => {
   return (
     <Box className="App">
       <h1 style={{ textAlign: 'center' }}>KLOTSKI SOLVER</h1>
-      <p style={{ display: 'block', textAlign: 'center', marginBottom: '2rem' }}>{msg}</p>
+      <StatusMsg
+        status={status}
+        boardIsValid={boardStatus.isValid}
+        numMoves={numMoves}
+        algoMoveIdx={algoMoveIdx}
+        manualMoveIdx={manualMoveIdx}
+      />
       <Box sx={{ position: 'relative', width: '100%' }}>
         <BoardUI
           boardStatus={boardStatus}
