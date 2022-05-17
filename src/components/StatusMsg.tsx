@@ -26,7 +26,9 @@ const StatusMsg: FunctionComponent<Props> = ({
   const manualSolveMsg = (
     <span>
       Current Moves: <strong>{manualMoveIdx}</strong>
-      Fewest Possible Moves: <strong>{numMoves}</strong>
+      <span style={{ marginLeft: '1rem' }}>
+        Fewest Possible Moves: <strong>{numMoves}</strong>
+      </span>
     </span>
   );
 

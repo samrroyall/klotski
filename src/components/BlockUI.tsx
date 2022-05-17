@@ -10,16 +10,16 @@ interface Props {
   boardStatus: BoardStatus;
   status: Status;
   setStatus: React.Dispatch<React.SetStateAction<Status>>;
-  getPotentialNewPositions: (block: Block, pos: Pos) => Pos[];
-  setPotentialNewPositions: (block: Block, pos: Pos) => void;
+  getPotentialPositions: (block: Block, pos: Pos) => Pos[];
+  setPotentialPositions: (block: Block, pos: Pos) => void;
 }
 
 const BlockUI: FunctionComponent<Props> = ({
   block,
   boardStatus,
   status,
-  getPotentialNewPositions,
-  setPotentialNewPositions,
+  getPotentialPositions,
+  setPotentialPositions,
 }) => {
   const blockColor = [colors.yellow, colors.blue, colors.green, colors.red];
 
@@ -59,7 +59,7 @@ const BlockUI: FunctionComponent<Props> = ({
         zIndex: isMovable ? 3 : 2,
       }}
       onMouseEnter={() => {
-        if (boardReadyToSolve() && getPotentialNewPositions(block.block, block.minPos()).length > 0)
+        if (boardReadyToSolve() && getPotentialPositions(block.block, block.minPos()).length > 0)
           setIsMovable(true);
       }}
       onMouseLeave={() => {
@@ -68,7 +68,7 @@ const BlockUI: FunctionComponent<Props> = ({
       onClick={() => {
         if (!boardReadyToSolve()) return;
 
-        setPotentialNewPositions(block.block, block.minPos());
+        setPotentialPositions(block.block, block.minPos());
       }}
     />
   );

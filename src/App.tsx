@@ -7,6 +7,7 @@ import { solveBoard } from './models/Solver';
 import BoardUI from './components/BoardUI';
 import Buttons from './components/Buttons';
 import StatusMsg from './components/StatusMsg';
+import { Toast, Severity } from './components/Toast';
 
 export enum Status {
   Start,
@@ -164,6 +165,8 @@ const App: FunctionComponent = () => {
 
   // ManualSolve Helpers
 
+  const [potentialPositions, setPotentialPositions] = useState<Pos[]>([]);
+
   const manualSolve = () => {
     const solution = solveBoard(board);
     if (!solution) {
@@ -179,6 +182,7 @@ const App: FunctionComponent = () => {
   };
 
   const moveBlockToPos = (posBlock: PositionedBlock, pos: Pos) => {
+    setPotentialPositions([]);
     // This call moves a block during the ManualSolve phase
     if (status !== Status.ManualSolve) return;
 
@@ -194,6 +198,7 @@ const App: FunctionComponent = () => {
   };
 
   const undoMove = () => {
+    setPotentialPositions([]);
     if (manualMoves.length === 0) return;
 
     const { block, oldPos, newPos } = manualMoves.pop()!;
@@ -202,7 +207,14 @@ const App: FunctionComponent = () => {
     setManualMoveIdx(manualMoveIdx - 1);
   };
 
-  // resetState
+  // Alert State
+
+  const [alert, setAlert] = useState<JSX.Element | null>(null);
+
+  const addAlert = (msg: string, severity: Severity) =>
+    setAlert(<Toast severity={severity} msg={msg} closeCallback={() => setAlert(null)} />);
+
+  // Reset State
 
   const resetState = () => {
     board.reset();
@@ -212,10 +224,25 @@ const App: FunctionComponent = () => {
     setAlgoMoveIdx(-1);
     setManualMoveIdx(-1);
     setBoardStatus(validateBoard());
+    setPotentialPositions([]);
   };
 
   return (
     <Box className="App">
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '3rem',
+          paddingY: '1rem',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
+        {alert}
+      </Box>
       <h1 style={{ textAlign: 'center' }}>KLOTSKI SOLVER</h1>
       <StatusMsg
         status={status}
@@ -230,10 +257,12 @@ const App: FunctionComponent = () => {
           blocks={blocks}
           functions={{
             addBlock,
-            getPotentialNewPositions: (block: Block, pos: Pos) =>
-              board.availablePositions(block, pos),
+            addAlert,
+            getPotentialPositions: (block: Block, pos: Pos) => board.availablePositions(block, pos),
+            setPotentialPositions,
             moveBlockToPos,
           }}
+          potentialPositions={potentialPositions}
           status={status}
           setStatus={setStatus}
         />

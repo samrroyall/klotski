@@ -7,15 +7,19 @@ import { Pos, PositionedBlock } from '../models/PositionedBlock';
 import { Board } from '../models/Board';
 import BlockUI from './BlockUI';
 import Cell from './Cell';
+import { Severity } from './Toast';
 
 interface Props {
   boardStatus: BoardStatus;
   blocks: PositionedBlock[];
   functions: {
     addBlock: (block: Block, pos: Pos) => void;
-    getPotentialNewPositions: (block: Block, pos: Pos) => Pos[];
+    addAlert: (msg: string, severity: Severity) => void;
+    getPotentialPositions: (block: Block, pos: Pos) => Pos[];
     moveBlockToPos: (pos_block: PositionedBlock, pos: Pos) => void;
+    setPotentialPositions: React.Dispatch<React.SetStateAction<Pos[]>>;
   };
+  potentialPositions: Pos[];
   status: Status;
   setStatus: React.Dispatch<React.SetStateAction<Status>>;
 }
@@ -24,10 +28,12 @@ const BoardUI: FunctionComponent<Props> = ({
   boardStatus,
   blocks,
   functions,
+  potentialPositions,
   status,
   setStatus,
 }) => {
-  const { addBlock, getPotentialNewPositions, moveBlockToPos } = functions;
+  const { addBlock, addAlert, getPotentialPositions, setPotentialPositions, moveBlockToPos } =
+    functions;
 
   // Styling Objects
 
@@ -37,7 +43,6 @@ const BoardUI: FunctionComponent<Props> = ({
 
   // Board Methods
 
-  const [potentialPositions, setPotentialPositions] = useState<Pos[]>([]);
   const [blockToMove, setBlockToMove] = useState<PositionedBlock | null>(null);
 
   const grid = [];
@@ -50,6 +55,7 @@ const BoardUI: FunctionComponent<Props> = ({
           col={j}
           boardStatus={boardStatus}
           addBlock={addBlock}
+          addAlert={addAlert}
           moveBlockToPos={(pos: Pos) => {
             if (blockToMove) {
               moveBlockToPos(blockToMove, pos);
@@ -76,10 +82,10 @@ const BoardUI: FunctionComponent<Props> = ({
         block={block}
         status={status}
         setStatus={setStatus}
-        getPotentialNewPositions={getPotentialNewPositions}
-        setPotentialNewPositions={(block: Block, pos: Pos) => {
+        getPotentialPositions={getPotentialPositions}
+        setPotentialPositions={(block: Block, pos: Pos) => {
           setBlockToMove(new PositionedBlock(block, pos));
-          setPotentialPositions(getPotentialNewPositions(block, pos));
+          setPotentialPositions(getPotentialPositions(block, pos));
         }}
       />
     ));
