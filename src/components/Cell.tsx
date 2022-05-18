@@ -34,7 +34,7 @@ interface ABSProps {
   onClick: () => any;
 }
 
-const AddBlockSelector: FunctionComponent<ABSProps> = ({ block, show, onClick }) => {
+const AddBlockSelector: FunctionComponent<ABSProps> = ({ block, onClick }) => {
   return (
     <Box
       sx={{
@@ -49,7 +49,7 @@ const AddBlockSelector: FunctionComponent<ABSProps> = ({ block, show, onClick })
       onClick={() => onClick()}
     >
       <h3>
-        {block.height()}×{block.width()}
+        {block.rows}×{block.cols}
       </h3>
     </Box>
   );
@@ -163,7 +163,7 @@ const Cell: FunctionComponent<CellProps> = ({
       >
         {validBlocks.map((block) => (
           <AddBlockSelector
-            key={`cell-${row}-${col}-${block.height()}x${block.width()}-selector`}
+            key={`cell-${row}-${col}-${block.rows}x${block.cols}-selector`}
             show={hovering}
             block={block}
             onClick={() => {

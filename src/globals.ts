@@ -1,7 +1,15 @@
 interface Globals {
-    cellSize: number; // in rem
+  numRows: number;
+  numCols: number;
+  winningRow: number;
+  winningCol: number;
+  cellSize: number; // in rem
 }
 
 export const globals: Globals = {
-    cellSize: 8,
+  numRows: 5,
+  numCols: 4,
+  winningRow: 3,
+  winningCol: 1,
+  cellSize: 8,
 };

@@ -1,7 +1,7 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 import { Block } from './models/Block';
-import { oppositeDir, PositionedBlock, Pos, getNewPos } from './models/PositionedBlock';
+import { oppositeDir, PositionedBlock, Pos, getNewPosFromDir } from './models/PositionedBlock';
 import { Board, Move } from './models/Board';
 import { solveBoard } from './models/Solver';
 import BoardUI from './components/BoardUI';
@@ -141,7 +141,7 @@ const App: FunctionComponent = () => {
     const prevMove = moves[algoMoveIdx + 1];
 
     const newPos = { row: prevMove.pos.row, col: prevMove.pos.col };
-    prevMove.dirs.forEach((dir) => getNewPos(newPos, dir));
+    prevMove.dirs.forEach((dir) => getNewPosFromDir(newPos, dir));
 
     const oppositeDirs = prevMove.dirs.map((dir) => oppositeDir(dir)).reverse();
 

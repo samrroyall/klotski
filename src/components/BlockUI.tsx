@@ -35,8 +35,8 @@ const BlockUI: FunctionComponent<Props> = ({
   };
 
   const blockSize = {
-    height: block.block.height() * globals.cellSize,
-    width: block.block.width() * globals.cellSize,
+    height: block.block.rows * globals.cellSize,
+    width: block.block.cols * globals.cellSize,
   };
 
   return (
@@ -54,7 +54,7 @@ const BlockUI: FunctionComponent<Props> = ({
         }rem`,
         height: `${isMovable ? blockSize.height * (1 + scalingFactor) : blockSize.height}rem`,
         width: `${isMovable ? blockSize.width * (1 + scalingFactor) : blockSize.width}rem`,
-        backgroundColor: blockColor[block.toBlockId() - 1][600],
+        backgroundColor: blockColor[block.block.toInt() - 1][600],
         cursor: isMovable ? 'pointer' : 'default',
         zIndex: isMovable ? 3 : 2,
       }}

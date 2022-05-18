@@ -1,11 +1,3 @@
-// BlockId is a named enum of the different types of valid Blocks
-export enum BlockId {
-  OneByOne = 1,
-  TwoByOne = 2,
-  OneByTwo = 3,
-  TwoByTwo = 4,
-}
-
 // There are four types of blocks in Klotski: 1x1, 2x1 (vertical), 1x2 (horizontal), and 2x2
 export class Block {
   static readonly ONE_BY_ONE = new Block(1, 1);
@@ -13,15 +5,22 @@ export class Block {
   static readonly ONE_BY_TWO = new Block(1, 2);
   static readonly TWO_BY_TWO = new Block(2, 2);
 
-  private _rows: number;
-  private _cols: number;
+  readonly rows: 1 | 2;
+  readonly cols: 1 | 2;
 
-  private constructor(rows: number, cols: number) {
-    this._rows = rows;
-    this._cols = cols;
+  private constructor(rows: 1 | 2, cols: 1 | 2) {
+    this.rows = rows;
+    this.cols = cols;
   }
 
-  public height = (): number => this._rows;
+  public area = () => this.rows * this.cols;
 
-  public width = (): number => this._cols;
+  public isEqual = (b: Block) => this.rows === b.rows && this.cols === b.cols;
+
+  public toInt(): 1 | 2 | 3 | 4 {
+    if (this.isEqual(Block.ONE_BY_ONE)) return 1;
+    else if (this.isEqual(Block.TWO_BY_ONE)) return 2;
+    else if (this.isEqual(Block.ONE_BY_TWO)) return 3;
+    else return 4;
+  }
 }
