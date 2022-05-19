@@ -1,5 +1,6 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, Tooltip, useMediaQuery } from '@mui/material';
+import { HelpOutlineOutlined } from '@mui/icons-material';
 import { Block } from './models/Block';
 import { oppositeDir, PositionedBlock, Pos, getNewPosFromDir } from './models/PositionedBlock';
 import { Board, Move } from './models/Board';
@@ -8,6 +9,7 @@ import BoardUI from './components/BoardUI';
 import Buttons from './components/Buttons';
 import StatusMsg from './components/StatusMsg';
 import { Toast, Severity } from './components/Toast';
+import { globals } from './globals';
 
 export enum Status {
   Start,
@@ -214,6 +216,43 @@ const App: FunctionComponent = () => {
   const addAlert = (msg: string, severity: Severity) =>
     setAlert(<Toast severity={severity} msg={msg} closeCallback={() => setAlert(null)} />);
 
+  const AlertContainer: FunctionComponent = () => (
+    <Box
+      sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '3rem',
+        paddingY: '1rem',
+        display: 'flex',
+        justifyContent: 'center',
+      }}
+    >
+      {alert}
+    </Box>
+  );
+
+  // Title Container
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+
+  const TitleContainer = () => {
+    const helpText = `${isMobile ? 'Clock on ' : 'Hover over '} the cells bellow to add a block of 
+    size HEIGHT x WIDTH. A valid board contains exactly one 2x2 block and exactly two free spaces. 
+    You can also click 'Create Board For Me' to get a random board.`;
+
+    return (
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2rem' }}
+      >
+        <h1 style={{ padding: 0, margin: 0 }}>KLOTSKI SOLVER</h1>
+        <Tooltip title={helpText} arrow>
+          <HelpOutlineOutlined color="action" fontSize="small" style={{ marginLeft: '1rem' }} />
+        </Tooltip>
+      </Box>
+    );
+  };
+
   // Reset State
 
   const resetState = () => {
@@ -229,21 +268,8 @@ const App: FunctionComponent = () => {
 
   return (
     <Box className="App">
-      <Box
-        sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '3rem',
-          paddingY: '1rem',
-          display: 'flex',
-          justifyContent: 'center',
-        }}
-      >
-        {alert}
-      </Box>
-      <h1 style={{ textAlign: 'center' }}>KLOTSKI SOLVER</h1>
+      <AlertContainer />
+      <TitleContainer />
       <StatusMsg
         status={status}
         boardIsValid={boardStatus.isValid}

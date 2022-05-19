@@ -3,7 +3,9 @@ interface Globals {
   numCols: number;
   winningRow: number;
   winningCol: number;
-  cellSize: number; // in rem
+  mobileCutoff: number; // in px
+  desktopCellSize: number; // in rem
+  mobileCellSize: number; // in rem
 }
 
 export const globals: Globals = {
@@ -11,5 +13,7 @@ export const globals: Globals = {
   numCols: 4,
   winningRow: 3,
   winningCol: 1,
-  cellSize: 8,
+  mobileCutoff: 800,
+  desktopCellSize: 8,
+  mobileCellSize: 5,
 };

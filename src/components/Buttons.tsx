@@ -1,10 +1,37 @@
 import { FunctionComponent } from 'react';
-import { Box, Button } from '@mui/material';
+import { Box, Button, SxProps, Theme, useMediaQuery } from '@mui/material';
 import { Board } from '../models/Board';
 import { BoardStatus, Status } from '../App';
 import { globals } from '../globals';
 
-interface Props {
+interface ButtonProps {
+  title: string;
+  onClick: () => any;
+  disabled?: boolean;
+  sx?: SxProps<Theme>;
+}
+
+const ButtonWrapper: FunctionComponent<ButtonProps> = ({ title, onClick, disabled, sx }) => {
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+  const size = isMobile ? 'small' : 'medium';
+
+  return (
+    <Button
+      sx={{
+        ...sx,
+        fontSize: `${isMobile ? '0.6rem' : '1rem'} !important`,
+      }}
+      variant="outlined"
+      size={size}
+      disabled={disabled || false}
+      onClick={onClick}
+    >
+      {title}
+    </Button>
+  );
+};
+
+interface ButtonsProps {
   boardStatus: BoardStatus;
   functions: {
     createRandomBoard: () => void;
@@ -22,7 +49,7 @@ interface Props {
   setStatus: React.Dispatch<React.SetStateAction<Status>>;
 }
 
-const Buttons: FunctionComponent<Props> = ({
+const Buttons: FunctionComponent<ButtonsProps> = ({
   boardStatus,
   functions,
   numMoves,
@@ -35,87 +62,70 @@ const Buttons: FunctionComponent<Props> = ({
     functions;
 
   const randomizeButton = (
-    <Button
-      variant="outlined"
+    <ButtonWrapper
+      title="Create board for me"
       onClick={() => {
         setStatus(Status.AlgoBuild);
         createRandomBoard();
       }}
-    >
-      Create board for me
-    </Button>
+    />
   );
 
   const stepThroughSolutionButtons = (
     <>
-      <Button variant="outlined" onClick={() => undoStep()} disabled={algoMoveIdx >= numMoves - 1}>
-        Previous Step
-      </Button>
-      <Button
+      <ButtonWrapper
+        title="Previous Step"
+        onClick={() => undoStep()}
+        disabled={algoMoveIdx >= numMoves - 1}
+      />
+      <ButtonWrapper
         sx={{ marginLeft: '1rem' }}
-        variant="outlined"
+        title="Next Step"
         onClick={() => {
           if (status !== Status.StepThroughSolution) setStatus(Status.StepThroughSolution);
           doStep();
         }}
         disabled={algoMoveIdx < 0}
-      >
-        Next Step
-      </Button>
+      />
     </>
   );
 
   const manualSolveButtons = (
     <>
-      <Button variant="outlined" onClick={() => undoMove()} disabled={manualMoveIdx <= 0}>
-        Undo Move
-      </Button>
-      <Button sx={{ marginLeft: '1rem' }} variant="outlined" onClick={() => clearBlocks()}>
-        Clear Board
-      </Button>
+      <ButtonWrapper title="Undo Move" onClick={() => undoMove()} disabled={manualMoveIdx <= 0} />
+      <ButtonWrapper
+        sx={{ marginLeft: '1rem' }}
+        title="Clear Board"
+        onClick={() => clearBlocks()}
+      />
     </>
   );
 
   const buildButtons = (
     <>
-      <Button variant="outlined" onClick={() => clearBlocks()}>
-        Clear Board
-      </Button>
-      <Button
+      <ButtonWrapper title="Clear Board" onClick={() => clearBlocks()} />
+      <ButtonWrapper
         sx={{ marginLeft: '1rem' }}
-        variant="outlined"
+        title="Solve myself"
         disabled={!boardStatus.isValid}
         onClick={() => {
           setStatus(Status.ManualSolve);
           manualSolve();
         }}
-      >
-        Solve myself
-      </Button>
-      <Button
+      />
+      <ButtonWrapper
         sx={{ marginLeft: '1rem' }}
-        variant="outlined"
+        title="Solve board for me"
         disabled={!boardStatus.isValid}
         onClick={() => {
           setStatus(Status.AlgoSolve);
           algoSolve();
         }}
-      >
-        Solve board for me
-      </Button>
+      />
     </>
   );
 
-  const startOverButton = (
-    <Button
-      variant="outlined"
-      onClick={() => {
-        clearBlocks();
-      }}
-    >
-      Start Over
-    </Button>
-  );
+  const startOverButton = <ButtonWrapper title="Start Over" onClick={() => clearBlocks()} />;
 
   const buttons = () => {
     switch (status) {
@@ -142,7 +152,10 @@ const Buttons: FunctionComponent<Props> = ({
     }
   };
 
-  const boardHeight = globals.cellSize * Board.rows + 1;
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+  const cellSize = isMobile ? globals.mobileCellSize : globals.desktopCellSize;
+  const boardHeight = cellSize * Board.rows + 1;
+
   const buttonStyling = {
     position: 'absolute',
     width: '100%',

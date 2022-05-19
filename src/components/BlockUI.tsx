@@ -1,5 +1,5 @@
 import { FunctionComponent, useState } from 'react';
-import { Paper, colors } from '@mui/material';
+import { Paper, colors, useMediaQuery } from '@mui/material';
 import { globals } from '../globals';
 import { Block } from '../models/Block';
 import { Pos, PositionedBlock } from '../models/PositionedBlock';
@@ -27,17 +27,20 @@ const BlockUI: FunctionComponent<Props> = ({
 
   const boardReadyToSolve = () => boardStatus.isValid && status === Status.ManualSolve;
 
-  const scalingFactor = 0.1;
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+  const cellSize = isMobile ? globals.mobileCellSize : globals.desktopCellSize;
 
   const blockPos = {
-    top: block.minPos().row * globals.cellSize,
-    left: block.minPos().col * globals.cellSize,
+    top: block.minPos().row * cellSize,
+    left: block.minPos().col * cellSize,
   };
 
   const blockSize = {
-    height: block.block.rows * globals.cellSize,
-    width: block.block.cols * globals.cellSize,
+    height: block.block.rows * cellSize,
+    width: block.block.cols * cellSize,
   };
+
+  const scalingFactor = 0.1;
 
   return (
     <Paper

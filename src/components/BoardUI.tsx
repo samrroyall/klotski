@@ -1,5 +1,5 @@
 import { FunctionComponent, useState, useEffect } from 'react';
-import { Box } from '@mui/material';
+import { Box, useMediaQuery } from '@mui/material';
 import { globals } from '../globals';
 import { BoardStatus, Status } from '../App';
 import { Block } from '../models/Block';
@@ -37,7 +37,10 @@ const BoardUI: FunctionComponent<Props> = ({
 
   // Styling Objects
 
-  const boardWidth = Board.cols * globals.cellSize;
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+  const cellSize = isMobile ? globals.mobileCellSize : globals.desktopCellSize;
+
+  const boardWidth = Board.cols * cellSize;
   const boardSizing = { width: `${boardWidth}rem` };
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
 
@@ -90,7 +93,7 @@ const BoardUI: FunctionComponent<Props> = ({
       />
     ));
     setUiBlocks(newUiBlocks);
-  }, [blocks, status]);
+  }, [blocks, boardStatus, getPotentialPositions, setPotentialPositions, setStatus, status]);
 
   return (
     <Box

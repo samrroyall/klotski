@@ -1,5 +1,7 @@
+import { useMediaQuery } from '@mui/material';
 import { FunctionComponent } from 'react';
 import { Status } from '../App';
+import { globals } from '../globals';
 
 interface Props {
   status: Status;
@@ -16,7 +18,9 @@ const StatusMsg: FunctionComponent<Props> = ({
   algoMoveIdx,
   manualMoveIdx,
 }) => {
-  const startMsg = <span>Hover over the board to add blocks</span>;
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+
+  const startMsg = <span>{isMobile ? 'Click on ' : 'Hover over '} a cell to add a block</span>;
   const doneMsg = <span>Done!</span>;
   const failedMsg = <span>No Solution Found :(</span>;
   const alreadySolvedMsg = <span>Oops! It looks like the board is already solved</span>;
@@ -90,8 +94,10 @@ const StatusMsg: FunctionComponent<Props> = ({
     <p
       style={{
         display: 'block',
+        marginTop: '1rem',
+        marginBottom: '1rem',
         textAlign: 'center',
-        marginBottom: '2rem',
+        fontSize: isMobile ? '0.8rem' : '1rem',
       }}
     >
       {getMsg()}
