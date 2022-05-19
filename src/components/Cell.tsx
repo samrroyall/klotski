@@ -1,41 +1,58 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Box, colors } from '@mui/material';
+import { Box, colors, useMediaQuery } from '@mui/material';
 import { Block } from '../models/Block';
 import { Pos } from '../models/PositionedBlock';
 import { Board } from '../models/Board';
 import { BoardStatus, Status } from '../App';
+import { Severity } from './Toast';
 import { globals } from '../globals';
 
-interface BSProps {
-  block: Block;
-  addBlock: () => void;
+interface MBSProps {
+  size: number;
+  show: boolean;
+  onClick: () => any;
 }
 
-const BlockSelector: FunctionComponent<BSProps> = ({ block, addBlock }) => {
+const MoveBlockSelector: FunctionComponent<MBSProps> = ({ size, show, onClick }) => {
+  return (
+    <Box
+      sx={{
+        height: `${size}rem`,
+        width: `${size}rem`,
+        backgroundColor: colors.deepPurple[300],
+        '&:hover': { backgroundColor: colors.deepPurple[400] },
+        zIndex: show ? 20 : 0,
+      }}
+      onClick={() => onClick()}
+    ></Box>
+  );
+};
+
+interface ABSProps {
+  block: Block;
+  show: boolean;
+  onClick: () => any;
+}
+
+const AddBlockSelector: FunctionComponent<ABSProps> = ({ block, onClick }) => {
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+
   return (
     <Box
       sx={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: `50%`,
-        minWidth: `50%`,
+        height: '50%',
+        width: '50%',
         color: colors.grey[400],
-        '&:hover': {
-          color: colors.grey[800],
-        },
+        '&:hover': { color: colors.grey[800] },
+        fontSize: isMobile ? '0.8rem' : '1rem',
+        fontWeight: 'bold',
       }}
-      onClick={() => {
-        try {
-          addBlock();
-        } catch {
-          alert('Add block failed!');
-        }
-      }}
+      onClick={() => onClick()}
     >
-      <h3>
-        {block.height()}×{block.width()}
-      </h3>
+      {block.rows}×{block.cols}
     </Box>
   );
 };
@@ -45,6 +62,7 @@ interface CellProps {
   col: number;
   boardStatus: BoardStatus;
   addBlock: (block: Block, pos: Pos) => void;
+  addAlert: (msg: string, severity: Severity) => void;
   moveBlockToPos: (pos: Pos) => void;
   status: Status;
   setStatus: React.Dispatch<React.SetStateAction<Status>>;
@@ -56,6 +74,7 @@ const Cell: FunctionComponent<CellProps> = ({
   col,
   boardStatus,
   addBlock,
+  addAlert,
   moveBlockToPos,
   status,
   setStatus,
@@ -63,8 +82,6 @@ const Cell: FunctionComponent<CellProps> = ({
 }) => {
   const inLastRow = row === Board.rows - 1;
   const inLastCol = col === Board.cols - 1;
-
-  const availablePositionBoxScaleFactor = 0.2;
 
   const isWinningCell = (i: number, j: number) =>
     (i === Board.winningPos.row || i === Board.winningPos.row + 1) &&
@@ -97,11 +114,15 @@ const Cell: FunctionComponent<CellProps> = ({
     setIsPotentialPosition(potentialPositions.some((pos) => row === pos.row && col === pos.col));
   }, [col, row, potentialPositions]);
 
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+  const cellSize = isMobile ? globals.mobileCellSize : globals.desktopCellSize;
+  const availablePositionBoxScaleFactor = 0.2;
+
   return (
     <Box
       sx={{
-        height: `${globals.cellSize}rem`,
-        width: `${globals.cellSize}rem`,
+        height: `${cellSize}rem`,
+        width: `${cellSize}rem`,
         borderTop: 1,
         borderBottom: Number(inLastRow),
         borderLeft: 1,
@@ -125,21 +146,14 @@ const Cell: FunctionComponent<CellProps> = ({
           width: '100%',
         }}
       >
-        <Box
-          sx={{
-            height: `${availablePositionBoxScaleFactor * globals.cellSize}rem`,
-            width: `${availablePositionBoxScaleFactor * globals.cellSize}rem`,
-            backgroundColor: colors.deepPurple[300],
-            '&:hover': {
-              backgroundColor: colors.deepPurple[400],
-            },
-            zIndex: isPotentialPosition ? 20 : 0,
-          }}
+        <MoveBlockSelector
+          size={availablePositionBoxScaleFactor * cellSize}
+          show={isPotentialPosition}
           onClick={() => {
             setHovering(false);
             if (isPotentialPosition) moveBlockToPos({ row, col });
           }}
-        ></Box>
+        />
       </Box>
 
       <Box
@@ -152,12 +166,20 @@ const Cell: FunctionComponent<CellProps> = ({
         }}
       >
         {validBlocks.map((block) => (
-          <BlockSelector
-            key={`cell-${row}-${col}-${block.height()}x${block.width()}-selector`}
+          <AddBlockSelector
+            key={`cell-${row}-${col}-${block.rows}x${block.cols}-selector`}
+            show={hovering}
             block={block}
-            addBlock={() => {
-              if (status !== Status.ManualBuild) setStatus(Status.ManualBuild);
-              addBlock(block, { row, col });
+            onClick={() => {
+              try {
+                if (status !== Status.ManualBuild) setStatus(Status.ManualBuild);
+                addBlock(block, { row, col });
+              } catch {
+                addAlert(
+                  'Invalid block placement! Placed block overlaps another.',
+                  Severity.Warning
+                );
+              }
             }}
           />
         ))}

@@ -1,11 +1,15 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, Tooltip, useMediaQuery } from '@mui/material';
+import { HelpOutlineOutlined } from '@mui/icons-material';
 import { Block } from './models/Block';
-import { oppositeDir, PositionedBlock, Pos, getNewPos } from './models/PositionedBlock';
+import { oppositeDir, PositionedBlock, Pos, getNewPosFromDir } from './models/PositionedBlock';
 import { Board, Move } from './models/Board';
 import { solveBoard } from './models/Solver';
 import BoardUI from './components/BoardUI';
 import Buttons from './components/Buttons';
+import StatusMsg from './components/StatusMsg';
+import { Toast, Severity } from './components/Toast';
+import { globals } from './globals';
 
 export enum Status {
   Start,
@@ -41,7 +45,6 @@ const App: FunctionComponent = () => {
   const [status, setStatus] = useState(Status.Start);
   const [board, _] = useState(new Board());
   const [blocks, setBlocks] = useState(board.getBlocks());
-  const [msg, setMsg] = useState<JSX.Element>(<></>);
 
   const validateBoard = (): BoardStatus => {
     return {
@@ -140,7 +143,7 @@ const App: FunctionComponent = () => {
     const prevMove = moves[algoMoveIdx + 1];
 
     const newPos = { row: prevMove.pos.row, col: prevMove.pos.col };
-    prevMove.dirs.forEach((dir) => getNewPos(newPos, dir));
+    prevMove.dirs.forEach((dir) => getNewPosFromDir(newPos, dir));
 
     const oppositeDirs = prevMove.dirs.map((dir) => oppositeDir(dir)).reverse();
 
@@ -164,6 +167,8 @@ const App: FunctionComponent = () => {
 
   // ManualSolve Helpers
 
+  const [potentialPositions, setPotentialPositions] = useState<Pos[]>([]);
+
   const manualSolve = () => {
     const solution = solveBoard(board);
     if (!solution) {
@@ -179,6 +184,7 @@ const App: FunctionComponent = () => {
   };
 
   const moveBlockToPos = (posBlock: PositionedBlock, pos: Pos) => {
+    setPotentialPositions([]);
     // This call moves a block during the ManualSolve phase
     if (status !== Status.ManualSolve) return;
 
@@ -194,6 +200,7 @@ const App: FunctionComponent = () => {
   };
 
   const undoMove = () => {
+    setPotentialPositions([]);
     if (manualMoves.length === 0) return;
 
     const { block, oldPos, newPos } = manualMoves.pop()!;
@@ -202,57 +209,51 @@ const App: FunctionComponent = () => {
     setManualMoveIdx(manualMoveIdx - 1);
   };
 
-  // Status Message
+  // Alert State
 
-  useEffect(() => {
-    if (status === Status.Start) setMsg(<span>Hover over the board to add blocks</span>);
-    else if (status === Status.ManualBuild && !boardStatus.isValid)
-      setMsg(<span>A valid board has exactly one 2x2 block and two empty cells</span>);
-    else if (boardStatus.isValid && [Status.ManualBuild, Status.AlgoBuild].includes(status))
-      setMsg(<span>The board is ready to solve</span>);
-    else if (status === Status.ManualSolve)
-      setMsg(
-        <span>
-          Current Moves: <strong>{manualMoveIdx}</strong> Fewest Possible Moves:{' '}
-          <strong>{numMoves}</strong>
-        </span>
-      );
-    else if (status === Status.Solved)
-      setMsg(
-        <span>
-          The optimal solution is <strong>{numMoves}</strong> steps long
-        </span>
-      );
-    else if (status === Status.StepThroughSolution)
-      setMsg(
-        <span>
-          <strong>{numMoves - algoMoveIdx - 1}</strong>/<strong>{numMoves}</strong>
-        </span>
-      );
-    else if (status === Status.Done)
-      setMsg(
-        manualMoveIdx > 0 ? (
-          manualMoveIdx === numMoves ? (
-            <span>
-              You solved the board in <strong>{manualMoveIdx}</strong> moves. That's the fewest
-              moves possible!
-            </span>
-          ) : (
-            <span>
-              You solved the board in <strong>{manualMoveIdx}</strong> moves!
-            </span>
-          )
-        ) : (
-          <span>Done!</span>
-        )
-      );
-    else if (status === Status.Failed) setMsg(<span>No Solution Found :(</span>);
-    else if (status === Status.AlreadySolved)
-      setMsg(<span>Oops! It looks like the board is already solved</span>);
-    else setMsg(<span></span>);
-  }, [status, boardStatus, numMoves, algoMoveIdx, manualMoveIdx]);
+  const [alert, setAlert] = useState<JSX.Element | null>(null);
 
-  // resetState
+  const addAlert = (msg: string, severity: Severity) =>
+    setAlert(<Toast severity={severity} msg={msg} closeCallback={() => setAlert(null)} />);
+
+  const AlertContainer: FunctionComponent = () => (
+    <Box
+      sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '3rem',
+        paddingY: '1rem',
+        display: 'flex',
+        justifyContent: 'center',
+      }}
+    >
+      {alert}
+    </Box>
+  );
+
+  // Title Container
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+
+  const TitleContainer = () => {
+    const helpText = `${isMobile ? 'Clock on ' : 'Hover over '} the cells bellow to add a block of 
+    size HEIGHT x WIDTH. A valid board contains exactly one 2x2 block and exactly two free spaces. 
+    You can also click 'Create Board For Me' to get a random board.`;
+
+    return (
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2rem' }}
+      >
+        <h1 style={{ padding: 0, margin: 0 }}>KLOTSKI SOLVER</h1>
+        <Tooltip title={helpText} arrow>
+          <HelpOutlineOutlined color="action" fontSize="small" style={{ marginLeft: '1rem' }} />
+        </Tooltip>
+      </Box>
+    );
+  };
+
+  // Reset State
 
   const resetState = () => {
     board.reset();
@@ -262,22 +263,32 @@ const App: FunctionComponent = () => {
     setAlgoMoveIdx(-1);
     setManualMoveIdx(-1);
     setBoardStatus(validateBoard());
+    setPotentialPositions([]);
   };
 
   return (
     <Box className="App">
-      <h1 style={{ textAlign: 'center' }}>KLOTSKI SOLVER</h1>
-      <p style={{ display: 'block', textAlign: 'center', marginBottom: '2rem' }}>{msg}</p>
+      <AlertContainer />
+      <TitleContainer />
+      <StatusMsg
+        status={status}
+        boardIsValid={boardStatus.isValid}
+        numMoves={numMoves}
+        algoMoveIdx={algoMoveIdx}
+        manualMoveIdx={manualMoveIdx}
+      />
       <Box sx={{ position: 'relative', width: '100%' }}>
         <BoardUI
           boardStatus={boardStatus}
           blocks={blocks}
           functions={{
             addBlock,
-            getPotentialNewPositions: (block: Block, pos: Pos) =>
-              board.availablePositions(block, pos),
+            addAlert,
+            getPotentialPositions: (block: Block, pos: Pos) => board.availablePositions(block, pos),
+            setPotentialPositions,
             moveBlockToPos,
           }}
+          potentialPositions={potentialPositions}
           status={status}
           setStatus={setStatus}
         />

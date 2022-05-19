@@ -1,38 +1,26 @@
-import { Block, BlockId } from './Block';
-import {
-  Dir,
-  isSamePositionedBlock,
-  oppositeDir,
-  Pos,
-  PositionedBlock,
-  getNewPos,
-} from './PositionedBlock';
+import { Block } from './Block';
+import { Dir, oppositeDir, Pos, PositionedBlock, getNewPosFromDir } from './PositionedBlock';
+import { globals } from '../globals';
 const md5 = require('md5');
 
-// A Move is made up of a Dir and a PositionedBlock
+// A Move is made up of a Block, a Pos associated with the block, and a list of Dirs
+// corresponding to the move
 export interface Move {
   readonly dirs: Dir[];
   readonly block: Block;
   readonly pos: Pos;
 }
 
-export function oppositeMove(m: Move): Move {
-  const dirs: Dir[] = [];
-  for (let dir of m.dirs) dirs.push(oppositeDir(dir));
-
-  return { block: m.block, pos: m.pos, dirs };
-}
-
-// A Board is essentially a collection of PositionedBlocks with board-related methods -- like
+// A Board is a collection of PositionedBlocks with board-related methods -- like
 // addBlock(), moveBlock(), allValidMoves(), and isSolved() -- and utility methods that enforce
 // rules -- like isValid()., updatePos
 export class Board {
-  static readonly rows: number = 5;
-  static readonly cols: number = 4;
-  static readonly winningPos: Pos = { row: 3, col: 1 };
+  static readonly rows: number = globals.numRows;
+  static readonly cols: number = globals.numCols;
+  static readonly winningPos: Pos = { row: globals.winningRow, col: globals.winningCol };
 
   private blocks: PositionedBlock[] = [];
-  private grid: (BlockId | 0)[][] = [[]];
+  private grid: (0 | 1 | 2 | 3 | 4)[][] = [[]];
 
   readonly parent: Board | null = null;
   readonly initialMove: Move | null = null;
@@ -50,7 +38,7 @@ export class Board {
       this.moveBlock(move);
       return;
     }
-
+    // if not, set blocks and grid to defaults
     this.reset();
   }
 
@@ -65,23 +53,19 @@ export class Board {
 
   public getGrid = () => [...this.grid.map((row) => [...row])];
 
-  public numCellsFilled = (): number => this.blocks.reduce((acc, b) => acc + b.area(), 0);
+  public numCellsFilled = (): number => this.blocks.reduce((acc, pb) => acc + pb.block.area(), 0);
 
   public numTwoByTwos = (): number =>
-    this.blocks.reduce((acc, b) => acc + Number(b.area() === 4), 0);
+    this.blocks.reduce((acc, pb) => acc + Number(pb.block.toInt() === 4), 0);
 
   public isValid = (): boolean =>
     this.numCellsFilled() === Board.rows * Board.cols - 2 && this.numTwoByTwos() === 1;
 
   public isSolved(): boolean {
-    const twoByTwoMinPos = this.blocks
-      .find((block) => block.toBlockId() === BlockId.TwoByTwo)
-      ?.minPos();
+    const twoByTwoMinPos = this.blocks.find((pb) => pb.block.toInt() === 4)?.minPos();
 
     return (
-      !!twoByTwoMinPos &&
-      twoByTwoMinPos.row === Board.winningPos.row &&
-      twoByTwoMinPos.col === Board.winningPos.col
+      twoByTwoMinPos?.row === Board.winningPos.row && twoByTwoMinPos?.col === Board.winningPos.col
     );
   }
 
@@ -129,11 +113,11 @@ export class Board {
       if (this._moveAvailable(posBlock, dir)) {
         // create temporary moved block and push its position
         const movedPosBlock = new PositionedBlock(posBlock.block, posBlock.minPos());
-        movedPosBlock.move(getNewPos(movedPosBlock.minPos(), dir));
+        movedPosBlock.move(getNewPosFromDir(movedPosBlock.minPos(), dir));
         positions.push(movedPosBlock.minPos());
         for (let dir2 of availableDirs.filter((dir) => dir !== oppositeDir(dir))) {
           if (this._moveAvailable(movedPosBlock, dir2)) {
-            movedPosBlock.move(getNewPos(movedPosBlock.minPos(), dir2));
+            movedPosBlock.move(getNewPosFromDir(movedPosBlock.minPos(), dir2));
             positions.push(movedPosBlock.minPos());
           }
         }
@@ -144,19 +128,20 @@ export class Board {
   }
 
   private _validMoves(posBlock: PositionedBlock): Move[] {
-    const moves: Move[] = [];
+    const minPos = posBlock.minPos();
+    const block = posBlock.block;
 
+    const moves: Move[] = [];
     const availableDirs = [Dir.Left, Dir.Right, Dir.Up, Dir.Down];
     for (let dir of availableDirs) {
       if (this._moveAvailable(posBlock, dir)) {
         // add move of length one to moves array
-        moves.push({ block: posBlock.block, pos: posBlock.minPos(), dirs: [dir] });
-        const movedBlock = new PositionedBlock(posBlock.block, getNewPos(posBlock.minPos(), dir));
+        moves.push({ block, pos: minPos, dirs: [dir] });
+        // add move of length two to moves array
+        const movedBlock = new PositionedBlock(block, getNewPosFromDir(minPos, dir));
         for (let dir2 of availableDirs.filter((dir) => dir !== oppositeDir(dir))) {
-          if (this._moveAvailable(movedBlock, dir2)) {
-            // add move of length two to moves array
-            moves.push({ block: posBlock.block, pos: posBlock.minPos(), dirs: [dir, dir2] });
-          }
+          if (this._moveAvailable(movedBlock, dir2))
+            moves.push({ block, pos: minPos, dirs: [dir, dir2] });
         }
       }
     }
@@ -169,8 +154,6 @@ export class Board {
 
   public getHash = () =>
     md5(this.grid.reduce((acc, row) => row.reduce((acc2, col) => acc2 + col.toString(), acc), ''));
-
-  // Manual Solve Helpers
 
   private _outOfBounds = (block: PositionedBlock) =>
     [block.minPos(), block.maxPos()].some(
@@ -190,11 +173,11 @@ export class Board {
     !(this._outOfBounds(pb) || this._overlapsBlock(pb));
 
   private _addBlockToGrid(block: PositionedBlock): void {
-    const blockId = block.toBlockId();
     const minPos = block.minPos();
     const maxPos = block.maxPos();
     for (let row = minPos.row; row <= maxPos.row; row++) {
-      for (let col = minPos.col; col <= maxPos.col; col++) this.grid[row][col] = blockId;
+      for (let col = minPos.col; col <= maxPos.col; col++)
+        this.grid[row][col] = block.block.toInt();
     }
   }
 
@@ -215,7 +198,7 @@ export class Board {
   }
 
   public moveBlockToPos(posBlock: PositionedBlock, pos: Pos): void {
-    const pb = this.blocks.find((pb) => isSamePositionedBlock(pb, posBlock));
+    const pb = this.blocks.find((pb) => pb.isEqual(posBlock));
     if (!pb) throw Error('An attempt was made to move a block that does not exist on the board.');
 
     this._removeBlockFromGrid(pb);
@@ -225,12 +208,11 @@ export class Board {
 
   public moveBlock(move: Move): void {
     const posBlock = new PositionedBlock(move.block, move.pos);
-    const pb = this.blocks.find((pb) => isSamePositionedBlock(pb, posBlock));
+    const pb = this.blocks.find((pb) => pb.isEqual(posBlock));
     if (!pb) throw Error('An attempt was made to move a block that does not exist on the board.');
 
     this._removeBlockFromGrid(pb);
-    pb.move(getNewPos(pb.minPos(), move.dirs[0]));
-    if (move.dirs.length > 1) pb.move(getNewPos(pb.minPos(), move.dirs[1]));
+    move.dirs.map((d) => pb.move(getNewPosFromDir(pb.minPos(), d)));
     this._addBlockToGrid(pb);
   }
 }

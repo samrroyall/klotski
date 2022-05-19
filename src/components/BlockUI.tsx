@@ -1,5 +1,5 @@
 import { FunctionComponent, useState } from 'react';
-import { Paper, colors } from '@mui/material';
+import { Paper, colors, useMediaQuery } from '@mui/material';
 import { globals } from '../globals';
 import { Block } from '../models/Block';
 import { Pos, PositionedBlock } from '../models/PositionedBlock';
@@ -10,16 +10,16 @@ interface Props {
   boardStatus: BoardStatus;
   status: Status;
   setStatus: React.Dispatch<React.SetStateAction<Status>>;
-  getPotentialNewPositions: (block: Block, pos: Pos) => Pos[];
-  setPotentialNewPositions: (block: Block, pos: Pos) => void;
+  getPotentialPositions: (block: Block, pos: Pos) => Pos[];
+  setPotentialPositions: (block: Block, pos: Pos) => void;
 }
 
 const BlockUI: FunctionComponent<Props> = ({
   block,
   boardStatus,
   status,
-  getPotentialNewPositions,
-  setPotentialNewPositions,
+  getPotentialPositions,
+  setPotentialPositions,
 }) => {
   const blockColor = [colors.yellow, colors.blue, colors.green, colors.red];
 
@@ -27,17 +27,20 @@ const BlockUI: FunctionComponent<Props> = ({
 
   const boardReadyToSolve = () => boardStatus.isValid && status === Status.ManualSolve;
 
-  const scalingFactor = 0.1;
+  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+  const cellSize = isMobile ? globals.mobileCellSize : globals.desktopCellSize;
 
   const blockPos = {
-    top: block.minPos().row * globals.cellSize,
-    left: block.minPos().col * globals.cellSize,
+    top: block.minPos().row * cellSize,
+    left: block.minPos().col * cellSize,
   };
 
   const blockSize = {
-    height: block.block.height() * globals.cellSize,
-    width: block.block.width() * globals.cellSize,
+    height: block.block.rows * cellSize,
+    width: block.block.cols * cellSize,
   };
+
+  const scalingFactor = 0.1;
 
   return (
     <Paper
@@ -54,12 +57,12 @@ const BlockUI: FunctionComponent<Props> = ({
         }rem`,
         height: `${isMovable ? blockSize.height * (1 + scalingFactor) : blockSize.height}rem`,
         width: `${isMovable ? blockSize.width * (1 + scalingFactor) : blockSize.width}rem`,
-        backgroundColor: blockColor[block.toBlockId() - 1][600],
+        backgroundColor: blockColor[block.block.toInt() - 1][600],
         cursor: isMovable ? 'pointer' : 'default',
         zIndex: isMovable ? 3 : 2,
       }}
       onMouseEnter={() => {
-        if (boardReadyToSolve() && getPotentialNewPositions(block.block, block.minPos()).length > 0)
+        if (boardReadyToSolve() && getPotentialPositions(block.block, block.minPos()).length > 0)
           setIsMovable(true);
       }}
       onMouseLeave={() => {
@@ -68,7 +71,7 @@ const BlockUI: FunctionComponent<Props> = ({
       onClick={() => {
         if (!boardReadyToSolve()) return;
 
-        setPotentialNewPositions(block.block, block.minPos());
+        setPotentialPositions(block.block, block.minPos());
       }}
     />
   );
