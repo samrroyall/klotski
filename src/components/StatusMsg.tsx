@@ -1,24 +1,34 @@
 import { useMediaQuery } from '@mui/material';
 import { FunctionComponent } from 'react';
+import { selectBoardIsValid } from '../state/board/boardSlice';
 import { Status } from '../App';
-import { globals } from '../globals';
+import { useAppSelector } from '../state/hooks';
+import { MOBILE_CUTOFF } from '../constants';
 
 interface Props {
   status: Status;
-  boardIsValid: boolean;
-  numMoves: number;
-  algoMoveIdx: number;
-  manualMoveIdx: number;
 }
 
-const StatusMsg: FunctionComponent<Props> = ({
-  status,
-  boardIsValid,
-  numMoves,
-  algoMoveIdx,
-  manualMoveIdx,
-}) => {
-  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
+const StatusMsg: FunctionComponent<Props> = ({ status }) => {
+  // State
+
+  const boardIsValid = useAppSelector((state) => selectBoardIsValid(state));
+
+  const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
+  const numOptimalMoves = useAppSelector((state) =>
+    state.manualSolve.optimalMoves ? state.manualSolve.optimalMoves.length : null
+  );
+  const manualIsSolved = useAppSelector((state) => state.manualSolve.isSolved);
+
+  const numSteps = useAppSelector((state) =>
+    state.algoSolve.steps ? state.algoSolve.steps.length : null
+  );
+  const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
+  const algoIsSolved = useAppSelector((state) => state.algoSolve.isSolved);
+
+  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
+
+  // Styling variables
 
   const startMsg = <span>{isMobile ? 'Click on ' : 'Hover over '} a cell to add a block</span>;
   const doneMsg = <span>Done!</span>;
@@ -29,35 +39,34 @@ const StatusMsg: FunctionComponent<Props> = ({
 
   const manualSolveMsg = (
     <span>
-      Current Moves: <strong>{manualMoveIdx}</strong>
+      Current Moves: <strong>{moveIdx}</strong>
       <span style={{ marginLeft: '1rem' }}>
-        Fewest Possible Moves: <strong>{numMoves}</strong>
+        Fewest Possible Moves: <strong>{numOptimalMoves}</strong>
       </span>
     </span>
   );
 
   const algoSolvedMsg = (
     <span>
-      The optimal solution is <strong>{numMoves}</strong> steps long
+      The optimal solution is <strong>{numSteps}</strong> steps long
     </span>
   );
 
   const stepThroughSolutionMsg = (
     <span>
-      <strong>{numMoves - algoMoveIdx - 1}</strong>/<strong>{numMoves}</strong>
+      <strong>{numSteps ? numSteps - stepIdx - 1 : -1}</strong>/<strong>{numSteps || -1}</strong>
     </span>
   );
 
   const solvedMsg = (
     <span>
-      You solved the board in <strong>{manualMoveIdx}</strong> moves!
+      You solved the board in <strong>{moveIdx}</strong> moves!
     </span>
   );
 
   const solvedOptimalMsg = (
     <span>
-      You solved the board in <strong>{manualMoveIdx}</strong> moves. That's the fewest moves
-      possible!
+      You solved the board in <strong>{moveIdx}</strong> moves. That's the fewest moves possible!
     </span>
   );
 
@@ -79,12 +88,12 @@ const StatusMsg: FunctionComponent<Props> = ({
         return failedMsg;
       case Status.AlreadySolved:
         return alreadySolvedMsg;
-      case Status.Done:
-        return manualMoveIdx > 0
-          ? manualMoveIdx === numMoves
-            ? solvedOptimalMsg
-            : solvedMsg
-          : doneMsg;
+      case Status.Done: {
+        if (!manualIsSolved) return <></>;
+
+        if (moveIdx === numOptimalMoves) return solvedOptimalMsg;
+        else return solvedMsg;
+      }
       default:
         return <span></span>;
     }

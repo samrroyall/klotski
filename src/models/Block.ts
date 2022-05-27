@@ -8,7 +8,7 @@ export class Block {
   readonly rows: 1 | 2;
   readonly cols: 1 | 2;
 
-  private constructor(rows: 1 | 2, cols: 1 | 2) {
+  public constructor(rows: 1 | 2, cols: 1 | 2) {
     this.rows = rows;
     this.cols = cols;
   }

@@ -1,52 +1,43 @@
 import { FunctionComponent, useState, useEffect } from 'react';
 import { Box, useMediaQuery } from '@mui/material';
-import { globals } from '../globals';
-import { BoardStatus, Status } from '../App';
-import { Block } from '../models/Block';
-import { Pos, PositionedBlock } from '../models/PositionedBlock';
 import { Board } from '../models/Board';
+import { Status } from '../App';
 import BlockUI from './BlockUI';
 import Cell from './Cell';
 import { Severity } from './Toast';
+import { useAppSelector } from '../state/hooks';
+import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from '../constants';
 
 interface Props {
-  boardStatus: BoardStatus;
-  blocks: PositionedBlock[];
-  functions: {
-    addBlock: (block: Block, pos: Pos) => void;
-    addAlert: (msg: string, severity: Severity) => void;
-    getPotentialPositions: (block: Block, pos: Pos) => Pos[];
-    moveBlockToPos: (pos_block: PositionedBlock, pos: Pos) => void;
-    setPotentialPositions: React.Dispatch<React.SetStateAction<Pos[]>>;
-  };
-  potentialPositions: Pos[];
+  addAlert: (msg: string, severity: Severity) => void;
   status: Status;
   setStatus: React.Dispatch<React.SetStateAction<Status>>;
 }
 
-const BoardUI: FunctionComponent<Props> = ({
-  boardStatus,
-  blocks,
-  functions,
-  potentialPositions,
-  status,
-  setStatus,
-}) => {
-  const { addBlock, addAlert, getPotentialPositions, setPotentialPositions, moveBlockToPos } =
-    functions;
+const BoardUI: FunctionComponent<Props> = ({ addAlert, status, setStatus }) => {
+  // State
+
+  const blocks = useAppSelector((state) => state.board.blocks);
+
+  const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
+
+  useEffect(() => {
+    const newUiBlocks = blocks.map((pb, idx) => (
+      <BlockUI key={`block-${idx}`} pb={pb} status={status} setStatus={setStatus} />
+    ));
+    setUiBlocks(newUiBlocks);
+  }, [blocks, setStatus, status]);
 
   // Styling Objects
 
-  const isMobile = useMediaQuery(`(max-width:${globals.mobileCutoff}px)`);
-  const cellSize = isMobile ? globals.mobileCellSize : globals.desktopCellSize;
-
+  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
+  const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
   const boardWidth = Board.cols * cellSize;
+
   const boardSizing = { width: `${boardWidth}rem` };
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
 
   // Board Methods
-
-  const [blockToMove, setBlockToMove] = useState<PositionedBlock | null>(null);
 
   const grid = [];
   for (let i = 0; i < Board.rows; i++) {
@@ -56,44 +47,12 @@ const BoardUI: FunctionComponent<Props> = ({
           key={`cell-${i}-${j}`}
           row={i}
           col={j}
-          boardStatus={boardStatus}
-          addBlock={addBlock}
           addAlert={addAlert}
-          moveBlockToPos={(pos: Pos) => {
-            if (blockToMove) {
-              moveBlockToPos(blockToMove, pos);
-              setBlockToMove(null);
-              setPotentialPositions([]);
-            }
-          }}
           status={status}
           setStatus={setStatus}
-          potentialPositions={potentialPositions}
         />
       );
   }
-
-  // UI Blocks
-
-  const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
-
-  useEffect(() => {
-    const newUiBlocks = blocks.map((block, idx) => (
-      <BlockUI
-        key={`block-${idx}`}
-        boardStatus={boardStatus}
-        block={block}
-        status={status}
-        setStatus={setStatus}
-        getPotentialPositions={getPotentialPositions}
-        setPotentialPositions={(block: Block, pos: Pos) => {
-          setBlockToMove(new PositionedBlock(block, pos));
-          setPotentialPositions(getPotentialPositions(block, pos));
-        }}
-      />
-    ));
-    setUiBlocks(newUiBlocks);
-  }, [blocks, boardStatus, getPotentialPositions, setPotentialPositions, setStatus, status]);
 
   return (
     <Box
