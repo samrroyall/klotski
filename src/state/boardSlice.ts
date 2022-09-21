@@ -1,7 +1,7 @@
 import { CaseReducer, createSlice, Draft, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../store';
-import { NUM_COLS, NUM_ROWS, WINNING_COL, WINNING_ROW } from '../../constants';
-import { Board } from '../../models/Board';
+import { RootState } from './store';
+import { NUM_COLS, NUM_ROWS, WINNING_COL, WINNING_ROW } from '../constants';
+import { Board } from '../models/Board';
 import {
   blockToInt,
   Dir,
@@ -13,7 +13,7 @@ import {
   UIBlock,
   UIMove,
   UIPosBlock,
-} from '../../models/global';
+} from '../models/global';
 
 // State
 

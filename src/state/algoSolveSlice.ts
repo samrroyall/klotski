@@ -1,9 +1,9 @@
 import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Block } from '../../models/Block';
-import { Board } from '../../models/Board';
-import { PositionedBlock } from '../../models/PositionedBlock';
-import { Grid, UIMove, UIPosBlock } from '../../models/global';
-import { solveBoard } from '../../models/Solver';
+import { Block } from '../models/Block';
+import { Board } from '../models/Board';
+import { PositionedBlock } from '../models/PositionedBlock';
+import { Grid, UIMove, UIPosBlock } from '../models/global';
+import { solveBoard } from '../models/Solver';
 
 // State
 
@@ -41,6 +41,14 @@ const initReducer: CaseReducer<
   state.isSolved = true;
 };
 
+const decrementStepReducer: CaseReducer<AlgoSolveState> = (state) => {
+  state.stepIdx -= 1;
+};
+
+const incrementStepReducer: CaseReducer<AlgoSolveState> = (state) => {
+  state.stepIdx += 1;
+}
+
 // Slice
 
 const algoSolveSlice = createSlice({
@@ -48,12 +56,8 @@ const algoSolveSlice = createSlice({
   initialState,
   reducers: {
     init: initReducer,
-    decrementStepIdx: (state: AlgoSolveState) => {
-      state.stepIdx = state.stepIdx - 1;
-    },
-    incrementStepIdx: (state: AlgoSolveState) => {
-      state.stepIdx = state.stepIdx + 1;
-    },
+    decrementStepIdx: decrementStepReducer,
+    incrementStepIdx: incrementStepReducer,
   },
 });
 

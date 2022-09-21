@@ -1,9 +1,9 @@
 import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Block } from '../../models/Block';
-import { Board } from '../../models/Board';
-import { PositionedBlock } from '../../models/PositionedBlock';
-import { Grid, Pos, UIBlock, UIMove, UIPosBlock } from '../../models/global';
-import { solveBoard } from '../../models/Solver';
+import { Block } from '../models/Block';
+import { Board } from '../models/Board';
+import { PositionedBlock } from '../models/PositionedBlock';
+import { Grid, Pos, UIBlock, UIMove, UIPosBlock } from '../models/global';
+import { solveBoard } from '../models/Solver';
 
 // State
 

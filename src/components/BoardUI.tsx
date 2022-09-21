@@ -1,44 +1,31 @@
 import { FunctionComponent, useState, useEffect } from 'react';
 import { Box, useMediaQuery } from '@mui/material';
 import { Board } from '../models/Board';
-import { Status } from '../App';
 import BlockUI from './BlockUI';
 import Cell from './Cell';
-import { Severity } from './Toast';
 import { useAppSelector } from '../state/hooks';
 import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from '../constants';
 
-interface Props {
-  addAlert: (msg: string, severity: Severity) => void;
-  status: Status;
-  setStatus: React.Dispatch<React.SetStateAction<Status>>;
-}
-
-const BoardUI: FunctionComponent<Props> = ({ addAlert, status, setStatus }) => {
+const BoardUI: FunctionComponent = () => {
   // State
-
   const blocks = useAppSelector((state) => state.board.blocks);
-
   const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
     const newUiBlocks = blocks.map((pb, idx) => (
-      <BlockUI key={`block-${idx}`} pb={pb} status={status} setStatus={setStatus} />
+      <BlockUI key={`block-${idx}`} pb={pb} />
     ));
     setUiBlocks(newUiBlocks);
-  }, [blocks, setStatus, status]);
+  }, [blocks]);
 
-  // Styling Objects
-
+  // Styling
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
   const boardWidth = Board.cols * cellSize;
-
   const boardSizing = { width: `${boardWidth}rem` };
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
 
-  // Board Methods
-
+  // Grid
   const grid = [];
   for (let i = 0; i < Board.rows; i++) {
     for (let j = 0; j < Board.cols; j++)
@@ -47,9 +34,6 @@ const BoardUI: FunctionComponent<Props> = ({ addAlert, status, setStatus }) => {
           key={`cell-${i}-${j}`}
           row={i}
           col={j}
-          addAlert={addAlert}
-          status={status}
-          setStatus={setStatus}
         />
       );
   }
