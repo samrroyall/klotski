@@ -1,107 +1,75 @@
 import { FunctionComponent } from 'react';
-import { Box, Button, SxProps, Theme, useMediaQuery } from '@mui/material';
+import { Box, useMediaQuery } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../state/hooks';
+import { changeStatus, Status } from '../state/appSlice';
 import {
   moveBlock,
   moveBlockToPos,
   randomize,
   reset as boardReset,
   selectBoardIsValid,
-} from '../state/board/boardSlice';
+} from '../state/boardSlice';
 import {
   init as algoInit,
   incrementStepIdx,
   decrementStepIdx,
-} from '../state/solve/algoSolveSlice';
+} from '../state/algoSolveSlice';
 import {
   init as manualInit,
   undoMove,
   reset as manualSolveReset,
   clearBlockToMove,
   clearAvailablePositions,
-} from '../state/solve/manualSolveSlice';
+} from '../state/manualSolveSlice';
 import { Board } from '../models/Board';
 import { getOppositeMove } from '../models/global';
-import { Status } from '../App';
 import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from '../constants';
 import store from '../state/store';
+import ButtonWrapper from './ButtonWrapper';
 
-////////////////////////////////////////////////////
-
-interface ButtonProps {
-  title: string;
-  onClick: () => any;
-  disabled?: boolean;
-  sx?: SxProps<Theme>;
-}
-
-const ButtonWrapper: FunctionComponent<ButtonProps> = ({ title, onClick, disabled, sx }) => {
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const size = isMobile ? 'small' : 'medium';
-
-  return (
-    <Button
-      sx={{
-        ...sx,
-        fontSize: `${isMobile ? '0.6rem' : '1rem'} !important`,
-      }}
-      variant="outlined"
-      size={size}
-      disabled={disabled || false}
-      onClick={onClick}
-    >
-      {title}
-    </Button>
-  );
-};
-
-interface ButtonsProps {
-  status: Status;
-  setStatus: React.Dispatch<React.SetStateAction<Status>>;
-}
-
-const Buttons: FunctionComponent<ButtonsProps> = ({ status, setStatus }) => {
+const Buttons: FunctionComponent = () => {
+  // State
   const dispatch = useAppDispatch();
-
-  // Board State
+  const status = useAppSelector((state) => state.app.status);
   const blocks = useAppSelector((state) => state.board.blocks);
   const boardIsValid = useAppSelector((state) => selectBoardIsValid(state));
   const grid = useAppSelector((state) => state.board.grid);
-  // Algo-Solve State
-  const currentStep = useAppSelector((state) =>
-    state.algoSolve.steps ? state.algoSolve.steps[state.algoSolve.stepIdx] : null
-  );
+  const currentStep = useAppSelector((state) => (
+    state.algoSolve.steps 
+      ? state.algoSolve.steps[state.algoSolve.stepIdx] 
+      : null
+  ));
   const numSteps = useAppSelector((state) => state.algoSolve.steps?.length);
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
-  const previousStep = useAppSelector((state) =>
-    state.algoSolve.steps ? state.algoSolve.steps[state.algoSolve.stepIdx + 1] : null
-  );
-  // Manual-Solve State
-  const currentMove = useAppSelector(
-    (state) => state.manualSolve.moves[state.manualSolve.moveIdx - 1]
-  );
+  const previousStep = useAppSelector((state) => (
+    state.algoSolve.steps 
+      ? state.algoSolve.steps[state.algoSolve.stepIdx + 1] 
+      : null
+  ));
+  const currentMove = useAppSelector((state) => (
+    state.manualSolve.moves[state.manualSolve.moveIdx - 1]
+  ));
   const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
 
+  // Button Groups
   const randomizeButton = (
     <ButtonWrapper
       title="Create board for me"
       onClick={() => {
-        setStatus(Status.AlgoBuild);
+        dispatch(changeStatus({ status: Status.AlgoBuild }));
         dispatch(randomize());
       }}
     />
   );
-
   const startOverButton = (
     <ButtonWrapper
       title="Start Over"
       onClick={() => {
         dispatch(boardReset());
-        setStatus(Status.Start);
+        dispatch(changeStatus({ status: Status.Start }));
       }}
     />
   );
-
   const stepThroughSolutionButtons = (
     <>
       <ButtonWrapper
@@ -118,7 +86,9 @@ const Buttons: FunctionComponent<ButtonsProps> = ({ status, setStatus }) => {
         sx={{ marginLeft: '1rem' }}
         title="Next Step"
         onClick={() => {
-          if (status !== Status.StepThroughSolution) setStatus(Status.StepThroughSolution);
+          if (status !== Status.StepThroughSolution) {
+            dispatch(changeStatus({ status: Status.StepThroughSolution }));
+          }
           if (currentStep) {
             dispatch(moveBlock({ move: currentStep }));
             dispatch(decrementStepIdx());
@@ -129,7 +99,6 @@ const Buttons: FunctionComponent<ButtonsProps> = ({ status, setStatus }) => {
       {stepIdx < 0 ? <div style={{ marginLeft: '1rem' }}>{startOverButton}</div> : <></>}
     </>
   );
-
   const manualSolveButtons = (
     <>
       <ButtonWrapper
@@ -149,19 +118,18 @@ const Buttons: FunctionComponent<ButtonsProps> = ({ status, setStatus }) => {
         onClick={() => {
           dispatch(boardReset());
           dispatch(manualSolveReset());
-          setStatus(Status.Start);
+          dispatch(changeStatus({ status: Status.Start }));
         }}
       />
     </>
   );
-
   const buildButtons = (
     <>
       <ButtonWrapper
         title="Clear Board"
         onClick={() => {
           dispatch(boardReset());
-          setStatus(Status.Start);
+          dispatch(changeStatus({ status: Status.Start }));
         }}
       />
       <ButtonWrapper
@@ -173,9 +141,13 @@ const Buttons: FunctionComponent<ButtonsProps> = ({ status, setStatus }) => {
 
           const optimalMoves = store.getState().manualSolve.optimalMoves;
 
-          if (!optimalMoves) setStatus(Status.Failed);
-          else if (optimalMoves.length === 0) setStatus(Status.AlreadySolved);
-          else setStatus(Status.ManualSolve);
+          if (!optimalMoves) {
+            dispatch(changeStatus({ status: Status.Failed }));
+          } else if (optimalMoves.length === 0) {
+            dispatch(changeStatus({ status: Status.AlreadySolved }));
+          } else {
+            dispatch(changeStatus({ status: Status.ManualSolve }));
+          }
         }}
       />
       <ButtonWrapper
@@ -187,43 +159,32 @@ const Buttons: FunctionComponent<ButtonsProps> = ({ status, setStatus }) => {
 
           const steps = store.getState().algoSolve.steps;
 
-          if (!steps) setStatus(Status.Failed);
-          else if (steps.length === 0) setStatus(Status.AlreadySolved);
-          else setStatus(Status.StepThroughSolution);
+          if (!steps) {
+            dispatch(changeStatus({ status: Status.Failed }));
+          } else if (steps.length === 0) {
+            dispatch(changeStatus({ status: Status.AlreadySolved }));
+          } else {
+            dispatch(changeStatus({ status: Status.StepThroughSolution }));
+          }
         }}
       />
     </>
   );
+  const buttons = status === Status.Start ? randomizeButton
+    : status === Status.ManualBuild ? buildButtons
+    : status === Status.AlgoBuild ? buildButtons
+    : status === Status.Solved ? stepThroughSolutionButtons
+    : status === Status.StepThroughSolution ? stepThroughSolutionButtons
+    : status === Status.ManualSolve ? manualSolveButtons
+    : status === Status.Done ? startOverButton
+    : status === Status.Failed ? startOverButton
+    : status === Status.AlreadySolved ? startOverButton
+    : <></>;
 
-  const buttons = () => {
-    switch (status) {
-      case Status.Start:
-        return randomizeButton;
-      case Status.ManualBuild:
-        return buildButtons;
-      case Status.AlgoBuild:
-        return buildButtons;
-      case Status.Solved:
-        return stepThroughSolutionButtons;
-      case Status.StepThroughSolution:
-        return stepThroughSolutionButtons;
-      case Status.ManualSolve:
-        return manualSolveButtons;
-      case Status.Done:
-        return startOverButton;
-      case Status.Failed:
-        return startOverButton;
-      case Status.AlreadySolved:
-        return startOverButton;
-      default:
-        return <></>;
-    }
-  };
-
+  // Styling
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
   const boardHeight = cellSize * Board.rows + 1;
-
   const buttonStyling = {
     position: 'absolute',
     width: '100%',
@@ -239,7 +200,7 @@ const Buttons: FunctionComponent<ButtonsProps> = ({ status, setStatus }) => {
         justifyContent: 'center',
       }}
     >
-      {buttons()}
+      {buttons}
     </Box>
   );
 };

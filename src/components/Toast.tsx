@@ -1,33 +1,24 @@
-import { FunctionComponent, useState } from 'react';
-import { Alert, Box, Slide } from '@mui/material';
-
-export enum Severity {
-  Error = 'error',
-  Warning = 'warning',
-  Info = 'info',
-  Success = 'success',
-}
+import { FunctionComponent } from 'react';
+import { Alert, Box, Slide, useMediaQuery } from '@mui/material';
+import { Severity } from '../state/appSlice';
+import { MOBILE_CUTOFF } from '../constants';
 
 interface Props {
   msg: string;
   severity: Severity;
-  closeCallback: () => any;
 }
 
-export const Toast: FunctionComponent<Props> = ({ msg, severity, closeCallback }) => {
-  const [show, setShow] = useState(true);
+export const Toast: FunctionComponent<Props> = ({ msg, severity }) => {
+  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
 
   return (
     <Box>
-      <Slide direction="down" in={show} mountOnEnter unmountOnExit>
-        <Alert
-          sx={{ width: '30rem' }}
-          severity={severity}
-          onClose={() => {
-            setShow(false);
-            closeCallback();
-          }}
-        >
+      <Slide direction="down" in={true} mountOnEnter unmountOnExit>
+        <Alert sx={{ 
+          marginBottom: isMobile ? '0.2rem' : '0.5rem', 
+          width: isMobile ? '90%' : '30rem',
+          marginX: 'auto',
+        }} severity={severity}>
           {msg}
         </Alert>
       </Slide>

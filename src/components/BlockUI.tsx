@@ -1,34 +1,28 @@
 import { FunctionComponent, useState } from 'react';
 import { Paper, colors, useMediaQuery } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../state/hooks';
-import { selectAvailablePositions, selectBoardIsValid } from '../state/board/boardSlice';
-import { setBlockToMove, setAvailablePositions } from '../state/solve/manualSolveSlice';
+import { Status } from '../state/appSlice';
+import { selectAvailablePositions, selectBoardIsValid } from '../state/boardSlice';
+import { setBlockToMove, setAvailablePositions } from '../state/manualSolveSlice';
 import { blockToInt, UIPosBlock } from '../models/global';
 import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from '../constants';
-import { Status } from '../App';
 
 interface Props {
   pb: UIPosBlock;
-  status: Status;
-  setStatus: React.Dispatch<React.SetStateAction<Status>>;
 }
 
-const BlockUI: FunctionComponent<Props> = ({ pb, status, setStatus }) => {
+const BlockUI: FunctionComponent<Props> = ({ pb }) => {
   // State
-
   const dispatch = useAppDispatch();
+  const status = useAppSelector((state) => state.app.status );
   const availablePositions = useAppSelector((state) => selectAvailablePositions(state, pb));
   const boardIsValid = useAppSelector((state) => selectBoardIsValid(state));
-
   const [isMovable, setIsMovable] = useState(false);
 
-  // Styling variables
-
-  const blockColor = [colors.yellow, colors.blue, colors.green, colors.red];
-
+  // Styling
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-
   const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const blockColor = [colors.yellow, colors.blue, colors.green, colors.red];
   const blockPos = {
     top: pb.pos.row * cellSize,
     left: pb.pos.col * cellSize,
@@ -37,7 +31,6 @@ const BlockUI: FunctionComponent<Props> = ({ pb, status, setStatus }) => {
     height: pb.block.rows * cellSize,
     width: pb.block.cols * cellSize,
   };
-
   const scalingFactor = 0.1;
 
   return (
