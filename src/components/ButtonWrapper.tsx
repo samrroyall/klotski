@@ -16,8 +16,9 @@ const ButtonWrapper: FunctionComponent<Props> = ({ title, onClick, disabled, sx 
   return (
     <Button
       sx={{
+        marginX: `0.5rem`,
+				fontSize: `${isMobile ? 0.6 : 1}rem`,
         ...sx,
-        fontSize: `${isMobile ? '0.6rem' : '1rem'} !important`,
       }}
       variant="outlined"
       size={size}

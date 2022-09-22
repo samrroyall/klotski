@@ -15,11 +15,19 @@ export const Toast: FunctionComponent<Props> = ({ msg, severity }) => {
     <Box>
       <Slide direction="down" in={true} mountOnEnter unmountOnExit>
         <Alert sx={{ 
-          marginBottom: isMobile ? '0.2rem' : '0.5rem', 
-          width: isMobile ? '90%' : '30rem',
-          marginX: 'auto',
-        }} severity={severity}>
-          {msg}
+            marginBottom: isMobile ? '0.2rem' : '0.5rem', 
+            marginX: 'auto',
+				    fontSize: `${isMobile ? 0.6 : 1}rem`,
+          }} 
+          severity={severity}
+        >
+          <Box sx={{
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            {msg}
+          </Box>
         </Alert>
       </Slide>
     </Box>

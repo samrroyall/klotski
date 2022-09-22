@@ -5,6 +5,7 @@ import Buttons from './components/Buttons';
 import StatusMsg from './components/StatusMsg';
 import TitleContainer from './components/TitleContainer';
 import AlertContainer from './components/AlertContainer';
+import DoneModal from './components/DoneModal';
 
 const App: FunctionComponent = () => {
   return (
@@ -16,6 +17,7 @@ const App: FunctionComponent = () => {
         <BoardUI />
         <Buttons />
       </Box>
+      <DoneModal />
     </Box>
   );
 };

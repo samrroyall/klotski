@@ -6,6 +6,7 @@ import {
   addBlock,
   moveBlockToPos,
   selectBoardIsSolved,
+  selectBoardIsValid,
   selectNumCellsFilled,
   selectNumTwoByTwoBlocks,
 } from '../state/boardSlice';
@@ -33,10 +34,11 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
     }, 3000);
   }
   const availablePositions = useAppSelector((state) => state.manualSolve.availablePositions);
-  const blockToMove = useAppSelector((state) => state.manualSolve.blockToMove);
-  const numCellsFilled = useAppSelector((state) => selectNumCellsFilled(state));
+  const blockToMove = useAppSelector((state) => state.manualSolve.blockToMove); 
+  const numCellsFilled = useAppSelector((state) => selectNumCellsFilled(state)); 
   const numTwoByTwoBlocks = useAppSelector((state) => selectNumTwoByTwoBlocks(state));
   const getBoardIsSolved = (state: RootState) => selectBoardIsSolved(state);
+  const getBoardIsValid = (state: RootState) => selectBoardIsValid(state);
   const [isAvailablePosition, setIsAvailablePosition] = useState(false);
   const [hovering, setHovering] = useState(false);
 
@@ -79,8 +81,14 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
       dispatch(clearAvailablePositions());
       dispatch(clearBlockToMove());
 
-      if (getBoardIsSolved(store.getState())) {
-        dispatch(changeStatus({ status: Status.Done }));
+      const state = store.getState()
+      if (getBoardIsSolved(state)) {
+        const moveIdx = state.manualSolve.moveIdx; 
+        const numOptimalMoves = state.manualSolve.optimalMoves?.length;
+        dispatch(changeStatus({ status:  moveIdx === numOptimalMoves 
+          ? Status.DoneOptimal
+          : Status.Done
+        }));
       }
     }
   }
@@ -92,6 +100,10 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
 
       dispatch(addBlock({ block, pos: { row, col } }));
       setHovering(false);
+      
+      if (getBoardIsValid(store.getState())) {
+        dispatch(changeStatus({ status: Status.ReadyToSolve }));
+      }
     } catch {
       addNewAlert('Invalid block placement! Placed block overlaps another.', Severity.Warning); 
     }
