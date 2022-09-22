@@ -3,16 +3,15 @@ import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
 // State
 
 export enum Status {
-  Start,
-  ManualBuild,
-  AlgoBuild,
-  ManualSolve,
-  Solved,
-  StepThroughSolution,
-  SimulateSolution,
-  Done,
-  Failed,
-  AlreadySolved,
+  Start='start',
+  ManualBuild='manualBuild',
+  ManualSolve='manualSolve',
+  ReadyToSolve='readyToSolve',
+  StepThroughSolution='stepThrough',
+  Done='done',
+  DoneOptimal='doneOptimal',
+  Failed='failed',
+  AlreadySolved='alreadySolved',
 }
 
 export enum Severity {
