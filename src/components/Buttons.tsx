@@ -23,7 +23,7 @@ import {
 import { Board } from '../models/Board';
 import { getOppositeMove } from '../models/global';
 import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from '../constants';
-import store from '../state/store';
+import store, { RootState } from '../state/store';
 import ButtonWrapper from './ButtonWrapper';
 
 const Buttons: FunctionComponent = () => {
@@ -44,9 +44,9 @@ const Buttons: FunctionComponent = () => {
       ? state.algoSolve.steps[state.algoSolve.stepIdx + 1] 
       : null
   ));
-  const currentMove = useAppSelector((state) => (
+  const getCurrentMove = (state: RootState) => (
     state.manualSolve.moves[state.manualSolve.moveIdx - 1]
-  ));
+  );
   const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
 
   // Button Actions
@@ -54,11 +54,23 @@ const Buttons: FunctionComponent = () => {
     dispatch(randomize());
     dispatch(changeStatus({ status: Status.ReadyToSolve }));
   }
-  const startOver = () => {
+  const clearBoard = () => {
     dispatch(boardReset());
     dispatch(manualSolveReset());
     dispatch(changeStatus({ status: Status.Start }));
-  }
+  } 
+  const initAlgoSolve = () => {
+    dispatch(algoInit({ blocks, grid }));
+
+    const steps = store.getState().algoSolve.steps;
+    dispatch(changeStatus({ 
+      status: !steps
+        ? Status.Failed
+        : steps.length > 0 
+          ? Status.StepThroughSolution 
+          : Status.AlreadySolved 
+    }));
+  }; 
   const getPreviousStep = () => {
     if (previousStep) {
       dispatch(moveBlock({ move: getOppositeMove(previousStep) }));
@@ -75,13 +87,6 @@ const Buttons: FunctionComponent = () => {
       dispatch(decrementStepIdx());
     }
   }
-  const undoLastMove = () => {
-    const { block, oldPos, newPos } = currentMove;
-    dispatch(moveBlockToPos({ pb: { block, pos: newPos }, newPos: oldPos }));
-    dispatch(undoMove());
-    dispatch(clearBlockToMove());
-    dispatch(clearAvailablePositions());
-  } 
   const initManualSolve = () => {
     dispatch(manualInit({ blocks, grid }));
 
@@ -94,40 +99,43 @@ const Buttons: FunctionComponent = () => {
           : Status.AlreadySolved
     }));
   }
-  const initAlgoSolve = () => {
-    dispatch(algoInit({ blocks, grid }));
-
-    const steps = store.getState().algoSolve.steps;
-    dispatch(changeStatus({ 
-      status: !steps
-        ? Status.Failed
-        : steps.length > 0 
-          ? Status.StepThroughSolution 
-          : Status.AlreadySolved 
-    }));
-  };
+  const undoLastMove = () => {
+    const { block, oldPos, newPos } = getCurrentMove(store.getState());
+    dispatch(moveBlockToPos({ pb: { block, pos: newPos }, newPos: oldPos }));
+    dispatch(undoMove());
+    dispatch(clearBlockToMove());
+    dispatch(clearAvailablePositions());
+  }
+  const startOver = () => {
+    for (let i = moveIdx; i > 0; i--) {
+      console.log(moveIdx);
+      undoLastMove();
+    }
+    dispatch(changeStatus({ status: Status.ReadyToSolve }))
+  }
 
   // Buttons
   const randomizeButton = <ButtonWrapper title="Create board for me" onClick={getRandomBoard} />;
+  const clearButton = <ButtonWrapper title="Clear Board" onClick={clearBoard} />;
   const startOverButton = <ButtonWrapper title="Start Over" onClick={startOver} />;
+  const readyToSolveButtons = (
+    <>
+      {clearButton}
+      <ButtonWrapper title="Solve myself" onClick={initManualSolve} />
+      <ButtonWrapper title="Solve for me" onClick={initAlgoSolve} />
+    </>
+  );
   const stepThroughSolutionButtons = (
     <>
-      { stepIdx < 0 ? startOverButton : <></>}
+      { stepIdx < 0 ? clearButton : <></>}
       <ButtonWrapper title="Previous Step" onClick={getPreviousStep} disabled={!numSteps || stepIdx >= numSteps - 1} />
       <ButtonWrapper title="Next Step" onClick={getNextStep} disabled={stepIdx < 0} />
     </>
   );
   const manualSolveButtons = (
     <>
-      <ButtonWrapper title="Undo Move" onClick={undoLastMove} disabled={moveIdx <= 0} />
-      <ButtonWrapper title="Clear Board" onClick={startOver} />
-    </>
-  );
-  const readyToSolveButtons = (
-    <>
       {startOverButton}
-      <ButtonWrapper title="Solve myself" onClick={initManualSolve} />
-      <ButtonWrapper title="Solve for me" onClick={initAlgoSolve} />
+      <ButtonWrapper title="Undo Move" onClick={undoLastMove} disabled={moveIdx <= 0} />
     </>
   );
 
@@ -147,12 +155,14 @@ const Buttons: FunctionComponent = () => {
       }}
     >{
       [
-        Status.Done, 
+        Status.Done,
         Status.DoneOptimal, 
+      ].includes(status) ? startOverButton
+      : [
         Status.ManualBuild, 
         Status.Failed, 
         Status.AlreadySolved
-      ].includes(status) ? startOverButton
+      ].includes(status) ? clearButton
         : status === Status.StepThroughSolution ? stepThroughSolutionButtons
         : status === Status.Start ? randomizeButton
         : status === Status.ManualSolve ? manualSolveButtons

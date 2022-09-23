@@ -1,36 +1,70 @@
 import { HelpOutlineOutlined } from "@mui/icons-material";
-import { Tooltip, Box, useMediaQuery, ClickAwayListener } from "@mui/material";
+import { Tooltip, Box, useMediaQuery, ClickAwayListener, styled, TooltipProps, tooltipClasses } from "@mui/material";
 import { FunctionComponent, useState } from "react";
-import { MOBILE_CUTOFF } from "../constants";
+import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from "../constants";
+import { Board } from "../models/Board";
 
-const TitleContainer: FunctionComponent<{}> = () => {
+const TitleContainer: FunctionComponent = () => {
+	// State
 	const [tooltipOpen, setTooltipOpen ] = useState(false);
+
+	// Styling
   	const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-    const helpText = `${isMobile ? 'Click on ' : 'Hover over '} a cell and click on one of the
-    HEIGHT×WIDTH buttons to add a block of that size. A valid board contains exactly one 2×2 block 
-    and exactly two free spaces. You can also click 'Create Board For Me' to get a random board.`;
+  	const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
+	const boardWidth = Board.cols * cellSize;
+    const helpText = (
+		<Box sx={{ 
+			padding: `${isMobile ? 0.3 : 1}rem` ,
+			fontSize: `${isMobile ? 0.6 : 1}rem` ,
+		}}>
+			{isMobile ? 'Click on ' : 'Hover over '} a cell and click on one of the
+ 	   		HEIGHT×WIDTH buttons to add a block of that size. A valid board contains 
+			<b> exactly one </b> 2×2 block and <b> exactly two </b> free spaces. 
+			You can also click <em> Create Board For Me </em> to get a random board.
+		</Box>
+	);
+	const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
+		<ClickAwayListener onClickAway={() => setTooltipOpen(false)}>
+	  		<Tooltip {...props} classes={{ popper: className }} />
+		</ClickAwayListener>
+	))({
+	  [`& .${tooltipClasses.tooltip}`]: {
+		maxWidth: `${boardWidth + (isMobile ? 2 : cellSize)}rem`,
+		marginLeft: 'auto',
+		marginRight: 'auto',
+	  },
+	});
 
     return (
-		<Box sx={{ 
-			display: 'flex', 
-			alignItems: 'center', 
-			justifyContent: 'center', 
-			marginTop: '2rem' 
-		}}>
-			<h1 style={{ padding: 0, margin: 0 }}>KLOTSKI SOLVER</h1>
-			<ClickAwayListener onClickAway={() => setTooltipOpen(false)}>
-				<Tooltip open={tooltipOpen} title={helpText} arrow>
-					<HelpOutlineOutlined 
-						color="action" 
-						fontSize="small" 
-						sx={{ marginLeft: '1rem' }} 
-						onClick={() => setTooltipOpen(!tooltipOpen)} 
-						onMouseEnter={() => setTooltipOpen(true)}
-						onMouseLeave={() => setTooltipOpen(false)}
-					/>
-				</Tooltip>
-			</ClickAwayListener>
-		</Box>
+		<StyledTooltip open={tooltipOpen} title={helpText} arrow>
+			<Box sx={{ 
+				display: 'flex', 
+				alignItems: 'end', 
+				justifyContent: 'center', 
+				marginTop: '2rem',
+				height: `${isMobile ? 2.5 : 5.5}rem`,
+			}}>
+				<Box sx={{ 
+					height: '100%',
+					fontSize: `${isMobile ? 2.3 : 5}rem`,
+					fontWeight: '400',
+					padding: 0,
+				}}>
+					KLOTSKI SOLVER
+				</Box>
+				<HelpOutlineOutlined
+					color="action" 
+					sx={{ 
+						marginLeft: '0.5rem', 
+						marginBottom: '-2px',
+						fontSize: `${isMobile ? 1 : 1.2}rem`,
+					}}
+					onClick={() => { if(isMobile) setTooltipOpen(!tooltipOpen) }} 
+					onMouseEnter={() => setTooltipOpen(true)}
+					onMouseLeave={() => setTooltipOpen(false)}
+				/>
+			</Box>
+		</StyledTooltip>
     );
 
 };
