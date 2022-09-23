@@ -12,7 +12,6 @@ class LinkedList<T> {
   public pushBack(val: T) {
     const newNode: Node<T> = { value: val, next: null };
 
-    // handle empty list
     if (this.isEmpty()) {
       this.head = newNode;
       this.tail = this.head;
@@ -23,7 +22,6 @@ class LinkedList<T> {
   }
 
   public popFront(): T {
-    // handle empty list
     if (this.isEmpty()) throw Error('Attempt to pop from empty list.');
 
     const headVal = this.head!.value;
@@ -65,18 +63,15 @@ class Queue<T> {
 
 export function solveBoard(board: Board): Move[] | null {
   let final_board: Board | null = null;
-
   const queue = new Queue<Board>([board]);
   const hashes = new Set<string>([board.getHash()]);
   while (!queue.isEmpty()) {
     const curr_board = queue.dequeue();
-
     // if the current board is solved, we are done
     if (curr_board.isSolved()) {
       final_board = curr_board;
       break;
     }
-
     // if not, push child boards to the stack
     for (let move of curr_board.allValidMoves()) {
       const child_board = new Board(curr_board, move);
@@ -88,17 +83,14 @@ export function solveBoard(board: Board): Move[] | null {
       queue.enqueue(child_board);
     }
   }
-
   // if no solution was found, return null
   if (!final_board) return null;
-
   // if a solution was found, return the list of moves in the solution
   const moves: Move[] = [];
   while (final_board.parent && final_board.initialMove) {
     moves.push(final_board.initialMove);
     final_board = final_board.parent;
   }
-
   // return moves in reverse order
   return moves;
 }
