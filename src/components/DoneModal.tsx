@@ -36,9 +36,9 @@ const DoneModal: FunctionComponent = () => {
 		>
 			<Box sx={{
 				position: 'absolute',
-  				top: `${isMobile ? 40 : 20}%`,
+  				top: `${isMobile ? 40 : 30}%`,
   				left: '50%',
-  				transform: `translate(-50%, -${isMobile ? 40 : 20}%)`,
+  				transform: `translate(-50%, -${isMobile ? 40 : 30}%)`,
 				display: 'flex',
 				alignItems: 'center',
 				justifyContent: 'center',
@@ -71,12 +71,13 @@ const DoneModal: FunctionComponent = () => {
 						<Box sx={greenText}> {moveIdx} </Box> moves. { 
 							status === Status.DoneOptimal 
 								? <span>
-									That is the fewest moves possible!
+									That is the fewest moves possible.
 								</span> 
 								: <span>
-									That is <Box sx={redText}> {
-										moveIdx - (optimalMoves?.length || 0)
-									} </Box> moves away from the optimal solution.
+									This board can be solved in as few as
+									<Box sx={redText}> {
+										optimalMoves?.length || 0
+									} </Box> moves.
 								</span>
 						}
 					</Box>
