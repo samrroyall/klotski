@@ -108,7 +108,6 @@ const Buttons: FunctionComponent = () => {
   }
   const startOver = () => {
     for (let i = moveIdx; i > 0; i--) {
-      console.log(moveIdx);
       undoLastMove();
     }
     dispatch(changeStatus({ status: Status.ReadyToSolve }))

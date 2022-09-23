@@ -21,6 +21,7 @@ const TitleContainer: FunctionComponent = () => {
  	   		HEIGHT×WIDTH buttons to add a block of that size. A valid board contains 
 			<b> exactly one </b> 2×2 block and <b> exactly two </b> free spaces. 
 			You can also click <em> Create Board For Me </em> to get a random board.
+			Move the 2×2 block to the red area at the bottom of the board to win!
 		</Box>
 	);
 	const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (

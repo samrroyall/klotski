@@ -23,7 +23,7 @@ const StatusMsg: FunctionComponent<{}> = () => {
   const msgText: {[k in Status]?: JSX.Element } = {
     alreadySolved: <span>Oops! It looks like the board is already solved</span>,
     failed: <span>No Solution Found :(</span>,
-    manualBuild: <span>A valid board has exactly one 2x2 block and two empty cells</span>,
+    manualBuild: <span>A valid board has exactly one 2×2 block and two empty cells</span>,
     manualSolve: (
       <span>
         Current Moves: <strong>{moveIdx}</strong>
@@ -32,7 +32,7 @@ const StatusMsg: FunctionComponent<{}> = () => {
         </span>
       </span>
     ),  
-    readyToSolve: <span>The board is ready to solve</span>,
+    readyToSolve: <span>Move the 2×2 block to the red area at the bottom to win</span>,
     start: <span>{isMobile ? 'Click on ' : 'Hover over '} a cell to add a block</span>,
     stepThrough: (
       <span>
