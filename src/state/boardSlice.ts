@@ -53,7 +53,6 @@ const doesOverlapOtherBlock = (state: Draft<BoardState>, pb: Draft<UIPosBlock>):
 };
 
 const addBlockToGrid = (state: Draft<BoardState>, pb: Draft<UIPosBlock>) => {
-  // add block to grid
   const minPos = getMinPos(pb);
   const maxPos = getMaxPos(pb);
   for (let row = minPos.row; row <= maxPos.row; row++) {

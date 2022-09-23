@@ -1,10 +1,10 @@
 // General Types, Interfaces, and functions
 
 export enum Dir {
-  Left = 'L',
-  Right = 'R',
-  Up = 'U',
-  Down = 'D',
+  Left='L',
+  Right='R',
+  Up='U',
+  Down='D',
 }
 
 export function getOppositeDir(dir: Dir): Dir {
