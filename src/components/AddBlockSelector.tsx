@@ -1,10 +1,10 @@
 import { Box, colors, useMediaQuery } from "@mui/material";
 import { FunctionComponent } from "react";
 import { MOBILE_CUTOFF } from "../constants";
-import { UIBlock } from "../models/global";
+import { Block } from "../models/global";
 
 interface Props {
-  block: UIBlock;
+  block: Block;
   show: boolean;
   onClick: () => any;
 }

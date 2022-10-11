@@ -1,4 +1,6 @@
-import { Board, Move } from './Board';
+import * as global from './global';
+import { Grid, Move, PosBlock } from './global';
+import { NUM_COLS, NUM_ROWS } from '../constants';
 
 interface Node<T> {
   value: T;
@@ -61,35 +63,64 @@ class Queue<T> {
   public length = (): number => this.queue.length();
 }
 
+export class Board {
+  public blocks: PosBlock[];
+  public grid: Grid;
+
+  readonly parent: Board | null = null;
+  readonly initialMove: Move | null = null;
+
+  public constructor(board: Board | null = null, move: Move | null = null) {
+    if (!board) {
+      this.blocks = [];
+      this.grid = Array(NUM_ROWS)
+        .fill(null)
+        .map(() => Array(NUM_COLS).fill(0));
+    } else if (!move) {
+      throw Error('An attempt was made to create a child board without a move.');
+    } else {
+      // if branching off from a parent board, clone its blocks array and grid...
+      this.blocks = [...board.blocks.map((pb) => ({...pb}))];
+      this.grid = [...board.grid.map((row) => [...row])];
+      this.parent = board;
+      // ...and make the initial move
+      this.initialMove = move;
+      const newPos = move.dirs.reduce((acc, d) => global.getNewPosFromDir(acc, d), global.getMinPos(move))
+      global.moveBlock({blocks: this.blocks, grid: this.grid}, {...move},  newPos);
+    }
+  } 
+}
+
 export function solveBoard(board: Board): Move[] | null {
-  let final_board: Board | null = null;
+  let tail: Board | null = null;
   const queue = new Queue<Board>([board]);
-  const hashes = new Set<string>([board.getHash()]);
+  const hashes = new Set<string>([global.getGridHash(board.grid)]);
   while (!queue.isEmpty()) {
-    const curr_board = queue.dequeue();
+    const curr = queue.dequeue();
     // if the current board is solved, we are done
-    if (curr_board.isSolved()) {
-      final_board = curr_board;
+    if (global.boardIsSolved({blocks: curr.blocks, grid: curr.grid})) {
+      tail = curr;
       break;
     }
     // if not, push child boards to the stack
-    for (let move of curr_board.allValidMoves()) {
-      const child_board = new Board(curr_board, move);
-      const child_board_hash = child_board.getHash();
-
-      if (hashes.has(child_board_hash)) continue;
-
-      hashes.add(child_board_hash);
-      queue.enqueue(child_board);
+    for (let move of global.allValidMoves({blocks: curr.blocks, grid: curr.grid})) {
+      const child = new Board(curr, move);
+      const child_hash = global.getGridHash(child.grid);
+      if (!hashes.has(child_hash)) { 
+        hashes.add(child_hash);
+        queue.enqueue(child);
+      } 
     }
   }
   // if no solution was found, return null
-  if (!final_board) return null;
+  if (!tail) {
+    return null;
+  }
   // if a solution was found, return the list of moves in the solution
   const moves: Move[] = [];
-  while (final_board.parent && final_board.initialMove) {
-    moves.push(final_board.initialMove);
-    final_board = final_board.parent;
+  while (tail.parent && tail.initialMove) {
+    moves.push(tail.initialMove);
+    tail = tail.parent;
   }
   // return moves in reverse order
   return moves;

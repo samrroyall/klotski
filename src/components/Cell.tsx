@@ -2,18 +2,24 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import { Box, colors, useMediaQuery } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../state/hooks';
 import { Severity, Status, changeStatus, addAlert, removeAlert } from '../state/appSlice';
-import {
-  addBlock,
-  moveBlockToPos,
-  selectBoardIsSolved,
-  selectBoardIsValid,
-  selectNumCellsFilled,
-  selectNumTwoByTwoBlocks,
-} from '../state/boardSlice';
+import { addBlock, moveBlockToPos } from '../state/boardSlice';
 import { doMove, clearAvailablePositions, clearBlockToMove } from '../state/manualSolveSlice';
-import { Board } from '../models/Board';
-import { UIBlock } from '../models/global';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from '../constants';
+import { 
+  Block, 
+  boardIsSolved, 
+  boardIsValid, 
+  numCellsFilled as getNumCellsFilled,
+  numTwoByTwoBlocks as getNumTwoByTwoBlocks, 
+} from '../models/global';
+import { 
+  DESKTOP_CELL_SIZE, 
+  MOBILE_CELL_SIZE, 
+  MOBILE_CUTOFF, 
+  NUM_COLS, 
+  NUM_ROWS, 
+  WINNING_COL, 
+  WINNING_ROW,
+} from '../constants';
 import store, { RootState } from '../state/store';
 import AddBlockSelector from './AddBlockSelector';
 import MoveBlockSelector from './MoveBlockSelector';
@@ -35,10 +41,10 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   }
   const availablePositions = useAppSelector((state) => state.manualSolve.availablePositions);
   const blockToMove = useAppSelector((state) => state.manualSolve.blockToMove); 
-  const numCellsFilled = useAppSelector((state) => selectNumCellsFilled(state)); 
-  const numTwoByTwoBlocks = useAppSelector((state) => selectNumTwoByTwoBlocks(state));
-  const getBoardIsSolved = (state: RootState) => selectBoardIsSolved(state);
-  const getBoardIsValid = (state: RootState) => selectBoardIsValid(state);
+  const numCellsFilled = useAppSelector((state) => getNumCellsFilled(state.board)); 
+  const numTwoByTwoBlocks = useAppSelector((state) => getNumTwoByTwoBlocks(state.board));
+  const getBoardIsSolved = (state: RootState) => boardIsSolved(state.board);
+  const getBoardIsValid = (state: RootState) => boardIsValid(state.board);
   const [isAvailablePosition, setIsAvailablePosition] = useState(false);
   const [hovering, setHovering] = useState(false);
 
@@ -49,16 +55,16 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   }, [col, row, availablePositions, setIsAvailablePosition]);
 
   // Helpers
-  const inLastRow = row === Board.rows - 1;
-  const inLastCol = col === Board.cols - 1;
+  const inLastRow = row === NUM_ROWS-1;
+  const inLastCol = col === NUM_COLS-1;
   const isWinningCell =
-    (row === Board.winningPos.row || row === Board.winningPos.row + 1) &&
-    (col === Board.winningPos.col || col === Board.winningPos.col + 1);
-  const maxCellsFilled = Board.cols * Board.rows - 2;
-  const ONE_BY_ONE: UIBlock = { rows: 1, cols: 1 };
-  const TWO_BY_ONE: UIBlock = { rows: 2, cols: 1 };
-  const ONE_BY_TWO: UIBlock = { rows: 1, cols: 2 };
-  const TWO_BY_TWO: UIBlock = { rows: 2, cols: 2 };
+    (row === WINNING_ROW || row === WINNING_ROW+1) &&
+    (col === WINNING_COL || col === WINNING_COL+1);
+  const maxCellsFilled = NUM_COLS*NUM_ROWS-2;
+  const ONE_BY_ONE: Block = { rows: 1, cols: 1 };
+  const TWO_BY_ONE: Block = { rows: 2, cols: 1 };
+  const ONE_BY_TWO: Block = { rows: 1, cols: 2 };
+  const TWO_BY_TWO: Block = { rows: 2, cols: 2 };
 
   // Valid Blocks
   const validBlocks = [];
@@ -92,7 +98,7 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
       }
     }
   }
-  const onClickAddBlockSelector = (block: UIBlock) => {
+  const onClickAddBlockSelector = (block: Block) => {
     try {
       if (status !== Status.ManualBuild) {
         dispatch(changeStatus({ status: Status.ManualBuild }));

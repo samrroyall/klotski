@@ -20,9 +20,8 @@ import {
   clearBlockToMove,
   clearAvailablePositions,
 } from '../state/manualSolveSlice';
-import { Board } from '../models/Board';
 import { getOppositeMove } from '../models/global';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from '../constants';
+import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_ROWS } from '../constants';
 import store, { RootState } from '../state/store';
 import ButtonWrapper from './ButtonWrapper';
 
@@ -31,7 +30,6 @@ const Buttons: FunctionComponent = () => {
   const dispatch = useAppDispatch();
   const status = useAppSelector((state) => state.app.status);
   const blocks = useAppSelector((state) => state.board.blocks);
-  const grid = useAppSelector((state) => state.board.grid);
   const currentStep = useAppSelector((state) => (
     state.algoSolve.steps 
       ? state.algoSolve.steps[state.algoSolve.stepIdx] 
@@ -60,7 +58,7 @@ const Buttons: FunctionComponent = () => {
     dispatch(changeStatus({ status: Status.Start }));
   } 
   const initAlgoSolve = () => {
-    dispatch(algoInit({ blocks, grid }));
+    dispatch(algoInit(blocks));
 
     const steps = store.getState().algoSolve.steps;
     dispatch(changeStatus({ 
@@ -73,7 +71,7 @@ const Buttons: FunctionComponent = () => {
   }; 
   const getPreviousStep = () => {
     if (previousStep) {
-      dispatch(moveBlock({ move: getOppositeMove(previousStep) }));
+      dispatch(moveBlock(getOppositeMove(previousStep)));
       dispatch(incrementStepIdx());
     }
   }
@@ -83,12 +81,12 @@ const Buttons: FunctionComponent = () => {
     }
 
     if (currentStep) {
-      dispatch(moveBlock({ move: currentStep }));
+      dispatch(moveBlock(currentStep));
       dispatch(decrementStepIdx());
     }
   }
   const initManualSolve = () => {
-    dispatch(manualInit({ blocks, grid }));
+    dispatch(manualInit(blocks));
 
     const optimalMoves = store.getState().manualSolve.optimalMoves;
     dispatch(changeStatus({
@@ -141,7 +139,7 @@ const Buttons: FunctionComponent = () => {
   // Styling
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const boardHeight = cellSize * Board.rows + 1;
+  const boardHeight = cellSize*NUM_ROWS+1;
   const buttonStyling = { position: 'absolute', width: '100%', left: 0 };
 
   return (

@@ -1,15 +1,12 @@
 import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Block } from '../models/Block';
-import { Board } from '../models/Board';
-import { PositionedBlock } from '../models/PositionedBlock';
-import { Grid, UIMove, UIPosBlock } from '../models/global';
-import { solveBoard } from '../models/Solver';
+import { addBlock, Move, PosBlock } from '../models/global';
+import { Board, solveBoard } from '../models/Solver';
 
 // State
 
 interface AlgoSolveState {
   isSolved: boolean;
-  steps: UIMove[] | null;
+  steps: Move[] | null;
   stepIdx: number;
 }
 
@@ -23,20 +20,11 @@ const initialState: AlgoSolveState = {
 
 const initReducer: CaseReducer<
   AlgoSolveState,
-  PayloadAction<{ blocks: UIPosBlock[]; grid: Grid }>
-> = (state, { payload: { blocks, grid } }) => {
+  PayloadAction<PosBlock[]>
+> = (state, {payload: blocks}) => {
   const board = new Board();
-  board.setBlocks(
-    blocks.map((pb) => new PositionedBlock(new Block(pb.block.rows, pb.block.cols), pb.pos))
-  );
-  board.setGrid(grid);
-
-  state.steps =
-    solveBoard(board)?.map(({ block, pos, dirs }) => ({
-      block: { rows: block.rows, cols: block.cols },
-      pos,
-      dirs,
-    })) || null;
+  blocks.forEach((pb) => addBlock(board, pb))
+  state.steps = solveBoard(board);
   state.stepIdx = state.steps ? state.steps.length - 1 : -1;
   state.isSolved = true;
 };

@@ -1,14 +1,11 @@
 import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Block } from '../models/Block';
-import { Board } from '../models/Board';
-import { PositionedBlock } from '../models/PositionedBlock';
-import { Grid, Pos, UIBlock, UIMove, UIPosBlock } from '../models/global';
-import { solveBoard } from '../models/Solver';
+import { Pos, Block, Move, PosBlock, addBlock } from '../models/global';
+import { Board, solveBoard } from '../models/Solver';
 
 // State
 
 export interface ManualMove {
-  block: UIBlock;
+  block: Block;
   oldPos: Pos;
   newPos: Pos;
 }
@@ -17,8 +14,8 @@ interface ManualSolveState {
   isSolved: boolean;
   moves: ManualMove[];
   moveIdx: number;
-  optimalMoves: UIMove[] | null;
-  blockToMove: UIPosBlock | null;
+  optimalMoves: Move[] | null;
+  blockToMove: PosBlock | null;
   availablePositions: Pos[];
 }
 
@@ -35,28 +32,19 @@ const initialState: ManualSolveState = {
 
 const initReducer: CaseReducer<
   ManualSolveState,
-  PayloadAction<{ blocks: UIPosBlock[]; grid: Grid }>
-> = (state, { payload: { blocks, grid } }) => {
+  PayloadAction<PosBlock[]>
+> = (state, {payload: blocks}) => {
   const board = new Board();
-  board.setBlocks(
-    blocks.map((pb) => new PositionedBlock(new Block(pb.block.rows, pb.block.cols), pb.pos))
-  );
-  board.setGrid(grid);
-
-  state.optimalMoves =
-    solveBoard(board)?.map(({ block, pos, dirs }) => ({
-      block: { rows: block.rows, cols: block.cols },
-      pos,
-      dirs,
-    })) || null;
+  blocks.forEach((pb) => addBlock(board, pb));
+  state.optimalMoves = solveBoard(board);
   state.moveIdx = state.optimalMoves ? 0 : -1;
   state.isSolved = true;
 };
 
 const doMoveReducer: CaseReducer<
   ManualSolveState,
-  PayloadAction<{ pb: UIPosBlock; newPos: Pos }>
-> = (state, { payload: { pb, newPos } }) => {
+  PayloadAction<{pb: PosBlock; newPos: Pos}>
+> = (state, {payload: {pb, newPos}}) => {
   state.moves = [...state.moves, { block: pb.block, oldPos: pb.pos, newPos }];
   state.moveIdx = state.moveIdx + 1;
 };
@@ -81,18 +69,18 @@ const clearAvailablePositionsReducer: CaseReducer<ManualSolveState> = (state) =>
 
 const setAvailablePositionsReducer: CaseReducer<
   ManualSolveState,
-  PayloadAction<{ positions: Pos[] }>
-> = (state, { payload: { positions } }) => {
+  PayloadAction<Pos[]>
+> = (state, {payload: positions}) => {
   if (state.blockToMove) {
     state.availablePositions = positions;
   }
 };
 
-const setBlockToMoveReducer: CaseReducer<ManualSolveState, PayloadAction<UIPosBlock>> = (
+const setBlockToMoveReducer: CaseReducer<ManualSolveState, PayloadAction<PosBlock>> = (
   state,
-  { payload: { block, pos } }
+  {payload: {block, pos}}
 ) => {
-  state.blockToMove = { block, pos };
+  state.blockToMove = {block, pos};
 };
 
 const clearBlockToMoveReducer: CaseReducer<ManualSolveState> = (state) => {

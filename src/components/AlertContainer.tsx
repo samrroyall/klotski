@@ -1,7 +1,6 @@
 import { Box, useMediaQuery } from "@mui/material";
 import { FunctionComponent } from "react";
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from "../constants";
-import { Board } from "../models/Board";
+import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_COLS } from "../constants";
 import { useAppSelector } from "../state/hooks";
 import { Toast } from "./Toast";
 
@@ -12,7 +11,7 @@ const AlertContainer: FunctionComponent<{}> = () => {
 	// Styling
 	const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   	const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-	const boardWidth = Board.cols * cellSize;
+	const boardWidth = NUM_COLS*cellSize;
 
 	return (
     	<Box

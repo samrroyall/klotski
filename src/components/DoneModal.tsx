@@ -1,8 +1,7 @@
 import { Box, colors, Modal, useMediaQuery } from "@mui/material";
 import EmojiEventsRoundedIcon from "@mui/icons-material/EmojiEventsRounded";
 import { FunctionComponent, useEffect, useState } from "react";
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from "../constants";
-import { Board } from "../models/Board";
+import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_COLS } from "../constants";
 import { Status } from "../state/appSlice";
 import { useAppSelector } from "../state/hooks";
 
@@ -23,7 +22,7 @@ const DoneModal: FunctionComponent = () => {
 	// Styling
   	const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   	const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-	const boardWidth = Board.cols * cellSize;
+	const boardWidth = NUM_COLS*cellSize;
 	const redText = { display: 'inline', color: colors.red[300] };
 	const greenText = { display: 'inline', color: colors.green[600] };
 
