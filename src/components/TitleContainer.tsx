@@ -1,8 +1,15 @@
 import { HelpOutlineOutlined } from "@mui/icons-material";
-import { Tooltip, Box, useMediaQuery, ClickAwayListener, styled, TooltipProps, tooltipClasses } from "@mui/material";
+import { 
+	Box, 
+	ClickAwayListener, 
+	styled, 
+	Tooltip, 
+	tooltipClasses,
+	TooltipProps, 
+	useMediaQuery, 
+} from "@mui/material";
 import { FunctionComponent, useState } from "react";
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF } from "../constants";
-import { Board } from "../models/Board";
+import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_COLS } from "../constants";
 
 const TitleContainer: FunctionComponent = () => {
 	// State
@@ -11,7 +18,7 @@ const TitleContainer: FunctionComponent = () => {
 	// Styling
   	const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   	const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-	const boardWidth = Board.cols * cellSize;
+	const boardWidth = NUM_COLS*cellSize;
     const helpText = (
 		<Box sx={{ 
 			padding: `${isMobile ? 0.3 : 1}rem` ,
