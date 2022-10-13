@@ -8,50 +8,52 @@ interface Node<T> {
 }
 
 class LinkedList<T> {
-  private head: Node<T> | null = null;
-  private tail: Node<T> | null = null;
+  private head: Node<T> | null;
+  private tail: Node<T> | null;
+  private size: number;
 
-  public pushBack(val: T) {
+  public constructor() {
+    this.head = null;
+    this.tail = null;
+    this.size = 0;
+  }
+
+  public pushBack(val: T): void {
     const newNode: Node<T> = { value: val, next: null };
-
-    if (this.isEmpty()) {
+    if (!this.tail) {
       this.head = newNode;
       this.tail = this.head;
     } else {
-      this.tail!.next = newNode;
-      this.tail = this.tail!.next;
+      this.tail.next = newNode;
+      this.tail = this.tail.next;
     }
+    this.size++;
   }
 
   public popFront(): T {
-    if (this.isEmpty()) throw Error('Attempt to pop from empty list.');
-
-    const headVal = this.head!.value;
-    this.head = this.head!.next;
+    if (!this.head) {
+      throw Error('Attempt to pop from empty list.');
+    } else if (this.head === this.tail) {
+      this.tail = this.tail.next;
+    }
+    const headVal = this.head.value;
+    this.head = this.head.next;
+    this.size--;
     return headVal;
   }
 
-  public length(): number {
-    let runner = this.head;
+  public length = (): number => this.size;
 
-    let size = 0;
-    while (runner) {
-      runner = runner.next;
-      size++;
-    }
-    return size;
-  }
-
-  public isEmpty(): boolean {
-    return !this.head;
-  }
+  public isEmpty = (): boolean => this.size === 0;
 }
 
 class Queue<T> {
   private queue = new LinkedList<T>();
 
-  public constructor(arr: T[] = []) {
-    arr.forEach((val: T) => this.enqueue(val));
+  public constructor(arr: T[] | null = null) {
+    if (arr) {
+      arr.forEach((val: T) => this.enqueue(val));
+    }
   }
 
   public enqueue = (val: T): void => this.queue.pushBack(val);
@@ -85,8 +87,11 @@ export class Board {
       this.parent = board;
       // ...and make the initial move
       this.initialMove = move;
-      const newPos = move.dirs.reduce((acc, d) => global.getNewPosFromDir(acc, d), global.getMinPos(move))
-      global.moveBlock({blocks: this.blocks, grid: this.grid}, {...move},  newPos);
+      const newPos = move.dirs.reduce(
+        (acc, d) => global.getNewPosFromDir(acc, d), 
+        global.getMinPos(move)
+      );
+      global.moveBlock(this, {...move},  newPos);
     }
   } 
 }
@@ -96,19 +101,19 @@ export function solveBoard(board: Board): Move[] | null {
   const queue = new Queue<Board>([board]);
   const hashes = new Set<string>([global.getGridHash(board.grid)]);
   while (!queue.isEmpty()) {
-    const curr = queue.dequeue();
+    const currBoard = queue.dequeue();
     // if the current board is solved, we are done
-    if (global.boardIsSolved({blocks: curr.blocks, grid: curr.grid})) {
-      tail = curr;
+    if (global.boardIsSolved(currBoard)) {
+      tail = currBoard;
       break;
     }
     // if not, push child boards to the stack
-    for (let move of global.allValidMoves({blocks: curr.blocks, grid: curr.grid})) {
-      const child = new Board(curr, move);
-      const child_hash = global.getGridHash(child.grid);
-      if (!hashes.has(child_hash)) { 
-        hashes.add(child_hash);
-        queue.enqueue(child);
+    for (let move of global.allValidMoves(currBoard)) {
+      const childBoard = new Board(currBoard, move);
+      const childBoardHash = global.getGridHash(childBoard.grid);
+      if (!hashes.has(childBoardHash)) { 
+        hashes.add(childBoardHash);
+        queue.enqueue(childBoard);
       } 
     }
   }
