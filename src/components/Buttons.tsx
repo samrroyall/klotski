@@ -50,24 +50,23 @@ const Buttons: FunctionComponent = () => {
   // Button Actions
   const getRandomBoard = () => {
     dispatch(randomize());
-    dispatch(changeStatus({ status: Status.ReadyToSolve }));
+    dispatch(changeStatus(Status.ReadyToSolve));
   }
   const clearBoard = () => {
     dispatch(boardReset());
     dispatch(manualSolveReset());
-    dispatch(changeStatus({ status: Status.Start }));
+    dispatch(changeStatus(Status.Start));
   } 
   const initAlgoSolve = () => {
     dispatch(algoInit(blocks));
 
     const steps = store.getState().algoSolve.steps;
-    dispatch(changeStatus({ 
-      status: !steps
-        ? Status.Failed
+    dispatch(changeStatus(
+      !steps ? Status.Failed
         : steps.length > 0 
           ? Status.StepThroughSolution 
           : Status.AlreadySolved 
-    }));
+    ));
   }; 
   const getPreviousStep = () => {
     if (previousStep) {
@@ -77,7 +76,7 @@ const Buttons: FunctionComponent = () => {
   }
   const getNextStep = () => {
     if (status !== Status.StepThroughSolution) {
-      dispatch(changeStatus({ status: Status.StepThroughSolution }));
+      dispatch(changeStatus(Status.StepThroughSolution));
     }
 
     if (currentStep) {
@@ -89,13 +88,12 @@ const Buttons: FunctionComponent = () => {
     dispatch(manualInit(blocks));
 
     const optimalMoves = store.getState().manualSolve.optimalMoves;
-    dispatch(changeStatus({
-      status: !optimalMoves
-        ? Status.Failed
+    dispatch(changeStatus(
+      !optimalMoves ? Status.Failed
         : optimalMoves.length > 0
           ? Status.ManualSolve
           : Status.AlreadySolved
-    }));
+    ));
   }
   const undoLastMove = () => {
     const { block, oldPos, newPos } = getCurrentMove(store.getState());
@@ -108,7 +106,7 @@ const Buttons: FunctionComponent = () => {
     for (let i = moveIdx; i > 0; i--) {
       undoLastMove();
     }
-    dispatch(changeStatus({ status: Status.ReadyToSolve }))
+    dispatch(changeStatus(Status.ReadyToSolve))
   }
 
   // Buttons

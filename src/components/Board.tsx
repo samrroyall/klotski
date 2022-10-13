@@ -11,8 +11,8 @@ const Board: FunctionComponent = () => {
   const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
-    const newUiBlocks = blocks.map((pb, idx) => (
-      <Block key={`block-${idx}`} pb={pb} />
+    const newUiBlocks = blocks.map(({block, pos}, idx) => (
+      <Block key={`block-${idx}`} block={block} pos={pos} />
     ));
     setUiBlocks(newUiBlocks);
   }, [blocks]);

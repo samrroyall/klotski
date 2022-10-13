@@ -40,8 +40,8 @@ const initialState: AppState = {
 
 const changeStatusReducer: CaseReducer<
   AppState,
-  PayloadAction<{ status: Status }>
-> = (state, {payload: {status}}) => {
+  PayloadAction<Status>
+> = (state, {payload: status}) => {
   state.status = status;
 };
 
@@ -54,8 +54,8 @@ const removeAlertReducer: CaseReducer<AppState> = (state) => {
 
 const addAlertReducer: CaseReducer<
   AppState, 
-  PayloadAction<{ alert: Alert }>
-> = (state, {payload: {alert}}) => {
+  PayloadAction<Alert>
+> = (state, {payload: alert}) => {
   state.alerts = [...state.alerts, alert];
 }
 

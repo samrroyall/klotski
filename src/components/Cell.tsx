@@ -34,7 +34,7 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector((state) => state.app.status);
   const addNewAlert = (msg: string, severity: Severity) => {
-    dispatch(addAlert({ alert: { msg, severity }}));
+    dispatch(addAlert({msg, severity}));
     setTimeout(() => {
       dispatch(removeAlert());
     }, 3000);
@@ -91,24 +91,24 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
       if (getBoardIsSolved(state)) {
         const moveIdx = state.manualSolve.moveIdx; 
         const numOptimalMoves = state.manualSolve.optimalMoves?.length;
-        dispatch(changeStatus({ status:  moveIdx === numOptimalMoves 
+        dispatch(changeStatus(moveIdx === numOptimalMoves 
           ? Status.DoneOptimal
           : Status.Done
-        }));
+        ));
       }
     }
   }
   const onClickAddBlockSelector = (block: Block) => {
     try {
       if (status !== Status.ManualBuild) {
-        dispatch(changeStatus({ status: Status.ManualBuild }));
+        dispatch(changeStatus(Status.ManualBuild));
       }
 
       dispatch(addBlock({ block, pos: { row, col } }));
       setHovering(false);
       
       if (getBoardIsValid(store.getState())) {
-        dispatch(changeStatus({ status: Status.ReadyToSolve }));
+        dispatch(changeStatus(Status.ReadyToSolve));
       }
     } catch {
       addNewAlert('Invalid block placement! Placed block overlaps another.', Severity.Warning); 

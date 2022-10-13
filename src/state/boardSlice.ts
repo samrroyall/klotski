@@ -2,15 +2,15 @@ import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { NUM_COLS, NUM_ROWS } from '../constants';
 import {
   addBlock as addBlockHelper,
+  Block,
+  getMinPos,
   getNewPosFromDir,
   Grid,
-  Pos,
-  posBlocksEqual,
-  Block,
   Move,
   moveBlock as moveBlockHelper,
+  Pos,
   PosBlock,
-  getMinPos,
+  removeBlock as removeBlockHelper,
 } from '../models/global';
 
 // State
@@ -41,7 +41,9 @@ const getRandomAvailableCoords = (grid: Grid): Pos => {
   return { row: i, col: j };
 };
 
-const getRandomBlock = (numCellsAvailable: number, hasTwoByTwoBlock: boolean): Block => {
+const getRandomBlock = (
+  numCellsAvailable: number, hasTwoByTwoBlock: boolean
+): Block => {
   let availableBlocks: Block[] = [
     { rows: 1, cols: 1 },
     { rows: 2, cols: 1 },
@@ -105,6 +107,13 @@ const randomizeReducer: CaseReducer<BoardState> = (state) => {
   }
 };
 
+const removeBlockReducer: CaseReducer<
+  BoardState, 
+  PayloadAction<PosBlock>
+> = (state, {payload: pb}) => {
+  removeBlockHelper(state, pb);
+};
+
 const resetReducer: CaseReducer<BoardState> = (state) => {
   const {blocks, grid} = initialState;
   state.blocks = blocks;
@@ -121,11 +130,19 @@ export const boardSlice = createSlice({
     moveBlock: moveBlockReducer,
     moveBlockToPos: moveBlockToPosReducer,
     randomize: randomizeReducer,
+    removeBlock: removeBlockReducer,
     reset: resetReducer,
   },
 });
 
 // Exports
 
-export const { addBlock, moveBlock, moveBlockToPos, randomize, reset } = boardSlice.actions;
+export const { 
+  addBlock, 
+  moveBlock, 
+  moveBlockToPos, 
+  randomize, 
+  removeBlock, 
+  reset,
+} = boardSlice.actions;
 export default boardSlice.reducer;

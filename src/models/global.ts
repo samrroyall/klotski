@@ -10,7 +10,7 @@ export enum Dir {
   Down='D',
 }
 
-export function getOppositeDir(dir: Dir): Dir {
+export const getOppositeDir = (dir: Dir): Dir => {
   switch (dir) {
     case Dir.Left:
       return Dir.Right;
@@ -21,7 +21,7 @@ export function getOppositeDir(dir: Dir): Dir {
     case Dir.Down:
       return Dir.Up;
   }
-}
+};
 
 // Pos
 
@@ -66,7 +66,7 @@ export const blockToInt = ({rows, cols}: Block): BlockId => {
 export interface PosBlock { 
   block: Block; 
   pos: Pos 
-};
+}
 
 export const getMinPos = ({pos}: PosBlock): Pos => pos;
 
@@ -85,14 +85,15 @@ export const posBlocksEqual = (
   p1.col === p2.col
 );
 
-export const blockIsOutOfBounds = (pb: PosBlock): boolean =>
+export const blockIsOutOfBounds = (pb: PosBlock): boolean => (
   [getMinPos(pb), getMaxPos(pb)].some(({row, col}) => (
     row < 0 || col < 0 || row >= NUM_ROWS || col >= NUM_COLS 
-  ));
+  ))
+);
 
 // Move
 
-export type Move = {
+export interface Move {
   block: Block;
   pos: Pos;
   dirs: Dir[];
@@ -117,7 +118,7 @@ export const movesEqual = (
 	}
 	const [pb1, pb2] = [{block: b1, pos: p1}, {block: b2, pos: p2}];
 	return ds_equal && posBlocksEqual(pb1, pb2);
-}
+};
 
 // Grid
 
@@ -170,7 +171,7 @@ export const addBlock = ({blocks, grid}: Board, pb: PosBlock): void => {
   }
   blocks.push(pb);
   addBlockToGrid(grid, pb);
-}
+};
 
 export const removeBlock = ({blocks, grid}: Board, pb1: PosBlock): void => {
   const pbIdx = blocks.findIndex((pb2) => posBlocksEqual(pb1, pb2));
@@ -179,7 +180,7 @@ export const removeBlock = ({blocks, grid}: Board, pb1: PosBlock): void => {
   }
   blocks.splice(pbIdx, 1);
   removeBlockFromGrid(grid, pb1);
-}
+};
 
 export const moveBlock = ({blocks, grid}: Board, pb1: PosBlock, newPos: Pos): void => {
   const pbIdx = blocks.findIndex((pb2) => posBlocksEqual(pb1, pb2));
@@ -189,7 +190,7 @@ export const moveBlock = ({blocks, grid}: Board, pb1: PosBlock, newPos: Pos): vo
   removeBlockFromGrid(grid, pb1);
   blocks[pbIdx].pos = newPos;
   addBlockToGrid(grid, blocks[pbIdx]);
-}
+};
 
 const isMoveAvailable = (grid: Grid, pb: PosBlock, dir: Dir): boolean => {
   const [{col: minCol, row: minRow}, {col: maxCol, row: maxRow}] = [getMinPos(pb), getMaxPos(pb)];
@@ -279,7 +280,7 @@ export const allValidMoves = ({blocks, grid}: Board): Move[] => {
     moves = [...moves, ...validMovesForBlock(grid, pb)];
   }
   return moves;
-}
+};
 
 export const hasPos = (positions: Pos[], {row: r1, col: c1}: Pos): boolean => (
   positions.filter(({row: r2, col: c2}) => r1 === r2 && c1 === c2).length > 0
@@ -322,7 +323,7 @@ export const numCellsFilled = ({blocks}: Board): number => (
 
 export const boardIsValid = (board: Board): boolean => {
   return numTwoByTwoBlocks(board) === 1 && numCellsFilled(board) === NUM_ROWS*NUM_COLS-2
-}
+};
 
 export const boardIsSolved = (board: Board): boolean => {
   if (numTwoByTwoBlocks(board) !== 1) {
@@ -330,4 +331,4 @@ export const boardIsSolved = (board: Board): boolean => {
   }
   const {pos} = board.blocks.find(({block}) => blockToInt(block) === 4)!
   return pos.row === WINNING_ROW && pos.col === WINNING_COL;
-}
+};
