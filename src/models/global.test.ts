@@ -1,5 +1,5 @@
 import * as global from "./global";
-import { Block, Dir, Grid, Move, Pos, PosBlock } from "./global";
+import { Block, Dir, Grid, Move, PosBlock } from "./global";
 import { Board } from "./Solver";
 const md5 = require('md5');
 
@@ -235,4 +235,22 @@ it("boardIsSolved works as expected", () => {
 	global.moveBlock(board, twoByTwo, {row: 3, col: 1});
 	global.addBlock(board, {...secondOneByTwo, pos: {row: 0, col: 1}});
 	expect(global.boardIsSolved(board)).toEqual(true);
+});
+
+// Random Board tests
+
+it("getRandomBoard creates valid boards", () => {
+	for (let _ = 0; _ < 3; _++) {
+		const board = global.getRandomBoard();
+		expect(global.boardIsValid(board)).toBe(true);
+	}
+});
+
+it("getRandomBoard creates solvable boards", () => {
+	for (let _ = 0; _ < 3; _++) {
+		const board = global.getRandomBoard();
+		const moves = global.solveBoard(board);
+		expect(moves).not.toBeNull();
+		expect(moves!.length).toBeGreaterThan(0);
+	}
 });
