@@ -49,7 +49,6 @@ const TitleContainer: FunctionComponent = () => {
 				display: 'flex', 
 				alignItems: 'end', 
 				justifyContent: 'center', 
-				marginTop: '2rem',
 				height: `${isMobile ? 2.5 : 5.5}rem`,
 			}}>
 				<Box sx={{ 
