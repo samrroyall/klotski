@@ -1,27 +1,18 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { Box, colors, useMediaQuery } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../state/hooks';
-import { Severity, Status, changeStatus, addAlert, removeAlert } from '../state/appSlice';
+import { Status, changeStatus } from '../state/appSlice';
 import { addBlock, moveBlockToPos } from '../state/boardSlice';
 import { doMove, clearAvailablePositions, clearBlockToMove } from '../state/manualSolveSlice';
-import { 
-  Block, 
-  boardIsSolved, 
-  boardIsValid, 
-  numCellsFilled as getNumCellsFilled,
-  numTwoByTwoBlocks as getNumTwoByTwoBlocks, 
-} from '../models/global';
+import { Block, boardIsSolved, boardIsValid } from '../models/global';
 import { 
   DESKTOP_CELL_SIZE, 
   MOBILE_CELL_SIZE, 
-  MOBILE_CUTOFF, 
-  NUM_COLS, 
-  NUM_ROWS, 
-  WINNING_COL, 
-  WINNING_ROW,
+  MOBILE_CUTOFF,
+  WINNING_COL,
+  WINNING_ROW, 
 } from '../constants';
 import store, { RootState } from '../state/store';
-import AddBlockSelector from './AddBlockSelector';
 import MoveBlockSelector from './MoveBlockSelector';
 
 interface Props {
@@ -33,50 +24,23 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   // State
   const dispatch = useAppDispatch();
   const status = useAppSelector((state) => state.app.status);
-  const addNewAlert = (msg: string, severity: Severity) => {
-    dispatch(addAlert({msg, severity}));
-    setTimeout(() => {
-      dispatch(removeAlert());
-    }, 3000);
-  }
   const availablePositions = useAppSelector((state) => state.manualSolve.availablePositions);
   const blockToMove = useAppSelector((state) => state.manualSolve.blockToMove); 
-  const numCellsFilled = useAppSelector((state) => getNumCellsFilled(state.board)); 
-  const numTwoByTwoBlocks = useAppSelector((state) => getNumTwoByTwoBlocks(state.board));
   const getBoardIsSolved = (state: RootState) => boardIsSolved(state.board);
-  const getBoardIsValid = (state: RootState) => boardIsValid(state.board);
+  const getBoardIsValid = (state: RootState) => boardIsValid(state.board); 
   const [isAvailablePosition, setIsAvailablePosition] = useState(false);
   const [hovering, setHovering] = useState(false);
+
+  // Helpers
+  const isWinningCell = (row === WINNING_ROW || row === WINNING_ROW + 1) && 
+    (col === WINNING_COL || col === WINNING_COL + 1);
+  const ONE_BY_ONE: Block = { rows: 1, cols: 1 };
 
   useEffect(() => {
     setIsAvailablePosition(
       availablePositions.filter((pos) => pos.row === row && pos.col === col).length > 0
     );
   }, [col, row, availablePositions, setIsAvailablePosition]);
-
-  // Helpers
-  const inLastRow = row === NUM_ROWS-1;
-  const inLastCol = col === NUM_COLS-1;
-  const isWinningCell =
-    (row === WINNING_ROW || row === WINNING_ROW+1) &&
-    (col === WINNING_COL || col === WINNING_COL+1);
-  const maxCellsFilled = NUM_COLS*NUM_ROWS-2;
-  const ONE_BY_ONE: Block = { rows: 1, cols: 1 };
-  const TWO_BY_ONE: Block = { rows: 2, cols: 1 };
-  const ONE_BY_TWO: Block = { rows: 1, cols: 2 };
-  const TWO_BY_TWO: Block = { rows: 2, cols: 2 };
-
-  // Valid Blocks
-  const validBlocks = [];
-  if (numCellsFilled < maxCellsFilled) {
-    validBlocks.push(ONE_BY_ONE);
-    if (numCellsFilled < maxCellsFilled - 1) {
-      if (!inLastCol) validBlocks.push(ONE_BY_TWO);
-      if (!inLastRow) validBlocks.push(TWO_BY_ONE);
-    }
-    if (numCellsFilled < maxCellsFilled - 3 && numTwoByTwoBlocks === 0 && !inLastRow && !inLastCol)
-      validBlocks.push(TWO_BY_TWO);
-  }
 
   // Handlers
   const onClickMoveBlockSelector = () => {
@@ -98,44 +62,47 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
       }
     }
   }
-  const onClickAddBlockSelector = (block: Block) => {
-    try {
-      if (status !== Status.ManualBuild) {
-        dispatch(changeStatus(Status.ManualBuild));
-      }
 
-      dispatch(addBlock({ block, pos: { row, col } }));
-      setHovering(false);
-      
-      if (getBoardIsValid(store.getState())) {
-        dispatch(changeStatus(Status.ReadyToSolve));
-      }
-    } catch {
-      addNewAlert('Invalid block placement! Placed block overlaps another.', Severity.Warning); 
+  const onClickCell = () => {
+    if (![Status.Start, Status.ManualBuild].includes(status)) {
+      return;
+    } 
+    if (status === Status.Start) {
+      dispatch(changeStatus(Status.ManualBuild));
+    }
+    dispatch(addBlock({ block: ONE_BY_ONE, pos: { row, col } }));
+    setHovering(false);
+    if (getBoardIsValid(store.getState())) {
+      dispatch(changeStatus(Status.ReadyToSolve));
     }
   }
 
   // Styling
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const [yPos, xPos] = [row*cellSize, col*cellSize];
   const availablePositionBoxScaleFactor = 0.2;
 
   return (
     <Box
       sx={{
+        position: 'absolute',
+        top: `calc(${yPos}rem - ${row}px)`,
+        left: `calc(${xPos}rem - ${col}px)`,
         height: `${cellSize}rem`,
         width: `${cellSize}rem`,
-        borderTop: 1,
-        borderRight: Number(inLastCol),
-        borderBottom: Number(inLastRow),
-        borderLeft: 1,
-        borderColor: colors.grey[500],
-        backgroundColor: isWinningCell ? colors.red[100] : null,
+        border: 1,
+        borderColor: 'black',
+        backgroundColor: isWinningCell ? colors.red[hovering ? 200 : 100] : colors.grey[hovering ? 200 : 100],
         cursor: isAvailablePosition || [Status.Start, Status.ManualBuild].includes(status)
           ? 'pointer'
           : 'default',
       }}
-      onMouseEnter={() => setHovering(true)}
+      onMouseEnter={() => {
+        if ([Status.Start, Status.ManualBuild].includes(status)) {
+          setHovering(true);
+        }
+      }}
       onMouseLeave={() => setHovering(false)}
     >
       <Box
@@ -156,22 +123,11 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
 
       <Box
         sx={{
-          display: hovering ? 'flex' : 'none',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
           height: '100%',
           width: '100%',
         }}
-      >
-        {validBlocks.map((block) => (
-          <AddBlockSelector
-            key={`cell-${row}-${col}-${block.rows}x${block.cols}-add-block-selector`}
-            show={hovering}
-            block={block}
-            onClick={() => onClickAddBlockSelector(block)}
-          />
-        ))}
-      </Box>
+        onClick={onClickCell}
+      />
     </Box>
   );
 };

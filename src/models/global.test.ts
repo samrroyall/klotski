@@ -240,9 +240,9 @@ it("boardIsSolved works as expected", () => {
 // Random Board tests
 
 it("getRandomBoard creates valid boards", () => {
-	for (let _ = 0; _ < 3; _++) {
+	for (let i = 0; i < 5; i++) {
 		const board = global.getRandomBoard();
-		expect(global.boardIsValid(board)).toBe(true);
+		expect(global.boardIsValid(board)).toEqual(true);
 	}
 });
 

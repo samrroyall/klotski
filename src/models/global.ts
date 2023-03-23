@@ -320,6 +320,8 @@ export const availablePositionsForBlock = ({grid}: Board, pb: PosBlock): Pos[] =
   return positions;
 };
 
+export const cellIsFree = (grid: Grid, row: number, col: number): boolean => grid[row][col] === 0;
+
 export const numTwoByTwoBlocks = ({blocks}: Board): number => (
   blocks.reduce((acc, {block}) => acc + Number(blockToInt(block) === 4), 0)
 );

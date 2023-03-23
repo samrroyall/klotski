@@ -33,7 +33,7 @@ const StatusMsg: FunctionComponent<{}> = () => {
       </span>
     ),  
     readyToSolve: <span>Move the 2×2 block to the red area at the bottom to win</span>,
-    start: <span>{isMobile ? 'Click on ' : 'Hover over '} a cell to add a block</span>,
+    start: <span>Click on a cell to add a block</span>,
     stepThrough: (
       <span>
         <strong>{numSteps ? numSteps - stepIdx - 1 : -1}</strong>/
