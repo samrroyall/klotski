@@ -217,14 +217,6 @@ it("boardIsValid works as expected", () => {
 	expect(global.boardIsValid(board)).toEqual(false);
 });
 
-it("getRandomBoard creates valid boards", () => {
-	for (let i = 0; i < 5; i++) {
-		const board = new Board();
-		global.getRandomBoard(board);
-		expect(global.boardIsValid(board)).toEqual(true);
-	}
-});
-
 it("boardIsSolved works as expected", () => {
 	const board = new Board();
 	global.addBlock(board, {block: {rows: 2, cols: 1}, pos: { row: 0, col: 0 }});
@@ -248,9 +240,9 @@ it("boardIsSolved works as expected", () => {
 // Random Board tests
 
 it("getRandomBoard creates valid boards", () => {
-	for (let _ = 0; _ < 3; _++) {
+	for (let i = 0; i < 5; i++) {
 		const board = global.getRandomBoard();
-		expect(global.boardIsValid(board)).toBe(true);
+		expect(global.boardIsValid(board)).toEqual(true);
 	}
 });
 
