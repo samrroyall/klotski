@@ -64,7 +64,10 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   }
 
   const onClickCell = () => {
-    if (status !== Status.ManualBuild) {
+    if (![Status.Start, Status.ManualBuild].includes(status)) {
+      return;
+    } 
+    if (status === Status.Start) {
       dispatch(changeStatus(Status.ManualBuild));
     }
     dispatch(addBlock({ block: ONE_BY_ONE, pos: { row, col } }));
@@ -95,7 +98,11 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
           ? 'pointer'
           : 'default',
       }}
-      onMouseEnter={() => setHovering(true)}
+      onMouseEnter={() => {
+        if ([Status.Start, Status.ManualBuild].includes(status)) {
+          setHovering(true);
+        }
+      }}
       onMouseLeave={() => setHovering(false)}
     >
       <Box
