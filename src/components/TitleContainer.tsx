@@ -24,8 +24,8 @@ const TitleContainer: FunctionComponent = () => {
 			padding: `${isMobile ? 0.3 : 1}rem` ,
 			fontSize: `${isMobile ? 0.6 : 1}rem` ,
 		}}>
-			{isMobile ? 'Click on ' : 'Hover over '} a cell and click on one of the
- 	   		HEIGHT×WIDTH buttons to add a block of that size. A valid board contains 
+			Click on a cell to add a block. Click the '⟲' icon to change the block, 
+			and click the '×' icon to remove the block. A valid board contains 
 			<b> exactly one </b> 2×2 block and <b> exactly two </b> free spaces. 
 			You can also click <em> Create Board For Me </em> to get a random board.
 			Move the 2×2 block to the red area at the bottom of the board to win!
@@ -49,11 +49,11 @@ const TitleContainer: FunctionComponent = () => {
 				display: 'flex', 
 				alignItems: 'end', 
 				justifyContent: 'center', 
-				height: `${isMobile ? 2.5 : 5.5}rem`,
+				height: `${isMobile ? 2.5 : 5}rem`,
 			}}>
 				<Box sx={{ 
 					height: '100%',
-					fontSize: `${isMobile ? 2.3 : 5}rem`,
+					fontSize: `${isMobile ? 2.3 : 4.5}rem`,
 					fontWeight: '400',
 					padding: 0,
 				}}>

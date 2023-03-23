@@ -21,18 +21,11 @@ export enum Severity {
   Success = 'success',
 }
 
-interface Alert {
-  msg: string;
-  severity: Severity;
-}
-
 interface AppState {
-  alerts: Alert[];
   status: Status;
 }
 
 const initialState: AppState = {
-  alerts: [],
   status: Status.Start,
 };
 
@@ -45,20 +38,6 @@ const changeStatusReducer: CaseReducer<
   state.status = status;
 };
 
-const removeAlertReducer: CaseReducer<AppState> = (state) => {
-  if (state.alerts.length > 0) {
-    const [_, ...others] = state.alerts;
-    state.alerts = others;
-  }
-}
-
-const addAlertReducer: CaseReducer<
-  AppState, 
-  PayloadAction<Alert>
-> = (state, {payload: alert}) => {
-  state.alerts = [...state.alerts, alert];
-}
-
 // Slice
 
 const appSlice = createSlice({
@@ -66,11 +45,9 @@ const appSlice = createSlice({
   initialState,
   reducers: {
     changeStatus: changeStatusReducer,
-    addAlert: addAlertReducer,
-    removeAlert: removeAlertReducer,
   },
 });
 
-export const { changeStatus, addAlert, removeAlert } = appSlice.actions;
+export const { changeStatus } = appSlice.actions;
 
 export default appSlice.reducer;
