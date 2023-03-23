@@ -334,3 +334,57 @@ export const boardIsSolved = (board: Board): boolean => {
   const {pos} = board.blocks.find(({block}) => blockToInt(block) === 4)!
   return pos.row === WINNING_ROW && pos.col === WINNING_COL;
 };
+
+// Random Board
+
+const getRandomAvailableCoords = (grid: Grid): Pos => {
+  const getRandomCoords = () => [
+    Math.floor(Math.random()*NUM_ROWS),
+    Math.floor(Math.random()*NUM_COLS),
+  ];
+  let [i, j] = getRandomCoords();
+  while (grid[i][j] !== 0) {
+    [i, j] = getRandomCoords();
+  }
+  return { row: i, col: j };
+};
+
+const getRandomBlock = (
+  numCellsAvailable: number, hasTwoByTwoBlock: boolean
+): Block => {
+  let availableBlocks: Block[] = [
+    { rows: 1, cols: 1 },
+    { rows: 2, cols: 1 },
+    { rows: 1, cols: 2 },
+  ];
+  if (numCellsAvailable === 1) {
+    availableBlocks = [{ rows: 1, cols: 1 }];
+  } else if (!hasTwoByTwoBlock) {
+    availableBlocks = [{ rows: 2, cols: 2 }];
+  }
+  return availableBlocks[Math.floor(Math.random() * availableBlocks.length)];
+};
+
+export const getRandomBoard = ({blocks, grid}: Board) => {
+  let numCellsAvailable = NUM_ROWS*NUM_COLS-2;
+  let hasTwoByTwoBlock = false;
+
+  while (numCellsAvailable > 0) {
+    const randomPosBlock = {
+      block: getRandomBlock(numCellsAvailable, hasTwoByTwoBlock),
+      pos: getRandomAvailableCoords(grid),
+    };
+    // attempt to add random block at random pos
+    try {
+      addBlock({blocks, grid}, randomPosBlock);
+    } catch {
+      continue;
+    }
+    // if successful update variables
+    const blockArea = randomPosBlock.block.rows * randomPosBlock.block.cols;
+    numCellsAvailable -= blockArea;
+    if (blockArea === 4) {
+      hasTwoByTwoBlock = true;
+    }
+  }
+};
