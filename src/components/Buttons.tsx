@@ -122,7 +122,7 @@ const Buttons: FunctionComponent = () => {
   );
   const stepThroughSolutionButtons = (
     <>
-      { stepIdx < 0 ? clearButton : <></>}
+      {startOverButton}
       <ButtonWrapper title="Previous Step" onClick={getPreviousStep} disabled={!numSteps || stepIdx >= numSteps - 1} />
       <ButtonWrapper title="Next Step" onClick={getNextStep} disabled={stepIdx < 0} />
     </>

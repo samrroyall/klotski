@@ -1,4 +1,5 @@
 import { NUM_COLS, NUM_ROWS, WINNING_COL, WINNING_ROW } from "../constants";
+import { Board as _Board, solveBoard as _solveBoard } from "./Solver";
 const md5 = require('md5');
 
 // Dir
@@ -123,6 +124,12 @@ export const movesEqual = (
 // Grid
 
 export type Grid = BlockId[][];
+
+export const getEmptyGrid = (): Grid => (
+  new Array(NUM_ROWS)
+    .fill(null)
+    .map(() => new Array(NUM_COLS).fill(0))
+);
 
 export const addBlockToGrid = (grid: Grid, pb: PosBlock): void => {
   const [minPos, maxPos] = [getMinPos(pb), getMaxPos(pb)];
@@ -335,56 +342,88 @@ export const boardIsSolved = (board: Board): boolean => {
   return pos.row === WINNING_ROW && pos.col === WINNING_COL;
 };
 
-// Random Board
+// Solve Board Helpers
 
-const getRandomAvailableCoords = (grid: Grid): Pos => {
+export const solveBoard = ({blocks, grid}: Board): Move[] | null => {
+  const board = new _Board();
+  board.blocks = blocks;
+  board.grid = grid;
+  return _solveBoard(board);
+};
+
+// Random Board Helpers
+
+const getRandomBlock = (numCellsAvailable: number, hasTwoByTwoBlock: boolean): Block => {
+  const oneByOne: Block = { rows: 1, cols: 1 };
+  const twoByOne: Block = { rows: 2, cols: 1 };
+  const oneByTwo: Block = { rows: 1, cols: 2 };
+  const twoByTwo: Block = { rows: 2, cols: 2 };
+  let availableBlocks: Block[] = [];
+  if (numCellsAvailable === 1) {
+    availableBlocks = [oneByOne];
+  } else if (!hasTwoByTwoBlock) {
+    availableBlocks = [twoByTwo];
+  } else {
+    availableBlocks = [oneByOne, oneByTwo, twoByOne];
+  }
+  return availableBlocks[Math.floor(Math.random() * availableBlocks.length)];
+};
+
+const getRandomOpenCoords = (grid: Grid, hasTwoByTwoBlock: boolean): Pos => {
+  // get random row and column
   const getRandomCoords = () => [
     Math.floor(Math.random()*NUM_ROWS),
     Math.floor(Math.random()*NUM_COLS),
   ];
+  // validate row and column
+  const coordsOpen = (i: number, j: number): boolean => (
+     grid[i][j] === 0 && (hasTwoByTwoBlock || i !== WINNING_ROW || j !== WINNING_COL)
+  );
+
   let [i, j] = getRandomCoords();
-  while (grid[i][j] !== 0) {
+  while (!coordsOpen(i, j)) {
     [i, j] = getRandomCoords();
   }
   return { row: i, col: j };
 };
 
-const getRandomBlock = (
-  numCellsAvailable: number, hasTwoByTwoBlock: boolean
-): Block => {
-  let availableBlocks: Block[] = [
-    { rows: 1, cols: 1 },
-    { rows: 2, cols: 1 },
-    { rows: 1, cols: 2 },
-  ];
-  if (numCellsAvailable === 1) {
-    availableBlocks = [{ rows: 1, cols: 1 }];
-  } else if (!hasTwoByTwoBlock) {
-    availableBlocks = [{ rows: 2, cols: 2 }];
-  }
-  return availableBlocks[Math.floor(Math.random() * availableBlocks.length)];
-};
-
-export const getRandomBoard = ({blocks, grid}: Board) => {
+const getRandomBoardHelper = (): Board => {
   let numCellsAvailable = NUM_ROWS*NUM_COLS-2;
   let hasTwoByTwoBlock = false;
+  const board: Board = {
+    blocks: [],
+    grid: getEmptyGrid(),
+  };
 
   while (numCellsAvailable > 0) {
-    const randomPosBlock = {
+    const pb: PosBlock = {
       block: getRandomBlock(numCellsAvailable, hasTwoByTwoBlock),
-      pos: getRandomAvailableCoords(grid),
+      pos: getRandomOpenCoords(board.grid, hasTwoByTwoBlock),
     };
     // attempt to add random block at random pos
     try {
-      addBlock({blocks, grid}, randomPosBlock);
+      addBlock(board, pb);
     } catch {
       continue;
     }
     // if successful update variables
-    const blockArea = randomPosBlock.block.rows * randomPosBlock.block.cols;
+    const blockArea = pb.block.rows*pb.block.cols;
+    hasTwoByTwoBlock ||= blockArea === 4;
     numCellsAvailable -= blockArea;
-    if (blockArea === 4) {
-      hasTwoByTwoBlock = true;
-    }
   }
+
+  return board;
+}
+
+export const getRandomBoard = (): Board => {
+  const boardIsSolvable = (board: Board): boolean => {
+    const moves = solveBoard(board);
+    return moves !== null && moves.length > 0;
+  };
+
+  let board = getRandomBoardHelper();
+  while (!boardIsSolvable(board)) {
+    board = getRandomBoardHelper();
+  }
+  return board;
 };

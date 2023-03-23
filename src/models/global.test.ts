@@ -244,3 +244,21 @@ it("boardIsSolved works as expected", () => {
 	global.addBlock(board, {...secondOneByTwo, pos: {row: 0, col: 1}});
 	expect(global.boardIsSolved(board)).toEqual(true);
 });
+
+// Random Board tests
+
+it("getRandomBoard creates valid boards", () => {
+	for (let _ = 0; _ < 3; _++) {
+		const board = global.getRandomBoard();
+		expect(global.boardIsValid(board)).toBe(true);
+	}
+});
+
+it("getRandomBoard creates solvable boards", () => {
+	for (let _ = 0; _ < 3; _++) {
+		const board = global.getRandomBoard();
+		const moves = global.solveBoard(board);
+		expect(moves).not.toBeNull();
+		expect(moves!.length).toBeGreaterThan(0);
+	}
+});

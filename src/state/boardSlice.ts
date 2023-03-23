@@ -53,7 +53,9 @@ const moveBlockToPosReducer: CaseReducer<
 );
 
 const randomizeReducer: CaseReducer<BoardState> = (state) => {
-  getRandomBoard(state);
+  const {blocks, grid} = getRandomBoard();
+  state.blocks = blocks;
+  state.grid = grid;
 };
 
 const removeBlockReducer: CaseReducer<
