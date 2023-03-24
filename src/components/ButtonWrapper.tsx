@@ -11,17 +11,17 @@ interface Props {
 
 const ButtonWrapper: FunctionComponent<Props> = ({ title, onClick, disabled, sx }) => {
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const size = isMobile ? 'small' : 'medium';
 
   return (
     <Button
       sx={{
-        marginX: `0.5rem`,
-				fontSize: `${isMobile ? 0.6 : 1}rem`,
+        marginX: `${isMobile ? 0.3 : 0.5}rem`,
+				fontSize: `${isMobile ? 0.7 : 1}rem`,
+        padding: `${isMobile ? 0.3 : 0.5}rem`,
         ...sx,
       }}
       variant="outlined"
-      size={size}
+      size="medium"
       disabled={disabled || false}
       onClick={onClick}
     >
