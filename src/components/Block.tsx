@@ -52,19 +52,16 @@ const Block: FunctionComponent<Props> = ({block, pos}) => {
     const state = store.getState();
     const numCellsFilled = getNumCellsFilled(state.board);
     const numTwoByTwoBlocks = getNumTwoByTwoBlocks(state.board);
-    const rightCellIsFree = getRightCellIsFree(state);
-    const belowCellIsFree = getBelowCellIsFree(state);
-    const belowRightCellIsFree = getBelowRightCellIsFree(state);
 
     const validBlocks: _Block[] = [];
     if (numCellsFilled < maxCellsFilled) {
       validBlocks.push(ONE_BY_ONE);
     }
     if (numCellsFilled < maxCellsFilled - 1) {
-      if (rightCellIsFree) {
+      if (!inLastCol && getRightCellIsFree(state)) {
         validBlocks.push(ONE_BY_TWO);
       }
-      if (belowCellIsFree) {
+      if (!inLastRow && getBelowCellIsFree(state)) {
         validBlocks.push(TWO_BY_ONE);
       }
     }
@@ -72,9 +69,9 @@ const Block: FunctionComponent<Props> = ({block, pos}) => {
       numTwoByTwoBlocks === 0 && 
       !inLastRow &&
       !inLastCol &&
-      rightCellIsFree &&
-      belowCellIsFree &&
-      belowRightCellIsFree
+      getRightCellIsFree(state) &&
+      getBelowCellIsFree(state) &&
+      getBelowRightCellIsFree(state)
     ) {
       validBlocks.push(TWO_BY_TWO);
     }
@@ -86,11 +83,10 @@ const Block: FunctionComponent<Props> = ({block, pos}) => {
     dispatch(removeBlock({block, pos}));
     const state = store.getState()
     const boardIsValid = getBoardIsValid(state);
+    const numCellsFilled = getNumCellsFilled(state.board);
     if (status === Status.ReadyToSolve && !boardIsValid) {
       dispatch(changeStatus(Status.ManualBuild));
-    }
-    const numCellsFilled = getNumCellsFilled(state.board);
-    if (status === Status.ManualBuild && numCellsFilled === 0) {
+    } else if (status === Status.ManualBuild && numCellsFilled === 0) {
       dispatch(changeStatus(Status.Start));
     }
   }; 
@@ -100,7 +96,12 @@ const Block: FunctionComponent<Props> = ({block, pos}) => {
     const validBlocks = getValidBlocks();
     const currBlockIdx = validBlocks.findIndex((b) => b.rows === block.rows && b.cols === block.cols);
     dispatch(addBlock({block: validBlocks[(currBlockIdx + 1) % validBlocks.length], pos}));
-    if (getBoardIsValid(store.getState())) {
+    const state = store.getState()
+    const boardIsValid = getBoardIsValid(state);
+    if (status === Status.ReadyToSolve && !boardIsValid) {
+      dispatch(changeStatus(Status.ManualBuild));
+    }
+    if (status === Status.ManualBuild && boardIsValid) {
       dispatch(changeStatus(Status.ReadyToSolve));
     }
   };
@@ -121,6 +122,8 @@ const Block: FunctionComponent<Props> = ({block, pos}) => {
       color: 'black',
     }
   };
+  const closeButtonSize = isMobile ? 1 : 1.5;
+  const cycleButtonSize = isMobile ? 2 : 2.5;
 
   return (
     <Paper
@@ -162,24 +165,34 @@ const Block: FunctionComponent<Props> = ({block, pos}) => {
         display: [Status.ManualBuild, Status.ReadyToSolve].includes(status) ? 'block' : 'none', 
         justifyContent: 'end',
       }}>
-        <Close sx={{
-            ...blockButtonStyle,
-            marginLeft: 'auto',
-            fontSize: '1rem',
-          }}
-          onClick={onClickCloseButton}
-        />
+        <Box sx={{
+          display: 'flex',
+          height: `${closeButtonSize}rem`,
+          justifyContent: 'right',
+        }}>
+          <Close sx={{
+              ...blockButtonStyle,
+              fontSize: `${closeButtonSize}rem`,
+            }}
+            key={`${block.rows}x${block.cols}@(${pos.row},${pos.col})-close-button`}
+            onClick={onClickCloseButton}
+          />
+        </Box>
         <Box sx={{ 
-          marginTop: '-1rem',
-          height: `${height-1}rem`,
+          marginTop: `-${closeButtonSize}rem`,
+          height: `${height-closeButtonSize}rem`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           }}>
           <Loop sx={{
               ...blockButtonStyle,
-              fontSize: '2rem',
+              fontSize: `${cycleButtonSize}rem`,
+              '&:hover': {
+                fontSize: `${isMobile ? cycleButtonSize : cycleButtonSize+1}rem`,
+              }
             }}
+            key={`${block.rows}x${block.cols}@(${pos.row},${pos.col})-cycle-button`}
             onClick={onClickCycleButton}
           />
         </Box>

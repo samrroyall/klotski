@@ -41,9 +41,9 @@ const DoneModal: FunctionComponent = () => {
 				display: 'flex',
 				alignItems: 'center',
 				justifyContent: 'center',
-				height: `${isMobile ? 10 : 20}rem`,
-				width: `${isMobile ? boardWidth - cellSize : boardWidth + cellSize}rem`,
-				padding: `1rem ${isMobile ? 1 : 5}rem`,
+				height: `${isMobile ? 12 : 20}rem`,
+				width: `${isMobile ? boardWidth - (0.5*cellSize) : boardWidth + cellSize}rem`,
+				padding: `${isMobile ? 2 : 5}rem`,
   				bgcolor: 'background.paper',
 				borderRadius: '0.5rem',
   				boxShadow: 24,
@@ -52,7 +52,7 @@ const DoneModal: FunctionComponent = () => {
 					display: 'flex', 
 					flexDirection: 'column', 
 					alignItems: 'center',
-					fontSize: `${isMobile ? 0.6 : 1.3}rem`,
+					fontSize: `${isMobile ? 0.8 : 1.3}rem`,
 				}}>
 					<Box sx={{ 
 						display: 'flex',
