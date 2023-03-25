@@ -3,7 +3,13 @@ import { Box, useMediaQuery } from '@mui/material';
 import Block from './Block';
 import Cell from './Cell';
 import { useAppSelector } from '../state/hooks';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_COLS, NUM_ROWS } from '../constants';
+import {
+  DESKTOP_CELL_SIZE,
+  MOBILE_CELL_SIZE,
+  MOBILE_CUTOFF,
+  NUM_COLS,
+  NUM_ROWS,
+} from '../constants';
 
 const Board: FunctionComponent = () => {
   // State
@@ -11,7 +17,7 @@ const Board: FunctionComponent = () => {
   const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
-    const newUiBlocks = blocks.map(({block, pos}, idx) => (
+    const newUiBlocks = blocks.map(({ block, pos }, idx) => (
       <Block key={`block-${idx}`} block={block} pos={pos} />
     ));
     setUiBlocks(newUiBlocks);
@@ -20,21 +26,14 @@ const Board: FunctionComponent = () => {
   // Styling
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const boardWidth = NUM_COLS*cellSize;
+  const boardWidth = NUM_COLS * cellSize;
   const boardSizing = { width: `${boardWidth}rem` };
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
 
   // Grid
   const grid = [];
   for (let i = 0; i < NUM_ROWS; i++) {
-    for (let j = 0; j < NUM_COLS; j++)
-      grid.push(
-        <Cell
-          key={`cell-${i}-${j}`}
-          row={i}
-          col={j}
-        />
-      );
+    for (let j = 0; j < NUM_COLS; j++) grid.push(<Cell key={`cell-${i}-${j}`} row={i} col={j} />);
   }
 
   return (

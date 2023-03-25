@@ -29,18 +29,16 @@ const initialState: BoardState = {
 
 // Actions
 
-const addBlockReducer: CaseReducer<
-  BoardState, 
-  PayloadAction<PosBlock>
-> = (state, {payload: pb}) => (
-  addBlockHelper(state, pb)
-);
+const addBlockReducer: CaseReducer<BoardState, PayloadAction<PosBlock>> = (
+  state,
+  { payload: pb }
+) => addBlockHelper(state, pb);
 
-const moveBlockReducer: CaseReducer<
-  BoardState, 
-  PayloadAction<Move>
-> = (state, {payload: {pos, block, dirs}}) => {
-  const pb: PosBlock = {block, pos};
+const moveBlockReducer: CaseReducer<BoardState, PayloadAction<Move>> = (
+  state,
+  { payload: { pos, block, dirs } }
+) => {
+  const pb: PosBlock = { block, pos };
   const newPos = dirs.reduce((acc, d) => getNewPosFromDir(acc, d), getMinPos(pb));
   moveBlockHelper(state, pb, newPos);
 };
@@ -48,25 +46,23 @@ const moveBlockReducer: CaseReducer<
 const moveBlockToPosReducer: CaseReducer<
   BoardState,
   PayloadAction<{ pb: PosBlock; newPos: Pos }>
-> = (state, {payload: {pb, newPos}}) => (
-  moveBlockHelper(state, pb, newPos)
-);
+> = (state, { payload: { pb, newPos } }) => moveBlockHelper(state, pb, newPos);
 
 const randomizeReducer: CaseReducer<BoardState> = (state) => {
-  const {blocks, grid} = getRandomBoard();
+  const { blocks, grid } = getRandomBoard();
   state.blocks = blocks;
   state.grid = grid;
 };
 
-const removeBlockReducer: CaseReducer<
-  BoardState, 
-  PayloadAction<PosBlock>
-> = (state, {payload: pb}) => {
+const removeBlockReducer: CaseReducer<BoardState, PayloadAction<PosBlock>> = (
+  state,
+  { payload: pb }
+) => {
   removeBlockHelper(state, pb);
 };
 
 const resetReducer: CaseReducer<BoardState> = (state) => {
-  const {blocks, grid} = initialState;
+  const { blocks, grid } = initialState;
   state.blocks = blocks;
   state.grid = grid;
 };
@@ -88,12 +84,6 @@ export const boardSlice = createSlice({
 
 // Exports
 
-export const { 
-  addBlock, 
-  moveBlock, 
-  moveBlockToPos, 
-  randomize, 
-  removeBlock, 
-  reset,
-} = boardSlice.actions;
+export const { addBlock, moveBlock, moveBlockToPos, randomize, removeBlock, reset } =
+  boardSlice.actions;
 export default boardSlice.reducer;

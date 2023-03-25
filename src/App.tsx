@@ -14,20 +14,24 @@ const App: FunctionComponent = () => {
 
   return (
     <Box className="App">
-      <Box className="container" sx={{
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        userSelect: 'none',
-      }}>
+      <Box
+        sx={{
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          userSelect: 'none',
+        }}
+      >
         <TitleContainer />
         <StatusMsg />
-        <Box sx={{ 
-          position: 'relative', 
-          height: `${cellSize*NUM_ROWS + buttonSize}rem`,
-          width: '100%',
-        }}>
+        <Box
+          sx={{
+            position: 'relative',
+            height: `${cellSize * NUM_ROWS + buttonSize}rem`,
+            width: '100%',
+          }}
+        >
           <Board />
           <Buttons />
         </Box>
