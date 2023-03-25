@@ -18,12 +18,12 @@ const initialState: AlgoSolveState = {
 
 // Actions
 
-const initReducer: CaseReducer<
-  AlgoSolveState,
-  PayloadAction<PosBlock[]>
-> = (state, {payload: blocks}) => {
+const initReducer: CaseReducer<AlgoSolveState, PayloadAction<PosBlock[]>> = (
+  state,
+  { payload: blocks }
+) => {
   const board = new Board();
-  blocks.forEach((pb) => addBlock(board, pb))
+  blocks.forEach((pb) => addBlock(board, pb));
   state.steps = solveBoard(board);
   state.stepIdx = state.steps ? state.steps.length - 1 : -1;
   state.isSolved = true;
@@ -35,7 +35,7 @@ const decrementStepReducer: CaseReducer<AlgoSolveState> = (state) => {
 
 const incrementStepReducer: CaseReducer<AlgoSolveState> = (state) => {
   state.stepIdx += 1;
-}
+};
 
 // Slice
 

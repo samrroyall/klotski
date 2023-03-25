@@ -82,18 +82,18 @@ export class Board {
       throw Error('An attempt was made to create a child board without a move.');
     } else {
       // if branching off from a parent board, clone its blocks array and grid...
-      this.blocks = [...board.blocks.map((pb) => ({...pb}))];
+      this.blocks = [...board.blocks.map((pb) => ({ ...pb }))];
       this.grid = [...board.grid.map((row) => [...row])];
       this.parent = board;
       // ...and make the initial move
       this.initialMove = move;
       const newPos = move.dirs.reduce(
-        (acc, d) => global.getNewPosFromDir(acc, d), 
+        (acc, d) => global.getNewPosFromDir(acc, d),
         global.getMinPos(move)
       );
-      global.moveBlock(this, {...move},  newPos);
+      global.moveBlock(this, { ...move }, newPos);
     }
-  } 
+  }
 }
 
 export function solveBoard(board: Board): Move[] | null {
@@ -111,10 +111,10 @@ export function solveBoard(board: Board): Move[] | null {
     for (let move of global.allValidMoves(currBoard)) {
       const childBoard = new Board(currBoard, move);
       const childBoardHash = global.getGridHash(childBoard.grid);
-      if (!hashes.has(childBoardHash)) { 
+      if (!hashes.has(childBoardHash)) {
         hashes.add(childBoardHash);
         queue.enqueue(childBoard);
-      } 
+      }
     }
   }
   // if no solution was found, return null

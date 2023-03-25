@@ -30,10 +30,10 @@ const initialState: ManualSolveState = {
 
 // Actions
 
-const initReducer: CaseReducer<
-  ManualSolveState,
-  PayloadAction<PosBlock[]>
-> = (state, {payload: blocks}) => {
+const initReducer: CaseReducer<ManualSolveState, PayloadAction<PosBlock[]>> = (
+  state,
+  { payload: blocks }
+) => {
   const board = new Board();
   blocks.forEach((pb) => addBlock(board, pb));
   state.optimalMoves = solveBoard(board);
@@ -41,10 +41,10 @@ const initReducer: CaseReducer<
   state.isSolved = true;
 };
 
-const doMoveReducer: CaseReducer<
-  ManualSolveState,
-  PayloadAction<{pb: PosBlock; newPos: Pos}>
-> = (state, {payload: {pb, newPos}}) => {
+const doMoveReducer: CaseReducer<ManualSolveState, PayloadAction<{ pb: PosBlock; newPos: Pos }>> = (
+  state,
+  { payload: { pb, newPos } }
+) => {
   state.moves = [...state.moves, { block: pb.block, oldPos: pb.pos, newPos }];
   state.moveIdx = state.moveIdx + 1;
 };
@@ -67,10 +67,10 @@ const clearAvailablePositionsReducer: CaseReducer<ManualSolveState> = (state) =>
   state.availablePositions = [];
 };
 
-const setAvailablePositionsReducer: CaseReducer<
-  ManualSolveState,
-  PayloadAction<Pos[]>
-> = (state, {payload: positions}) => {
+const setAvailablePositionsReducer: CaseReducer<ManualSolveState, PayloadAction<Pos[]>> = (
+  state,
+  { payload: positions }
+) => {
   if (state.blockToMove) {
     state.availablePositions = positions;
   }
@@ -78,9 +78,9 @@ const setAvailablePositionsReducer: CaseReducer<
 
 const setBlockToMoveReducer: CaseReducer<ManualSolveState, PayloadAction<PosBlock>> = (
   state,
-  {payload: {block, pos}}
+  { payload: { block, pos } }
 ) => {
-  state.blockToMove = {block, pos};
+  state.blockToMove = { block, pos };
 };
 
 const clearBlockToMoveReducer: CaseReducer<ManualSolveState> = (state) => {

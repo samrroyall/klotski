@@ -5,12 +5,12 @@ import { Status, changeStatus } from '../state/appSlice';
 import { addBlock, moveBlockToPos } from '../state/boardSlice';
 import { doMove, clearAvailablePositions, clearBlockToMove } from '../state/manualSolveSlice';
 import { Block, boardIsSolved, boardIsValid } from '../models/global';
-import { 
-  DESKTOP_CELL_SIZE, 
-  MOBILE_CELL_SIZE, 
+import {
+  DESKTOP_CELL_SIZE,
+  MOBILE_CELL_SIZE,
   MOBILE_CUTOFF,
   WINNING_COL,
-  WINNING_ROW, 
+  WINNING_ROW,
 } from '../constants';
 import store, { RootState } from '../state/store';
 import MoveBlockSelector from './MoveBlockSelector';
@@ -25,14 +25,15 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector((state) => state.app.status);
   const availablePositions = useAppSelector((state) => state.manualSolve.availablePositions);
-  const blockToMove = useAppSelector((state) => state.manualSolve.blockToMove); 
+  const blockToMove = useAppSelector((state) => state.manualSolve.blockToMove);
   const getBoardIsSolved = (state: RootState) => boardIsSolved(state.board);
-  const getBoardIsValid = (state: RootState) => boardIsValid(state.board); 
+  const getBoardIsValid = (state: RootState) => boardIsValid(state.board);
   const [isAvailablePosition, setIsAvailablePosition] = useState(false);
   const [hovering, setHovering] = useState(false);
 
   // Helpers
-  const isWinningCell = (row === WINNING_ROW || row === WINNING_ROW + 1) && 
+  const isWinningCell =
+    (row === WINNING_ROW || row === WINNING_ROW + 1) &&
     (col === WINNING_COL || col === WINNING_COL + 1);
   const ONE_BY_ONE: Block = { rows: 1, cols: 1 };
 
@@ -51,22 +52,19 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
       dispatch(clearAvailablePositions());
       dispatch(clearBlockToMove());
 
-      const state = store.getState()
+      const state = store.getState();
       if (getBoardIsSolved(state)) {
-        const moveIdx = state.manualSolve.moveIdx; 
+        const moveIdx = state.manualSolve.moveIdx;
         const numOptimalMoves = state.manualSolve.optimalMoves?.length;
-        dispatch(changeStatus(moveIdx === numOptimalMoves 
-          ? Status.DoneOptimal
-          : Status.Done
-        ));
+        dispatch(changeStatus(moveIdx === numOptimalMoves ? Status.DoneOptimal : Status.Done));
       }
     }
-  }
+  };
 
   const onClickCell = () => {
     if (![Status.Start, Status.ManualBuild].includes(status)) {
       return;
-    } 
+    }
     if (status === Status.Start) {
       dispatch(changeStatus(Status.ManualBuild));
     }
@@ -75,12 +73,12 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
     if (getBoardIsValid(store.getState())) {
       dispatch(changeStatus(Status.ReadyToSolve));
     }
-  }
+  };
 
   // Styling
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const [yPos, xPos] = [row*cellSize, col*cellSize];
+  const [yPos, xPos] = [row * cellSize, col * cellSize];
   const availablePositionBoxScaleFactor = 0.2;
 
   return (
@@ -93,10 +91,13 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
         width: `${cellSize}rem`,
         border: 1,
         borderColor: 'black',
-        backgroundColor: isWinningCell ? colors.red[hovering ? 200 : 100] : colors.grey[hovering ? 200 : 100],
-        cursor: isAvailablePosition || [Status.Start, Status.ManualBuild].includes(status)
-          ? 'pointer'
-          : 'default',
+        backgroundColor: isWinningCell
+          ? colors.red[hovering ? 200 : 100]
+          : colors.grey[hovering ? 200 : 100],
+        cursor:
+          isAvailablePosition || [Status.Start, Status.ManualBuild].includes(status)
+            ? 'pointer'
+            : 'default',
       }}
       onMouseEnter={() => {
         if ([Status.Start, Status.ManualBuild].includes(status)) {

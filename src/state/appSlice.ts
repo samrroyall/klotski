@@ -3,15 +3,15 @@ import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
 // State
 
 export enum Status {
-  Start='start',
-  ManualBuild='manualBuild',
-  ManualSolve='manualSolve',
-  ReadyToSolve='readyToSolve',
-  StepThroughSolution='stepThrough',
-  Done='done',
-  DoneOptimal='doneOptimal',
-  Failed='failed',
-  AlreadySolved='alreadySolved',
+  Start = 'start',
+  ManualBuild = 'manualBuild',
+  ManualSolve = 'manualSolve',
+  ReadyToSolve = 'readyToSolve',
+  StepThroughSolution = 'stepThrough',
+  Done = 'done',
+  DoneOptimal = 'doneOptimal',
+  Failed = 'failed',
+  AlreadySolved = 'alreadySolved',
 }
 
 export enum Severity {
@@ -31,10 +31,10 @@ const initialState: AppState = {
 
 // Actions
 
-const changeStatusReducer: CaseReducer<
-  AppState,
-  PayloadAction<Status>
-> = (state, {payload: status}) => {
+const changeStatusReducer: CaseReducer<AppState, PayloadAction<Status>> = (
+  state,
+  { payload: status }
+) => {
   state.status = status;
 };
 
