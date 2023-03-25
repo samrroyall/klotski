@@ -1,11 +1,14 @@
 {
   "name": "klotski",
   "version": "0.1.0",
+  "homepage": "https://samrroyall.github.io/klotski",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
+    "@mui/icons-material": "^5.8.0",
     "@mui/material": "^5.6.1",
+    "@reduxjs/toolkit": "^1.8.1",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.4",
     "@testing-library/user-event": "^13.5.0",
@@ -13,19 +16,24 @@
     "@types/node": "^16.11.26",
     "@types/react": "^17.0.43",
     "@types/react-dom": "^17.0.14",
+    "n": "^9.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.1.0",
+    "react-redux": "^8.0.1",
     "react-scripts": "5.0.0",
+    "stable": "^0.1.8",
     "typescript": "^4.6.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint .",
-    "format": "prettier --write \"**/*.+(js|jsx|json|yml|yaml|css|md|vue)\""
+    "lint": "eslint ./ --fix",
+    "format": "prettier --write \"**/*.+(js|jsx|ts|tsx|json)\""
   },
   "prettier": {
     "printWidth": 100,
@@ -60,9 +68,16 @@
       "import/first": "error"
     }
   },
+  "lint-staged": {
+    "*.js": "eslint",
+    "*.jsx": "eslint",
+    "*.ts": "eslint",
+    "*.tsx": "eslint",
+    "*.json": "eslint"
+  },
   "husky": {
     "hooks": {
-      "pre-commit": "npm run lint && npm run format"
+      "pre-commit": "lint-staged && pretty-quick --staged"
     }
   },
   "browserslist": {
@@ -80,8 +95,11 @@
   "devDependencies": {
     "eslint": "^8.12.0",
     "eslint-config-prettier": "^8.5.0",
+    "gh-pages": "^5.0.0",
     "husky": "^7.0.4",
+    "lint-staged": "^13.2.0",
     "md5": "^2.3.0",
-    "prettier": "^2.6.2"
+    "prettier": "^2.6.2",
+    "pretty-quick": "^3.1.3"
   }
 }
