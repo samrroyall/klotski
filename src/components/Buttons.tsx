@@ -25,10 +25,12 @@ const Buttons: FunctionComponent = () => {
     state.algoSolve.steps ? state.algoSolve.steps[state.algoSolve.stepIdx] : null
   );
   const numSteps = useAppSelector((state) => state.algoSolve.steps?.length);
+  const getPreviousStep = (state: RootState) => {
+      const steps = state.algoSolve.steps;
+      const stepIdx = state.algoSolve.stepIdx;
+      return steps && stepIdx < steps.length - 1 ? steps[stepIdx + 1] : null;
+  };
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
-  const previousStep = useAppSelector((state) =>
-    state.algoSolve.steps ? state.algoSolve.steps[state.algoSolve.stepIdx + 1] : null
-  );
   const getCurrentMove = (state: RootState) =>
     state.manualSolve.moves[state.manualSolve.moveIdx - 1];
   const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
@@ -45,7 +47,6 @@ const Buttons: FunctionComponent = () => {
   };
   const initAlgoSolve = () => {
     dispatch(algoInit(blocks));
-
     const steps = store.getState().algoSolve.steps;
     dispatch(
       changeStatus(
@@ -57,7 +58,8 @@ const Buttons: FunctionComponent = () => {
       )
     );
   };
-  const getPreviousStep = () => {
+  const undoStep = () => {
+    const previousStep = getPreviousStep(store.getState());
     if (previousStep) {
       dispatch(moveBlock(getOppositeMove(previousStep)));
       dispatch(incrementStepIdx());
@@ -67,7 +69,6 @@ const Buttons: FunctionComponent = () => {
     if (status !== Status.StepThroughSolution) {
       dispatch(changeStatus(Status.StepThroughSolution));
     }
-
     if (currentStep) {
       dispatch(moveBlock(currentStep));
       dispatch(decrementStepIdx());
@@ -95,8 +96,14 @@ const Buttons: FunctionComponent = () => {
     dispatch(clearAvailablePositions());
   };
   const startOver = () => {
-    for (let i = moveIdx; i > 0; i--) {
-      undoLastMove();
+    if (status === Status.StepThroughSolution) {
+      for (let i = stepIdx; i < numSteps!; i++) {
+        undoStep();
+      }
+    } else {
+      for (let i = moveIdx; i > 0; i--) {
+        undoLastMove();
+      }
     }
     dispatch(changeStatus(Status.ReadyToSolve));
   };
@@ -117,7 +124,7 @@ const Buttons: FunctionComponent = () => {
       {startOverButton}
       <ButtonWrapper
         title="Previous Step"
-        onClick={getPreviousStep}
+        onClick={undoStep}
         disabled={!numSteps || stepIdx >= numSteps - 1}
       />
       <ButtonWrapper title="Next Step" onClick={getNextStep} disabled={stepIdx < 0} />
