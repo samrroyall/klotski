@@ -4,11 +4,11 @@ import { useAppDispatch, useAppSelector } from '../state/hooks';
 import { Status, changeStatus } from '../state/appSlice';
 import { addBlock, moveBlockToPos } from '../state/boardSlice';
 import { doMove, clearAvailablePositions, clearBlockToMove } from '../state/manualSolveSlice';
-import { Block, boardIsSolved, boardIsValid } from '../models/global';
+import { Block, boardIsSolved, boardIsValid, getWindowSize } from '../models/global';
 import {
   DESKTOP_CELL_SIZE,
   MOBILE_CELL_SIZE,
-  MOBILE_CUTOFF,
+  TABLET_CELL_SIZE,
   WINNING_COL,
   WINNING_ROW,
 } from '../constants';
@@ -29,7 +29,6 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   const getBoardIsSolved = (state: RootState) => boardIsSolved(state.board);
   const getBoardIsValid = (state: RootState) => boardIsValid(state.board);
   const [isAvailablePosition, setIsAvailablePosition] = useState(false);
-  const [hovering, setHovering] = useState(false);
 
   // Helpers
   const isWinningCell =
@@ -45,7 +44,6 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
 
   // Handlers
   const onClickMoveBlockSelector = () => {
-    setHovering(false);
     if (isAvailablePosition && blockToMove) {
       dispatch(moveBlockToPos({ pb: { ...blockToMove }, newPos: { row, col } }));
       dispatch(doMove({ pb: { ...blockToMove }, newPos: { row, col } }));
@@ -61,50 +59,51 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
     }
   };
 
-  const onClickCell = () => {
+  const onClickCell = (e: any) => {
     if (![Status.Start, Status.ManualBuild].includes(status)) {
+      e.stopPropagation();
+      e.nativeEvent.stopImmediatePropagation();
       return;
     }
     if (status === Status.Start) {
       dispatch(changeStatus(Status.ManualBuild));
     }
     dispatch(addBlock({ block: ONE_BY_ONE, pos: { row, col } }));
-    setHovering(false);
     if (getBoardIsValid(store.getState())) {
       dispatch(changeStatus(Status.ReadyToSolve));
     }
   };
 
   // Styling
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const [yPos, xPos] = [row * cellSize, col * cellSize];
+  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
+  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const borderSize = isMobile ? 0.5 : 1;
   const availablePositionBoxScaleFactor = 0.2;
 
   return (
     <Box
       sx={{
         position: 'absolute',
-        top: `calc(${yPos}rem - ${row}px)`,
-        left: `calc(${xPos}rem - ${col}px)`,
-        height: `${cellSize}rem`,
-        width: `${cellSize}rem`,
-        border: 1,
+        top: `calc(${row} * (${cellSize}) - ${borderSize * row}px)`,
+        left: `calc(${col} * (${cellSize}) - ${borderSize * col}px)`,
+        height: `calc(${cellSize})`,
+        width: `calc(${cellSize})`,
+        border: borderSize,
         borderColor: 'black',
-        backgroundColor: isWinningCell
-          ? colors.red[hovering ? 200 : 100]
-          : colors.grey[hovering ? 200 : 100],
-        cursor:
-          isAvailablePosition || [Status.Start, Status.ManualBuild].includes(status)
-            ? 'pointer'
-            : 'default',
+        backgroundColor: isWinningCell ? colors.red[100] : colors.grey[100],
+        '&:hover': {
+          backgroundColor: [Status.Start, Status.ManualBuild].includes(status)
+            ? isWinningCell
+              ? colors.red[200]
+              : colors.grey[200]
+            : isWinningCell
+            ? colors.red[100]
+            : colors.grey[100],
+        },
+        cursor: [Status.Start, Status.ManualBuild].includes(status) ? 'pointer' : 'default',
+        pointerEvents: [Status.Start, Status.ManualBuild].includes(status) ? 'auto' : 'none',
       }}
-      onMouseEnter={() => {
-        if ([Status.Start, Status.ManualBuild].includes(status)) {
-          setHovering(true);
-        }
-      }}
-      onMouseLeave={() => setHovering(false)}
+      onClick={onClickCell}
     >
       <Box
         sx={{
@@ -116,19 +115,11 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
         }}
       >
         <MoveBlockSelector
-          size={availablePositionBoxScaleFactor * cellSize}
+          size={availablePositionBoxScaleFactor * 10}
           show={isAvailablePosition}
           onClick={onClickMoveBlockSelector}
         />
       </Box>
-
-      <Box
-        sx={{
-          height: '100%',
-          width: '100%',
-        }}
-        onClick={onClickCell}
-      />
     </Box>
   );
 };

@@ -13,13 +13,14 @@ import {
   numCellsFilled as getNumCellsFilled,
   numTwoByTwoBlocks as getNumTwoByTwoBlocks,
   cellIsFree,
+  getWindowSize,
 } from '../models/global';
 import {
   DESKTOP_CELL_SIZE,
   MOBILE_CELL_SIZE,
-  MOBILE_CUTOFF,
   NUM_COLS,
   NUM_ROWS,
+  TABLET_CELL_SIZE,
 } from '../constants';
 import { addBlock, removeBlock } from '../state/boardSlice';
 import store, { RootState } from '../state/store';
@@ -116,12 +117,13 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
   };
 
   // Styling
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
+  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const borderSize = isMobile ? 0.5 : 1;
   const blockColor = [colors.yellow, colors.blue, colors.green, colors.red];
   const [{ rows, cols }, { row, col }] = [block, pos];
-  const [yPos, xPos] = [row * cellSize, col * cellSize];
-  const [height, width] = [rows * cellSize, cols * cellSize];
+  const [yPos, xPos] = [`${row} * (${cellSize})`, `${col} * (${cellSize})`];
+  const [height, width] = [`${rows} * (${cellSize})`, `${cols} * (${cellSize})`];
   const scalingFactor = 0.1;
   const blockButtonStyle = {
     display: 'block',
@@ -141,15 +143,21 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
       square
       sx={{
         position: 'absolute',
-        top: `calc(${isMovable ? yPos - 0.5 * height * scalingFactor : yPos}rem - ${pos.row}px)`,
-        left: `calc(${isMovable ? xPos - 0.5 * width * scalingFactor : xPos}rem - ${pos.col}px)`,
-        height: `calc(${isMovable ? height * (scalingFactor + 1) : height}rem - ${
-          block.rows - 1
+        top: `calc(${isMovable ? `${yPos} - 0.5 * ${height} * ${scalingFactor}` : yPos} - ${
+          borderSize * pos.row
         }px)`,
-        width: `calc(${isMovable ? width * (scalingFactor + 1) : width}rem - ${block.cols - 1}px)`,
+        left: `calc(${isMovable ? `${xPos} - 0.5 * ${width} * ${scalingFactor}` : xPos} - ${
+          borderSize * pos.col
+        }px)`,
+        height: `calc(${isMovable ? `${height} * (${scalingFactor} + 1)` : height} - ${
+          borderSize * (block.rows - 1)
+        }px)`,
+        width: `calc(${isMovable ? `${width} * (${scalingFactor} + 1)` : width} - ${
+          borderSize * (block.cols - 1)
+        }px)`,
         padding: `0.5rem`,
         backgroundColor: blockColor[blockToInt(block) - 1][600],
-        border: 1,
+        border: borderSize,
         borderColor: 'black',
         cursor: isMovable ? 'pointer' : 'default',
         zIndex: isMovable ? 3 : 2,
@@ -159,13 +167,10 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
           setIsMovable(availablePositions.length > 0);
         }
       }}
-      onMouseLeave={() => {
-        if (isMovable) {
-          setIsMovable(false);
-        }
-      }}
+      onMouseLeave={() => setIsMovable(false)}
       onClick={() => {
         if (status === Status.ManualSolve && getBoardIsValid(store.getState())) {
+          setIsMovable(availablePositions.length > 0);
           dispatch(setBlockToMove({ block, pos }));
           dispatch(setAvailablePositions(availablePositions));
         }
@@ -197,7 +202,7 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
         <Box
           sx={{
             marginTop: `-${closeButtonSize}rem`,
-            height: `${height - closeButtonSize}rem`,
+            height: `calc(${height} - ${closeButtonSize}rem)`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

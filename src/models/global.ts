@@ -1,6 +1,35 @@
-import { NUM_COLS, NUM_ROWS, WINNING_COL, WINNING_ROW } from '../constants';
+import {
+  MOBILE_CUTOFF,
+  NUM_COLS,
+  NUM_ROWS,
+  TABLET_CUTOFF,
+  WINNING_COL,
+  WINNING_ROW,
+} from '../constants';
 import { Board as _Board, solveBoard as _solveBoard } from './Solver';
 const md5 = require('md5');
+
+// Responsive helpers
+
+export enum WindowSize {
+  Mobile,
+  Tablet,
+  Desktop,
+}
+
+export const getWindowSize = (mediaQueryFunc: (query: string) => boolean) => {
+  const windowSize = mediaQueryFunc(`(max-width:${MOBILE_CUTOFF})`)
+    ? WindowSize.Mobile
+    : mediaQueryFunc(`(max-width:${TABLET_CUTOFF})`)
+    ? WindowSize.Tablet
+    : WindowSize.Desktop;
+
+  return {
+    isMobile: windowSize === WindowSize.Mobile,
+    isTablet: windowSize === WindowSize.Tablet,
+    isDesktop: windowSize === WindowSize.Desktop,
+  };
+};
 
 // Dir
 

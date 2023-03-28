@@ -5,30 +5,36 @@ import Buttons from './components/Buttons';
 import StatusMsg from './components/StatusMsg';
 import TitleContainer from './components/TitleContainer';
 import DoneModal from './components/DoneModal';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_ROWS } from './constants';
+import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, NUM_ROWS, TABLET_CELL_SIZE } from './constants';
+import { getWindowSize } from './models/global';
 
 const App: FunctionComponent = () => {
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
+  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
   const buttonSize = isMobile ? 3 : 4;
+  const containerStyle = {
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    touchAction: 'manipulation',
+    userSelect: 'none',
+  };
+  const mobileHeights = [
+    { height: 'fill-available' },
+    { height: '-webkit-fill-available' },
+    { height: '-moz-fill-available' },
+  ];
 
   return (
     <Box className="App">
-      <Box
-        sx={{
-          height: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          userSelect: 'none',
-        }}
-      >
+      <Box sx={isMobile ? [containerStyle, ...mobileHeights] : containerStyle}>
         <TitleContainer />
         <StatusMsg />
         <Box
           sx={{
             position: 'relative',
-            height: `${cellSize * NUM_ROWS + buttonSize}rem`,
+            height: `calc(${NUM_ROWS} * (${cellSize}) + ${buttonSize}rem)`,
             width: '100%',
           }}
         >

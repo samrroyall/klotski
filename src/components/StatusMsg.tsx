@@ -1,8 +1,8 @@
 import { useMediaQuery } from '@mui/material';
 import { FunctionComponent } from 'react';
+import { getWindowSize } from '../models/global';
 import { Status } from '../state/appSlice';
 import { useAppSelector } from '../state/hooks';
-import { MOBILE_CUTOFF } from '../constants';
 
 const StatusMsg: FunctionComponent<{}> = () => {
   // State
@@ -16,8 +16,10 @@ const StatusMsg: FunctionComponent<{}> = () => {
   );
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
 
+  // Styling
+  const { isMobile } = getWindowSize(useMediaQuery);
+
   // Status Messages
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
   const msgText: { [k in Status]?: JSX.Element } = {
     alreadySolved: <span>Oops! It looks like the board is already solved</span>,
     failed: <span>No Solution Found :(</span>,
@@ -43,11 +45,10 @@ const StatusMsg: FunctionComponent<{}> = () => {
     <p
       style={{
         display: 'block',
-        marginTop: '1rem',
-        marginBottom: '1rem',
-        minHeight: isMobile ? '1.2rem' : '1.5rem',
+        marginTop: '0.5rem',
+        marginBottom: '0.5rem',
         textAlign: 'center',
-        fontSize: `${isMobile ? 0.7 : 1}rem`,
+        fontSize: `${isMobile ? 0.8 : 1}rem`,
       }}
     >
       {status in msgText ? msgText[status] : <></>}

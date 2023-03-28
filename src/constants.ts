@@ -6,8 +6,12 @@ export const WINNING_ROW = 3;
 
 export const WINNING_COL = 1;
 
-export const MOBILE_CUTOFF = 800;
+export const MOBILE_CUTOFF = '480px';
 
-export const DESKTOP_CELL_SIZE = 8;
+export const TABLET_CUTOFF = '800px';
 
-export const MOBILE_CELL_SIZE = 5;
+export const DESKTOP_CELL_SIZE = '8rem';
+
+export const TABLET_CELL_SIZE = '6rem';
+
+export const MOBILE_CELL_SIZE = '25vw - 1rem';

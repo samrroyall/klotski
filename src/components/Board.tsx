@@ -6,10 +6,11 @@ import { useAppSelector } from '../state/hooks';
 import {
   DESKTOP_CELL_SIZE,
   MOBILE_CELL_SIZE,
-  MOBILE_CUTOFF,
   NUM_COLS,
   NUM_ROWS,
+  TABLET_CELL_SIZE,
 } from '../constants';
+import { getWindowSize } from '../models/global';
 
 const Board: FunctionComponent = () => {
   // State
@@ -24,10 +25,10 @@ const Board: FunctionComponent = () => {
   }, [blocks]);
 
   // Styling
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const boardWidth = NUM_COLS * cellSize;
-  const boardSizing = { width: `${boardWidth}rem` };
+  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
+  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const boardWidth = `${NUM_COLS} * (${cellSize})`;
+  const boardSizing = { width: boardWidth };
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
 
   // Grid
@@ -40,7 +41,7 @@ const Board: FunctionComponent = () => {
     <Box
       sx={{
         position: 'absolute',
-        marginLeft: `calc(0.5 * (100% - ${boardWidth}rem))`,
+        marginLeft: `calc(0.5 * (100% - ${boardWidth}))`,
         ...boardSizing,
       }}
     >

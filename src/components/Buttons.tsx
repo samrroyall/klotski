@@ -11,8 +11,8 @@ import {
   clearBlockToMove,
   clearAvailablePositions,
 } from '../state/manualSolveSlice';
-import { getOppositeMove } from '../models/global';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_ROWS } from '../constants';
+import { getOppositeMove, getWindowSize } from '../models/global';
+import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, NUM_ROWS, TABLET_CELL_SIZE } from '../constants';
 import store, { RootState } from '../state/store';
 import ButtonWrapper from './ButtonWrapper';
 
@@ -103,12 +103,12 @@ const Buttons: FunctionComponent = () => {
 
   // Buttons
   const randomizeButton = <ButtonWrapper title="Create board for me" onClick={getRandomBoard} />;
-  const clearButton = <ButtonWrapper title="Clear Board" onClick={clearBoard} />;
+  const clearButton = <ButtonWrapper title="Clear" onClick={clearBoard} />;
   const startOverButton = <ButtonWrapper title="Start Over" onClick={startOver} />;
   const readyToSolveButtons = (
     <>
-      {clearButton}
       <ButtonWrapper title="Solve myself" onClick={initManualSolve} />
+      {clearButton}
       <ButtonWrapper title="Solve for me" onClick={initAlgoSolve} />
     </>
   );
@@ -131,16 +131,15 @@ const Buttons: FunctionComponent = () => {
   );
 
   // Styling
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const boardHeight = cellSize * NUM_ROWS + 1;
+  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
+  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
   const buttonStyling = { position: 'absolute', width: '100%', left: 0 };
 
   return (
     <Box
       sx={{
         ...buttonStyling,
-        top: `${boardHeight}rem`,
+        top: `calc(${NUM_ROWS} * (${cellSize}) + 0.5rem)`,
         display: 'flex',
         justifyContent: 'center',
       }}
