@@ -14,6 +14,8 @@ const MoveBlockSelector: FunctionComponent<Props> = ({ size, show, onClick }) =>
       width: `${size}rem`,
       backgroundColor: colors.deepPurple[300],
       '&:hover': { backgroundColor: colors.deepPurple[400] },
+      pointerEvents: 'auto',
+      cursor: 'pointer',
       zIndex: show ? 20 : 0,
     }}
     onClick={onClick}

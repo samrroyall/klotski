@@ -9,21 +9,21 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { FunctionComponent, useState } from 'react';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_COLS } from '../constants';
+import { NUM_COLS } from '../constants';
+import { getSizes } from '../models/global';
 
 const TitleContainer: FunctionComponent = () => {
   // State
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
   // Styling
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const boardWidth = NUM_COLS * cellSize;
+  const { isMobile, isTablet, cellSize } = getSizes(useMediaQuery);
+  const maxWidth = `calc(${NUM_COLS} * ${cellSize} + ${isMobile ? '1rem' : cellSize})`;
   const helpText = (
     <Box
       sx={{
-        padding: `${isMobile ? 0.3 : 1}rem`,
-        fontSize: `${isMobile ? 0.6 : 1}rem`,
+        padding: `${isMobile ? 0.3 : isTablet ? 0.5 : 1}rem`,
+        fontSize: '1rem',
       }}
     >
       Click on a cell to add a block. Click the '⟲' icon to change the block, and click the '×' icon
@@ -39,7 +39,7 @@ const TitleContainer: FunctionComponent = () => {
     </ClickAwayListener>
   ))({
     [`& .${tooltipClasses.tooltip}`]: {
-      maxWidth: `${boardWidth + (isMobile ? 2 : cellSize)}rem`,
+      maxWidth,
       marginLeft: 'auto',
       marginRight: 'auto',
     },
@@ -52,13 +52,13 @@ const TitleContainer: FunctionComponent = () => {
           display: 'flex',
           alignItems: 'end',
           justifyContent: 'center',
-          height: `${isMobile ? 2.5 : 5}rem`,
+          height: `${isMobile ? 2.5 : isTablet ? 3.8 : 4.95}rem`,
         }}
       >
         <Box
           sx={{
             height: '100%',
-            fontSize: `${isMobile ? 2.3 : 4.5}rem`,
+            fontSize: `${isMobile ? 2.3 : isTablet ? 3.5 : 4.5}rem`,
             fontWeight: '400',
             padding: 0,
           }}
