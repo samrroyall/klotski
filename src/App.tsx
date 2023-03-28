@@ -5,12 +5,10 @@ import Buttons from './components/Buttons';
 import StatusMsg from './components/StatusMsg';
 import TitleContainer from './components/TitleContainer';
 import DoneModal from './components/DoneModal';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, NUM_ROWS, TABLET_CELL_SIZE } from './constants';
-import { getWindowSize } from './models/global';
+import { getSizes } from './models/global';
 
 const App: FunctionComponent = () => {
-  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const { isMobile, boardHeight } = getSizes(useMediaQuery);
   const buttonSize = isMobile ? 3 : 4;
   const containerStyle = {
     height: '100vh',
@@ -34,7 +32,7 @@ const App: FunctionComponent = () => {
         <Box
           sx={{
             position: 'relative',
-            height: `calc(${NUM_ROWS} * (${cellSize}) + ${buttonSize}rem)`,
+            height: `calc(${boardHeight} + ${buttonSize}rem)`,
             width: '100%',
           }}
         >

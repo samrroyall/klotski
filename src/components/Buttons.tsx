@@ -11,8 +11,8 @@ import {
   clearBlockToMove,
   clearAvailablePositions,
 } from '../state/manualSolveSlice';
-import { getOppositeMove, getWindowSize } from '../models/global';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, NUM_ROWS, TABLET_CELL_SIZE } from '../constants';
+import { getOppositeMove, getSizes } from '../models/global';
+import { NUM_ROWS } from '../constants';
 import store, { RootState } from '../state/store';
 import ButtonWrapper from './ButtonWrapper';
 
@@ -138,15 +138,14 @@ const Buttons: FunctionComponent = () => {
   );
 
   // Styling
-  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const { boardHeight } = getSizes(useMediaQuery);
   const buttonStyling = { position: 'absolute', width: '100%', left: 0 };
 
   return (
     <Box
       sx={{
         ...buttonStyling,
-        top: `calc(${NUM_ROWS} * (${cellSize}) + 0.5rem)`,
+        top: `calc(${boardHeight} + 0.5rem)`,
         display: 'flex',
         justifyContent: 'center',
       }}

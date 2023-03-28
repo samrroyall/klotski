@@ -13,15 +13,9 @@ import {
   numCellsFilled as getNumCellsFilled,
   numTwoByTwoBlocks as getNumTwoByTwoBlocks,
   cellIsFree,
-  getWindowSize,
+  getSizes,
 } from '../models/global';
-import {
-  DESKTOP_CELL_SIZE,
-  MOBILE_CELL_SIZE,
-  NUM_COLS,
-  NUM_ROWS,
-  TABLET_CELL_SIZE,
-} from '../constants';
+import { NUM_COLS, NUM_ROWS } from '../constants';
 import { addBlock, removeBlock } from '../state/boardSlice';
 import store, { RootState } from '../state/store';
 
@@ -117,13 +111,11 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
   };
 
   // Styling
-  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const borderSize = isMobile ? 0.5 : 1;
+  const { isMobile, borderSize, cellSize } = getSizes(useMediaQuery);
   const blockColor = [colors.yellow, colors.blue, colors.green, colors.red];
   const [{ rows, cols }, { row, col }] = [block, pos];
-  const [yPos, xPos] = [`${row} * (${cellSize})`, `${col} * (${cellSize})`];
-  const [height, width] = [`${rows} * (${cellSize})`, `${cols} * (${cellSize})`];
+  const [yPos, xPos] = [`${row} * ${cellSize}`, `${col} * ${cellSize}`];
+  const [height, width] = [`${rows} * ${cellSize}`, `${cols} * ${cellSize}`];
   const scalingFactor = 0.1;
   const blockButtonStyle = {
     display: 'block',
@@ -143,22 +135,13 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
       square
       sx={{
         position: 'absolute',
-        top: `calc(${isMovable ? `${yPos} - 0.5 * ${height} * ${scalingFactor}` : yPos} - ${
-          borderSize * pos.row
-        }px)`,
-        left: `calc(${isMovable ? `${xPos} - 0.5 * ${width} * ${scalingFactor}` : xPos} - ${
-          borderSize * pos.col
-        }px)`,
-        height: `calc(${isMovable ? `${height} * (${scalingFactor} + 1)` : height} - ${
-          borderSize * (block.rows - 1)
-        }px)`,
-        width: `calc(${isMovable ? `${width} * (${scalingFactor} + 1)` : width} - ${
-          borderSize * (block.cols - 1)
-        }px)`,
+        top: `calc(${isMovable ? `${yPos} - 0.5 * ${height} * ${scalingFactor}` : yPos} + ${borderSize})`,
+        left: `calc(${isMovable ? `${xPos} - 0.5 * ${width} * ${scalingFactor}` : xPos} + ${borderSize})`,
+        height: `calc(${isMovable ? `${height} * (${scalingFactor} + 1)` : height})`,
+        width: `calc(${isMovable ? `${width} * (${scalingFactor} + 1)` : width})`,
         padding: `0.5rem`,
         backgroundColor: blockColor[blockToInt(block) - 1][600],
-        border: borderSize,
-        borderColor: 'black',
+        border: `${borderSize} solid black`,
         cursor: isMovable ? 'pointer' : 'default',
         zIndex: isMovable ? 3 : 2,
       }}

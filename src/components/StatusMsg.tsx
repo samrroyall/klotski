@@ -1,6 +1,6 @@
 import { useMediaQuery } from '@mui/material';
 import { FunctionComponent } from 'react';
-import { getWindowSize } from '../models/global';
+import { getSizes } from '../models/global';
 import { Status } from '../state/appSlice';
 import { useAppSelector } from '../state/hooks';
 
@@ -17,7 +17,7 @@ const StatusMsg: FunctionComponent<{}> = () => {
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
 
   // Styling
-  const { isMobile } = getWindowSize(useMediaQuery);
+  const { isMobile } = getSizes(useMediaQuery);
 
   // Status Messages
   const msgText: { [k in Status]?: JSX.Element } = {

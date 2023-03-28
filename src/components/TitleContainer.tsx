@@ -9,18 +9,16 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { FunctionComponent, useState } from 'react';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, NUM_COLS, TABLET_CELL_SIZE } from '../constants';
-import { getWindowSize } from '../models/global';
+import { NUM_COLS} from '../constants';
+import { getSizes } from '../models/global';
 
 const TitleContainer: FunctionComponent = () => {
   // State
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
   // Styling
-  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const boardWidth = `${NUM_COLS} * (${cellSize})`;
-  const maxWidth = `calc(${boardWidth} + ${isMobile ? '2rem' : cellSize})`;
+  const { isMobile, isTablet, cellSize } = getSizes(useMediaQuery);
+  const maxWidth = `calc(${NUM_COLS} * ${cellSize} + ${isMobile ? '1rem' : cellSize})`;
   const helpText = (
     <Box
       sx={{

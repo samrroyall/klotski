@@ -4,14 +4,8 @@ import { useAppDispatch, useAppSelector } from '../state/hooks';
 import { Status, changeStatus } from '../state/appSlice';
 import { addBlock, moveBlockToPos } from '../state/boardSlice';
 import { doMove, clearAvailablePositions, clearBlockToMove } from '../state/manualSolveSlice';
-import { Block, boardIsSolved, boardIsValid, getWindowSize } from '../models/global';
-import {
-  DESKTOP_CELL_SIZE,
-  MOBILE_CELL_SIZE,
-  TABLET_CELL_SIZE,
-  WINNING_COL,
-  WINNING_ROW,
-} from '../constants';
+import { Block, boardIsSolved, boardIsValid, getSizes } from '../models/global';
+import { WINNING_COL, WINNING_ROW } from '../constants';
 import store, { RootState } from '../state/store';
 import MoveBlockSelector from './MoveBlockSelector';
 
@@ -75,21 +69,18 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   };
 
   // Styling
-  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const borderSize = isMobile ? 0.5 : 1;
+  const { borderSize, cellSize } = getSizes(useMediaQuery);
   const availablePositionBoxScaleFactor = 0.2;
 
   return (
     <Box
       sx={{
         position: 'absolute',
-        top: `calc(${row} * (${cellSize}) - ${borderSize * row}px)`,
-        left: `calc(${col} * (${cellSize}) - ${borderSize * col}px)`,
+        top: `calc(${row} * ${cellSize})`,
+        left: `calc(${col} * ${cellSize})`,
         height: `calc(${cellSize})`,
         width: `calc(${cellSize})`,
-        border: borderSize,
-        borderColor: 'black',
+        border: `${borderSize} solid black`,
         backgroundColor: isWinningCell ? colors.red[100] : colors.grey[100],
         '&:hover': {
           backgroundColor: [Status.Start, Status.ManualBuild].includes(status)

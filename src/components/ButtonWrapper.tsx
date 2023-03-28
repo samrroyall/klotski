@@ -1,6 +1,6 @@
 import { Button, SxProps, Theme, useMediaQuery } from '@mui/material';
 import { FunctionComponent } from 'react';
-import { getWindowSize } from '../models/global';
+import { getSizes } from '../models/global';
 
 interface Props {
   title: string;
@@ -10,7 +10,7 @@ interface Props {
 }
 
 const ButtonWrapper: FunctionComponent<Props> = ({ title, onClick, disabled, sx }) => {
-  const { isMobile } = getWindowSize(useMediaQuery);
+  const { isMobile } = getSizes(useMediaQuery);
 
   return (
     <Button

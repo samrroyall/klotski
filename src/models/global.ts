@@ -1,7 +1,12 @@
 import {
+  DESKTOP_BORDER_SIZE,
+  DESKTOP_CELL_SIZE,
+  MOBILE_BORDER_SIZE,
+  MOBILE_CELL_SIZE,
   MOBILE_CUTOFF,
   NUM_COLS,
   NUM_ROWS,
+  TABLET_CELL_SIZE,
   TABLET_CUTOFF,
   WINNING_COL,
   WINNING_ROW,
@@ -17,7 +22,7 @@ export enum WindowSize {
   Desktop,
 }
 
-export const getWindowSize = (mediaQueryFunc: (query: string) => boolean) => {
+const getWindowSize = (mediaQueryFunc: (query: string) => boolean) => {
   const windowSize = mediaQueryFunc(`(max-width:${MOBILE_CUTOFF})`)
     ? WindowSize.Mobile
     : mediaQueryFunc(`(max-width:${TABLET_CUTOFF})`)
@@ -30,6 +35,24 @@ export const getWindowSize = (mediaQueryFunc: (query: string) => boolean) => {
     isDesktop: windowSize === WindowSize.Desktop,
   };
 };
+
+export const getSizes = (mediaQueryFunc: (query: string) => boolean) => {
+  const { isMobile, isTablet, isDesktop } = getWindowSize(mediaQueryFunc);
+  const borderSize = isMobile ? MOBILE_BORDER_SIZE : DESKTOP_BORDER_SIZE;
+  const totalBorderSize = `${2 * borderSize}px`;
+  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
+  const totalCellSize = `(${cellSize} + ${totalBorderSize})`;
+
+  return {
+    isMobile,
+    isTablet,
+    isDesktop,
+    borderSize: `${borderSize}px`,
+    cellSize: `${totalCellSize}`,
+    boardHeight: `(${NUM_ROWS} * ${totalCellSize} + ${totalBorderSize})`,
+    boardWidth: `(${NUM_COLS} * ${totalCellSize} + ${totalBorderSize})`,
+  }
+}
 
 // Dir
 

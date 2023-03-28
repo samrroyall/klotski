@@ -3,14 +3,8 @@ import { Box, useMediaQuery } from '@mui/material';
 import Block from './Block';
 import Cell from './Cell';
 import { useAppSelector } from '../state/hooks';
-import {
-  DESKTOP_CELL_SIZE,
-  MOBILE_CELL_SIZE,
-  NUM_COLS,
-  NUM_ROWS,
-  TABLET_CELL_SIZE,
-} from '../constants';
-import { getWindowSize } from '../models/global';
+import { NUM_COLS, NUM_ROWS } from '../constants';
+import { getSizes} from '../models/global';
 
 const Board: FunctionComponent = () => {
   // State
@@ -25,11 +19,12 @@ const Board: FunctionComponent = () => {
   }, [blocks]);
 
   // Styling
-  const { isMobile, isTablet } = getWindowSize(useMediaQuery);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const boardWidth = `${NUM_COLS} * (${cellSize})`;
-  const boardSizing = { width: boardWidth };
+  const { borderSize, boardHeight, boardWidth } = getSizes(useMediaQuery);
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
+  const boardSizing = { 
+    height: `calc(${boardHeight})`,
+    width: `calc(${boardWidth})`, 
+  };
 
   // Grid
   const grid = [];
@@ -52,6 +47,7 @@ const Board: FunctionComponent = () => {
           display: 'grid',
           gridTemplateColumns: `repeat(${NUM_COLS}, 1fr)`,
           gap: 0,
+          border: `${borderSize} solid black`,
         }}
       >
         {grid}
