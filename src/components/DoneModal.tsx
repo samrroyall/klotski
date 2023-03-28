@@ -53,7 +53,7 @@ const DoneModal: FunctionComponent = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            fontSize: `${isMobile ? 0.8 : 1.3}rem`,
+            fontSize: `${isMobile ? 1 : 1.3}rem`,
           }}
         >
           <Box

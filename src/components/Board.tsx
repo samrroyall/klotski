@@ -40,6 +40,7 @@ const Board: FunctionComponent = () => {
         ...boardSizing,
       }}
     >
+      <Box sx={{ ...boardSizing, ...boardPositioning }}>{uiBlocks}</Box>
       <Box
         sx={{
           ...boardSizing,
@@ -52,7 +53,6 @@ const Board: FunctionComponent = () => {
       >
         {grid}
       </Box>
-      <Box sx={{ ...boardSizing, ...boardPositioning }}>{uiBlocks}</Box>
     </Box>
   );
 };
