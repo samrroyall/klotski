@@ -51,8 +51,8 @@ export const getSizes = (mediaQueryFunc: (query: string) => boolean) => {
     cellSize: `${totalCellSize}`,
     boardHeight: `(${NUM_ROWS} * ${totalCellSize} + ${totalBorderSize})`,
     boardWidth: `(${NUM_COLS} * ${totalCellSize} + ${totalBorderSize})`,
-  }
-}
+  };
+};
 
 // Dir
 

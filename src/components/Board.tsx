@@ -4,7 +4,7 @@ import Block from './Block';
 import Cell from './Cell';
 import { useAppSelector } from '../state/hooks';
 import { NUM_COLS, NUM_ROWS } from '../constants';
-import { getSizes} from '../models/global';
+import { getSizes } from '../models/global';
 
 const Board: FunctionComponent = () => {
   // State
@@ -21,9 +21,9 @@ const Board: FunctionComponent = () => {
   // Styling
   const { borderSize, boardHeight, boardWidth } = getSizes(useMediaQuery);
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
-  const boardSizing = { 
+  const boardSizing = {
     height: `calc(${boardHeight})`,
-    width: `calc(${boardWidth})`, 
+    width: `calc(${boardWidth})`,
   };
 
   // Grid

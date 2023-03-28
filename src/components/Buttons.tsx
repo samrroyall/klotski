@@ -12,7 +12,6 @@ import {
   clearAvailablePositions,
 } from '../state/manualSolveSlice';
 import { getOppositeMove, getSizes } from '../models/global';
-import { NUM_ROWS } from '../constants';
 import store, { RootState } from '../state/store';
 import ButtonWrapper from './ButtonWrapper';
 
@@ -26,9 +25,9 @@ const Buttons: FunctionComponent = () => {
   );
   const numSteps = useAppSelector((state) => state.algoSolve.steps?.length);
   const getPreviousStep = (state: RootState) => {
-      const steps = state.algoSolve.steps;
-      const stepIdx = state.algoSolve.stepIdx;
-      return steps && stepIdx < steps.length - 1 ? steps[stepIdx + 1] : null;
+    const steps = state.algoSolve.steps;
+    const stepIdx = state.algoSolve.stepIdx;
+    return steps && stepIdx < steps.length - 1 ? steps[stepIdx + 1] : null;
   };
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
   const getCurrentMove = (state: RootState) =>

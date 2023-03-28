@@ -135,8 +135,12 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
       square
       sx={{
         position: 'absolute',
-        top: `calc(${isMovable ? `${yPos} - 0.5 * ${height} * ${scalingFactor}` : yPos} + ${borderSize})`,
-        left: `calc(${isMovable ? `${xPos} - 0.5 * ${width} * ${scalingFactor}` : xPos} + ${borderSize})`,
+        top: `calc(${
+          isMovable ? `${yPos} - 0.5 * ${height} * ${scalingFactor}` : yPos
+        } + ${borderSize})`,
+        left: `calc(${
+          isMovable ? `${xPos} - 0.5 * ${width} * ${scalingFactor}` : xPos
+        } + ${borderSize})`,
         height: `calc(${isMovable ? `${height} * (${scalingFactor} + 1)` : height})`,
         width: `calc(${isMovable ? `${width} * (${scalingFactor} + 1)` : width})`,
         padding: `0.5rem`,

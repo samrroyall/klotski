@@ -9,7 +9,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { FunctionComponent, useState } from 'react';
-import { NUM_COLS} from '../constants';
+import { NUM_COLS } from '../constants';
 import { getSizes } from '../models/global';
 
 const TitleContainer: FunctionComponent = () => {
