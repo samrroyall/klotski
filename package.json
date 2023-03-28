@@ -32,8 +32,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint ./ --fix",
-    "format": "prettier --write \"**/*.+(js|jsx|ts|tsx|json)\""
+    "lint": "eslint ./ --max-warnings=0",
+    "format": "prettier --write \"**/*.+(js|jsx|ts|tsx|json)\"",
+    "prepare": "husky install"
   },
   "prettier": {
     "printWidth": 100,
@@ -69,16 +70,9 @@
     }
   },
   "lint-staged": {
-    "*.js": "eslint",
-    "*.jsx": "eslint",
-    "*.ts": "eslint",
-    "*.tsx": "eslint",
-    "*.json": "eslint"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged && pretty-quick --staged"
-    }
+    "**/*.{js,jsx,ts,tsx,json,html,css}": [
+      "npm run format"
+    ]
   },
   "browserslist": {
     "production": [
@@ -93,13 +87,12 @@
     ]
   },
   "devDependencies": {
-    "eslint": "^8.12.0",
+    "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.5.0",
     "gh-pages": "^5.0.0",
-    "husky": "^7.0.4",
+    "husky": "^8.0.0",
     "lint-staged": "^13.2.0",
     "md5": "^2.3.0",
-    "prettier": "^2.6.2",
-    "pretty-quick": "^3.1.3"
+    "prettier": "^2.6.2"
   }
 }

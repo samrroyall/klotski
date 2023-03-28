@@ -11,8 +11,7 @@ import {
   clearBlockToMove,
   clearAvailablePositions,
 } from '../state/manualSolveSlice';
-import { getOppositeMove } from '../models/global';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_ROWS } from '../constants';
+import { getOppositeMove, getSizes } from '../models/global';
 import store, { RootState } from '../state/store';
 import ButtonWrapper from './ButtonWrapper';
 
@@ -25,10 +24,12 @@ const Buttons: FunctionComponent = () => {
     state.algoSolve.steps ? state.algoSolve.steps[state.algoSolve.stepIdx] : null
   );
   const numSteps = useAppSelector((state) => state.algoSolve.steps?.length);
+  const getPreviousStep = (state: RootState) => {
+    const steps = state.algoSolve.steps;
+    const stepIdx = state.algoSolve.stepIdx;
+    return steps && stepIdx < steps.length - 1 ? steps[stepIdx + 1] : null;
+  };
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
-  const previousStep = useAppSelector((state) =>
-    state.algoSolve.steps ? state.algoSolve.steps[state.algoSolve.stepIdx + 1] : null
-  );
   const getCurrentMove = (state: RootState) =>
     state.manualSolve.moves[state.manualSolve.moveIdx - 1];
   const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
@@ -45,7 +46,6 @@ const Buttons: FunctionComponent = () => {
   };
   const initAlgoSolve = () => {
     dispatch(algoInit(blocks));
-
     const steps = store.getState().algoSolve.steps;
     dispatch(
       changeStatus(
@@ -57,7 +57,8 @@ const Buttons: FunctionComponent = () => {
       )
     );
   };
-  const getPreviousStep = () => {
+  const undoStep = () => {
+    const previousStep = getPreviousStep(store.getState());
     if (previousStep) {
       dispatch(moveBlock(getOppositeMove(previousStep)));
       dispatch(incrementStepIdx());
@@ -67,7 +68,6 @@ const Buttons: FunctionComponent = () => {
     if (status !== Status.StepThroughSolution) {
       dispatch(changeStatus(Status.StepThroughSolution));
     }
-
     if (currentStep) {
       dispatch(moveBlock(currentStep));
       dispatch(decrementStepIdx());
@@ -95,20 +95,26 @@ const Buttons: FunctionComponent = () => {
     dispatch(clearAvailablePositions());
   };
   const startOver = () => {
-    for (let i = moveIdx; i > 0; i--) {
-      undoLastMove();
+    if (status === Status.StepThroughSolution) {
+      for (let i = stepIdx; i < numSteps!; i++) {
+        undoStep();
+      }
+    } else {
+      for (let i = moveIdx; i > 0; i--) {
+        undoLastMove();
+      }
     }
     dispatch(changeStatus(Status.ReadyToSolve));
   };
 
   // Buttons
   const randomizeButton = <ButtonWrapper title="Create board for me" onClick={getRandomBoard} />;
-  const clearButton = <ButtonWrapper title="Clear Board" onClick={clearBoard} />;
+  const clearButton = <ButtonWrapper title="Clear" onClick={clearBoard} />;
   const startOverButton = <ButtonWrapper title="Start Over" onClick={startOver} />;
   const readyToSolveButtons = (
     <>
-      {clearButton}
       <ButtonWrapper title="Solve myself" onClick={initManualSolve} />
+      {clearButton}
       <ButtonWrapper title="Solve for me" onClick={initAlgoSolve} />
     </>
   );
@@ -117,7 +123,7 @@ const Buttons: FunctionComponent = () => {
       {startOverButton}
       <ButtonWrapper
         title="Previous Step"
-        onClick={getPreviousStep}
+        onClick={undoStep}
         disabled={!numSteps || stepIdx >= numSteps - 1}
       />
       <ButtonWrapper title="Next Step" onClick={getNextStep} disabled={stepIdx < 0} />
@@ -131,16 +137,14 @@ const Buttons: FunctionComponent = () => {
   );
 
   // Styling
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const boardHeight = cellSize * NUM_ROWS + 1;
+  const { boardHeight } = getSizes(useMediaQuery);
   const buttonStyling = { position: 'absolute', width: '100%', left: 0 };
 
   return (
     <Box
       sx={{
         ...buttonStyling,
-        top: `${boardHeight}rem`,
+        top: `calc(${boardHeight} + 0.5rem)`,
         display: 'flex',
         justifyContent: 'center',
       }}

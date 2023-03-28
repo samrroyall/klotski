@@ -1,15 +1,15 @@
 import { Box, colors, Modal, useMediaQuery } from '@mui/material';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import { FunctionComponent, useEffect, useState } from 'react';
-import { DESKTOP_CELL_SIZE, MOBILE_CELL_SIZE, MOBILE_CUTOFF, NUM_COLS } from '../constants';
 import { Status } from '../state/appSlice';
 import { useAppSelector } from '../state/hooks';
+import { getSizes } from '../models/global';
 
 const DoneModal: FunctionComponent = () => {
   const status = useAppSelector((state) => state.app.status);
   const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
   const optimalMoves = useAppSelector((state) => state.manualSolve.optimalMoves);
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if ([Status.Done, Status.DoneOptimal].includes(status)) {
@@ -20,9 +20,7 @@ const DoneModal: FunctionComponent = () => {
   }, [status]);
 
   // Styling
-  const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF}px)`);
-  const cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const boardWidth = NUM_COLS * cellSize;
+  const { isMobile, cellSize, boardWidth } = getSizes(useMediaQuery);
   const redText = { display: 'inline', color: colors.red[300] };
   const greenText = { display: 'inline', color: colors.green[600] };
 
@@ -43,7 +41,7 @@ const DoneModal: FunctionComponent = () => {
           alignItems: 'center',
           justifyContent: 'center',
           height: `${isMobile ? 12 : 20}rem`,
-          width: `${isMobile ? boardWidth - 0.5 * cellSize : boardWidth + cellSize}rem`,
+          width: `calc(${isMobile ? boardWidth : `${boardWidth} + ${cellSize}`})`,
           padding: `${isMobile ? 2 : 5}rem`,
           bgcolor: 'background.paper',
           borderRadius: '0.5rem',
