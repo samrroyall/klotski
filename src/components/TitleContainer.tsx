@@ -6,19 +6,17 @@ import {
   Tooltip,
   tooltipClasses,
   TooltipProps,
-  useMediaQuery,
 } from '@mui/material';
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useContext, useState } from 'react';
+import { SizeContext } from '../App';
 import { NUM_COLS } from '../constants';
-import { getSizes } from '../models/global';
 
 const TitleContainer: FunctionComponent = () => {
   // State
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
   // Styling
-  const { isMobile, isTablet, cellSize } = getSizes(useMediaQuery);
-  const maxWidth = `calc(${NUM_COLS} * ${cellSize} + ${isMobile ? '1rem' : cellSize})`;
+  const { isMobile, isTablet, cellSize } = useContext(SizeContext);
   const helpText = (
     <Box
       sx={{
@@ -39,9 +37,8 @@ const TitleContainer: FunctionComponent = () => {
     </ClickAwayListener>
   ))({
     [`& .${tooltipClasses.tooltip}`]: {
-      maxWidth,
-      marginLeft: 'auto',
-      marginRight: 'auto',
+      maxWidth: `calc(${NUM_COLS} * ${cellSize} + ${isMobile ? '1rem' : cellSize})`,
+      marginTop: '0.25rem !important',
     },
   });
 
@@ -52,32 +49,39 @@ const TitleContainer: FunctionComponent = () => {
           display: 'flex',
           alignItems: 'end',
           justifyContent: 'center',
-          height: `${isMobile ? 2.5 : isTablet ? 3.8 : 4.95}rem`,
         }}
       >
         <Box
           sx={{
-            height: '100%',
             fontSize: `${isMobile ? 2.3 : isTablet ? 3.5 : 4.5}rem`,
-            fontWeight: '400',
-            padding: 0,
+            fontFamily: "'Righteous', cursive",
+            lineHeight: 1,
           }}
         >
-          KLOTSKI SOLVER
+          Klotski Solver
         </Box>
-        <HelpOutlineOutlined
-          color="action"
+        <Box
           sx={{
+            height: '100%',
+            display: 'flex',
+            alignItems: 'end',
+            paddingBottom: `${isMobile ? 0.23 : isTablet ? 0.4 : 0.5}rem`,
             marginLeft: '0.5rem',
-            marginBottom: '-2px',
-            fontSize: `${isMobile ? 1 : 1.2}rem`,
           }}
-          onClick={() => {
-            if (isMobile) setTooltipOpen(!tooltipOpen);
-          }}
-          onMouseEnter={() => setTooltipOpen(true)}
-          onMouseLeave={() => setTooltipOpen(false)}
-        />
+        >
+          <HelpOutlineOutlined
+            color="action"
+            sx={{
+              verticalAlign: 'end',
+              fontSize: `${isMobile ? 14 : 16}px`,
+            }}
+            onClick={() => {
+              if (isMobile) setTooltipOpen(!tooltipOpen);
+            }}
+            onMouseEnter={() => setTooltipOpen(true)}
+            onMouseLeave={() => setTooltipOpen(false)}
+          />
+        </Box>
       </Box>
     </StyledTooltip>
   );

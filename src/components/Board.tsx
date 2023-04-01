@@ -1,10 +1,10 @@
-import { FunctionComponent, useState, useEffect } from 'react';
-import { Box, useMediaQuery } from '@mui/material';
+import { FunctionComponent, useState, useEffect, useContext } from 'react';
+import { Box } from '@mui/material';
 import Block from './Block';
 import Cell from './Cell';
 import { useAppSelector } from '../state/hooks';
 import { NUM_COLS, NUM_ROWS } from '../constants';
-import { getSizes } from '../models/global';
+import { SizeContext } from '../App';
 
 const Board: FunctionComponent = () => {
   // State
@@ -19,7 +19,7 @@ const Board: FunctionComponent = () => {
   }, [blocks]);
 
   // Styling
-  const { borderSize, boardHeight, boardWidth } = getSizes(useMediaQuery);
+  const { borderSize, boardHeight, boardWidth } = useContext(SizeContext);
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
   const boardSizing = {
     height: `calc(${boardHeight})`,
