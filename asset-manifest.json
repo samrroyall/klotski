@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/klotski/static/js/main.464894e7.js",
+    "main.js": "/klotski/static/js/main.4248c49d.js",
     "index.html": "/klotski/index.html",
-    "main.464894e7.js.map": "/klotski/static/js/main.464894e7.js.map"
+    "main.4248c49d.js.map": "/klotski/static/js/main.4248c49d.js.map"
   },
   "entrypoints": [
-    "static/js/main.464894e7.js"
+    "static/js/main.4248c49d.js"
   ]
 }
