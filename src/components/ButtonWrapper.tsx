@@ -1,6 +1,6 @@
-import { Button, SxProps, Theme, useMediaQuery } from '@mui/material';
-import { FunctionComponent } from 'react';
-import { getSizes } from '../models/global';
+import { Button, SxProps, Theme } from '@mui/material';
+import { FunctionComponent, useContext } from 'react';
+import { SizeContext } from '../App';
 
 interface Props {
   title: string;
@@ -10,7 +10,7 @@ interface Props {
 }
 
 const ButtonWrapper: FunctionComponent<Props> = ({ title, onClick, disabled, sx }) => {
-  const { isMobile } = getSizes(useMediaQuery);
+  const { isMobile } = useContext(SizeContext);
 
   return (
     <Button

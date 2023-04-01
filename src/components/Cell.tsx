@@ -1,13 +1,14 @@
-import { FunctionComponent, useEffect, useState } from 'react';
-import { Box, colors, useMediaQuery } from '@mui/material';
+import { FunctionComponent, useContext, useEffect, useState } from 'react';
+import { Box, colors } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../state/hooks';
 import { Status, changeStatus } from '../state/appSlice';
 import { addBlock, moveBlockToPos } from '../state/boardSlice';
 import { doMove, clearAvailablePositions, clearBlockToMove } from '../state/manualSolveSlice';
-import { Block, boardIsSolved, boardIsValid, getSizes } from '../models/global';
+import { Block, boardIsSolved, boardIsValid } from '../models/global';
 import { WINNING_COL, WINNING_ROW } from '../constants';
 import store, { RootState } from '../state/store';
 import MoveBlockSelector from './MoveBlockSelector';
+import { SizeContext } from '../App';
 
 interface Props {
   row: number;
@@ -69,7 +70,7 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   };
 
   // Styling
-  const { borderSize, cellSize } = getSizes(useMediaQuery);
+  const { borderSize, cellSize } = useContext(SizeContext);
   const availablePositionBoxScaleFactor = 0.2;
 
   return (

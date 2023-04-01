@@ -1,5 +1,5 @@
-import { FunctionComponent } from 'react';
-import { Box, useMediaQuery } from '@mui/material';
+import { FunctionComponent, useContext } from 'react';
+import { Box } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../state/hooks';
 import { changeStatus, Status } from '../state/appSlice';
 import { moveBlock, moveBlockToPos, randomize, reset as boardReset } from '../state/boardSlice';
@@ -11,9 +11,10 @@ import {
   clearBlockToMove,
   clearAvailablePositions,
 } from '../state/manualSolveSlice';
-import { getOppositeMove, getSizes } from '../models/global';
+import { getOppositeMove } from '../models/global';
 import store, { RootState } from '../state/store';
 import ButtonWrapper from './ButtonWrapper';
+import { SizeContext } from '../App';
 
 const Buttons: FunctionComponent = () => {
   // State
@@ -137,7 +138,7 @@ const Buttons: FunctionComponent = () => {
   );
 
   // Styling
-  const { boardHeight } = getSizes(useMediaQuery);
+  const { boardHeight } = useContext(SizeContext);
   const buttonStyling = { position: 'absolute', width: '100%', left: 0 };
 
   return (

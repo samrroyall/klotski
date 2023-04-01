@@ -1,5 +1,5 @@
-import { FunctionComponent, useState } from 'react';
-import { Paper, colors, useMediaQuery, Box } from '@mui/material';
+import { FunctionComponent, useContext, useState } from 'react';
+import { Paper, colors, Box } from '@mui/material';
 import { Close, Loop } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../state/hooks';
 import { changeStatus, Status } from '../state/appSlice';
@@ -13,11 +13,11 @@ import {
   numCellsFilled as getNumCellsFilled,
   numTwoByTwoBlocks as getNumTwoByTwoBlocks,
   cellIsFree,
-  getSizes,
 } from '../models/global';
 import { NUM_COLS, NUM_ROWS } from '../constants';
 import { addBlock, removeBlock } from '../state/boardSlice';
 import store, { RootState } from '../state/store';
+import { SizeContext } from '../App';
 
 interface Props {
   block: _Block;
@@ -111,7 +111,7 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
   };
 
   // Styling
-  const { isMobile, borderSize, cellSize } = getSizes(useMediaQuery);
+  const { isMobile, borderSize, cellSize } = useContext(SizeContext);
   const blockColor = [colors.yellow, colors.blue, colors.green, colors.red];
   const [{ rows, cols }, { row, col }] = [block, pos];
   const [yPos, xPos] = [`${row} * ${cellSize}`, `${col} * ${cellSize}`];
