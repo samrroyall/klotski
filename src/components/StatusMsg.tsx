@@ -1,6 +1,5 @@
-import { useMediaQuery } from '@mui/material';
-import { FunctionComponent } from 'react';
-import { getSizes } from '../models/global';
+import { FunctionComponent, useContext } from 'react';
+import { SizeContext } from '../App';
 import { Status } from '../state/appSlice';
 import { useAppSelector } from '../state/hooks';
 
@@ -17,7 +16,7 @@ const StatusMsg: FunctionComponent<{}> = () => {
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
 
   // Styling
-  const { isMobile } = getSizes(useMediaQuery);
+  const { isMobile } = useContext(SizeContext);
 
   // Status Messages
   const msgText: { [k in Status]?: JSX.Element } = {
@@ -45,7 +44,7 @@ const StatusMsg: FunctionComponent<{}> = () => {
     <p
       style={{
         display: 'block',
-        marginTop: '0.5rem',
+        marginTop: 0,
         marginBottom: '0.5rem',
         textAlign: 'center',
         fontSize: `${isMobile ? 0.8 : 1}rem`,

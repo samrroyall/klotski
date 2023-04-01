@@ -1,11 +1,12 @@
-import { Box, colors, Modal, useMediaQuery } from '@mui/material';
+import { Box, colors, Modal } from '@mui/material';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import { FunctionComponent, useEffect, useState } from 'react';
+import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { Status } from '../state/appSlice';
 import { useAppSelector } from '../state/hooks';
-import { getSizes } from '../models/global';
+import { SizeContext } from '../App';
 
 const DoneModal: FunctionComponent = () => {
+  // State
   const status = useAppSelector((state) => state.app.status);
   const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
   const optimalMoves = useAppSelector((state) => state.manualSolve.optimalMoves);
@@ -20,7 +21,7 @@ const DoneModal: FunctionComponent = () => {
   }, [status]);
 
   // Styling
-  const { isMobile, cellSize, boardWidth } = getSizes(useMediaQuery);
+  const { isMobile, cellSize, boardWidth } = useContext(SizeContext);
   const redText = { display: 'inline', color: colors.red[300] };
   const greenText = { display: 'inline', color: colors.green[600] };
 
