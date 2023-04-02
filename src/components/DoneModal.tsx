@@ -35,9 +35,9 @@ const DoneModal: FunctionComponent = () => {
       <Box
         sx={{
           position: 'absolute',
-          top: `${isMobile ? 40 : 30}%`,
+          top: `50%`,
           left: '50%',
-          transform: `translate(-50%, -${isMobile ? 40 : 30}%)`,
+          transform: `translate(-50%, -50%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

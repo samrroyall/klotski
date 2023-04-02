@@ -1,7 +1,6 @@
 import {
-  DESKTOP_BORDER_SIZE,
+  BORDER_SIZE,
   DESKTOP_CELL_SIZE,
-  MOBILE_BORDER_SIZE,
   MOBILE_CELL_SIZE,
   NUM_COLS,
   NUM_ROWS,
@@ -25,8 +24,7 @@ export interface Sizes {
 }
 
 export const getSizes = (isMobile: boolean, isTablet: boolean): Sizes => {
-  const borderSize = isMobile ? MOBILE_BORDER_SIZE : DESKTOP_BORDER_SIZE;
-  const totalBorderSize = `${2 * borderSize}px`;
+  const totalBorderSize = `${2 * BORDER_SIZE}px`;
   const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
   const totalCellSize = `(${cellSize} + ${totalBorderSize})`;
 
@@ -34,8 +32,8 @@ export const getSizes = (isMobile: boolean, isTablet: boolean): Sizes => {
     isMobile,
     isTablet: !isMobile && isTablet,
     isDesktop: !isMobile && !isTablet,
-    borderSize: `${borderSize}px`,
-    cellSize: `${totalCellSize}`,
+    borderSize: `${BORDER_SIZE}px`,
+    cellSize,
     boardHeight: `(${NUM_ROWS} * ${totalCellSize} + ${totalBorderSize})`,
     boardWidth: `(${NUM_COLS} * ${totalCellSize} + ${totalBorderSize})`,
   };

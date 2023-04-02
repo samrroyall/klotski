@@ -10,9 +10,7 @@ export const MOBILE_CUTOFF = '480px';
 
 export const TABLET_CUTOFF = '800px';
 
-export const MOBILE_BORDER_SIZE = 0.25;
-
-export const DESKTOP_BORDER_SIZE = 0.5;
+export const BORDER_SIZE = 1;
 
 export const DESKTOP_CELL_SIZE = '8rem';
 

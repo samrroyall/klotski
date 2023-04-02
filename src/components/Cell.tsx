@@ -1,4 +1,4 @@
-import { FunctionComponent, useContext, useEffect, useState } from 'react';
+import { FunctionComponent, useEffect, useState } from 'react';
 import { Box, colors } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../state/hooks';
 import { Status, changeStatus } from '../state/appSlice';
@@ -8,7 +8,6 @@ import { Block, boardIsSolved, boardIsValid } from '../models/global';
 import { WINNING_COL, WINNING_ROW } from '../constants';
 import store, { RootState } from '../state/store';
 import MoveBlockSelector from './MoveBlockSelector';
-import { SizeContext } from '../App';
 
 interface Props {
   row: number;
@@ -70,18 +69,13 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   };
 
   // Styling
-  const { borderSize, cellSize } = useContext(SizeContext);
   const availablePositionBoxScaleFactor = 0.2;
 
   return (
     <Box
       sx={{
-        position: 'absolute',
-        top: `calc(${row} * ${cellSize})`,
-        left: `calc(${col} * ${cellSize})`,
-        height: `calc(${cellSize})`,
-        width: `calc(${cellSize})`,
-        border: `${borderSize} solid black`,
+        height: '100%',
+        width: '100%',
         backgroundColor: isWinningCell ? colors.red[100] : colors.grey[100],
         '&:hover': {
           backgroundColor: [Status.Start, Status.ManualBuild].includes(status)
