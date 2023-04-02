@@ -50,6 +50,7 @@ const StatusMsg: FunctionComponent<{}> = () => {
         marginBottom: '0.5rem',
         textAlign: 'center',
         fontSize: `${isMobile ? 0.8 : 1}rem`,
+        lineHeight: 1,
       }}
     >
       {status in msgText ? msgText[status] : <></>}
