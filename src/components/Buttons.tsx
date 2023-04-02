@@ -145,7 +145,8 @@ const Buttons: FunctionComponent = () => {
     <Box
       sx={{
         ...buttonStyling,
-        top: `calc(${boardHeight} + 0.5rem)`,
+        top: `calc(${boardHeight})`,
+        marginTop: '0.5rem',
         display: 'flex',
         justifyContent: 'center',
       }}
