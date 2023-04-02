@@ -1,10 +1,15 @@
 {
   "files": {
-    "main.js": "/klotski/static/js/main.4248c49d.js",
+    "main.css": "/klotski/static/css/main.43501733.css",
+    "main.js": "/klotski/static/js/main.5a486f62.js",
+    "static/media/Roboto-Regular.ttf": "/klotski/static/media/Roboto-Regular.fc2b5060f7accec5cf74.ttf",
+    "static/media/Righteous-Regular.ttf": "/klotski/static/media/Righteous-Regular.fd0110471f2228c1808a.ttf",
     "index.html": "/klotski/index.html",
-    "main.4248c49d.js.map": "/klotski/static/js/main.4248c49d.js.map"
+    "main.43501733.css.map": "/klotski/static/css/main.43501733.css.map",
+    "main.5a486f62.js.map": "/klotski/static/js/main.5a486f62.js.map"
   },
   "entrypoints": [
-    "static/js/main.4248c49d.js"
+    "static/css/main.43501733.css",
+    "static/js/main.5a486f62.js"
   ]
 }
