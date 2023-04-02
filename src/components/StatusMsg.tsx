@@ -38,6 +38,8 @@ const StatusMsg: FunctionComponent<{}> = () => {
         <strong>{numSteps ? numSteps - stepIdx - 1 : -1}</strong>/<strong>{numSteps || -1}</strong>
       </span>
     ),
+    done: <span>Great job!</span>,
+    doneOptimal: <span>Wow!</span>,
   };
 
   return (

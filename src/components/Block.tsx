@@ -114,9 +114,23 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
   const { isMobile, borderSize, cellSize } = useContext(SizeContext);
   const blockColor = [colors.yellow, colors.blue, colors.green, colors.red];
   const [{ rows, cols }, { row, col }] = [block, pos];
-  const [yPos, xPos] = [`${row} * ${cellSize}`, `${col} * ${cellSize}`];
-  const [height, width] = [`${rows} * ${cellSize}`, `${cols} * ${cellSize}`];
+  const [xPos, yPos] = [
+    `(${col} * (${cellSize} + ${borderSize}) + ${borderSize})`,
+    `(${row} * (${cellSize} + ${borderSize}) + ${borderSize})`,
+  ];
+  const [height, width] = [
+    `(${rows} * ${cellSize} + ${rows - 1} * ${borderSize})`,
+    `(${cols} * ${cellSize} + ${cols - 1} * ${borderSize})`,
+  ];
   const scalingFactor = 0.1;
+  const [scaledHeight, scaledWidth] = [
+    `${1 + scalingFactor} * ${height}`,
+    `${1 + scalingFactor} * ${width}`,
+  ];
+  const [scaledXPos, scaledYPos] = [
+    `${xPos} - 0.5 * ${scalingFactor} * ${width}`,
+    `${yPos} - 0.5 * ${scalingFactor} * ${height}`,
+  ];
   const blockButtonStyle = {
     display: 'block',
     cursor: 'pointer',
@@ -135,17 +149,13 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
       square
       sx={{
         position: 'absolute',
-        top: `calc(${
-          isMovable ? `${yPos} - 0.5 * ${height} * ${scalingFactor}` : yPos
-        } + ${borderSize})`,
-        left: `calc(${
-          isMovable ? `${xPos} - 0.5 * ${width} * ${scalingFactor}` : xPos
-        } + ${borderSize})`,
-        height: `calc(${isMovable ? `${height} * (${scalingFactor} + 1)` : height})`,
-        width: `calc(${isMovable ? `${width} * (${scalingFactor} + 1)` : width})`,
+        top: `calc(${isMovable ? scaledYPos : yPos})`,
+        left: `calc(${isMovable ? scaledXPos : xPos})`,
+        height: `calc(${isMovable ? scaledHeight : height})`,
+        width: `calc(${isMovable ? scaledWidth : width})`,
         padding: `0.5rem`,
+        border: isMovable ? `${borderSize} solid black` : ``,
         backgroundColor: blockColor[blockToInt(block) - 1][600],
-        border: `${borderSize} solid black`,
         cursor: isMovable ? 'pointer' : 'default',
         zIndex: isMovable ? 3 : 2,
       }}

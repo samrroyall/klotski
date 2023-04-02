@@ -19,18 +19,18 @@ const Board: FunctionComponent = () => {
   }, [blocks]);
 
   // Styling
-  const { borderSize, boardHeight, boardWidth } = useContext(SizeContext);
+  const { borderSize, boardHeight, boardWidth, cellSize } = useContext(SizeContext);
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
   const boardSizing = {
     height: `calc(${boardHeight})`,
     width: `calc(${boardWidth})`,
   };
-
-  // Grid
-  const grid = [];
-  for (let i = 0; i < NUM_ROWS; i++) {
-    for (let j = 0; j < NUM_COLS; j++) grid.push(<Cell key={`cell-${i}-${j}`} row={i} col={j} />);
-  }
+  const cellStyles = {
+    height: `calc(${cellSize} + ${borderSize})`,
+    width: `calc(${cellSize} + ${borderSize})`,
+    border: `${borderSize} solid black`,
+    padding: 0,
+  };
 
   return (
     <Box
@@ -41,18 +41,19 @@ const Board: FunctionComponent = () => {
       }}
     >
       <Box sx={{ ...boardSizing, ...boardPositioning }}>{uiBlocks}</Box>
-      <Box
-        sx={{
-          ...boardSizing,
-          ...boardPositioning,
-          display: 'grid',
-          gridTemplateColumns: `repeat(${NUM_COLS}, 1fr)`,
-          gap: 0,
-          border: `${borderSize} solid black`,
-        }}
-      >
-        {grid}
-      </Box>
+      <table style={{ position: 'absolute', top: 0, left: 0, borderCollapse: 'collapse' }}>
+        <tbody>
+          {Array.from(Array(NUM_ROWS).keys()).map((i) => (
+            <tr key={`table-row-${i}`}>
+              {Array.from(Array(NUM_COLS).keys()).map((j) => (
+                <td key={`table-cell-${i}-${j}`} style={cellStyles}>
+                  <Cell key={`Cell-${i}-${j}`} row={i} col={j} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </Box>
   );
 };
