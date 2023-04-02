@@ -55,6 +55,7 @@ const TitleContainer: FunctionComponent = () => {
           sx={{
             fontSize: `${isMobile ? 2.3 : isTablet ? 3.5 : 4.5}rem`,
             fontFamily: "'Righteous', cursive",
+            fontWeight: 400,
             lineHeight: 1,
           }}
         >

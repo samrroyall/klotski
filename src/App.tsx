@@ -25,6 +25,7 @@ const App: FunctionComponent = () => {
     display: 'flex',
     flexDirection: 'column',
     fontFamily: "'Roboto', sans-serif",
+    fontWeight: 400,
     justifyContent: 'center',
     touchAction: 'manipulation',
     userSelect: 'none',
