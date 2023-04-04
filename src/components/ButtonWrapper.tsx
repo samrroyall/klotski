@@ -23,6 +23,7 @@ const ButtonWrapper: FunctionComponent<Props> = ({ title, onClick, disabled, sx 
       }}
       variant="outlined"
       size="medium"
+      color="inherit"
       disabled={disabled || false}
       onClick={onClick}
     >
