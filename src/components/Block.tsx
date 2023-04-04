@@ -1,5 +1,5 @@
 import { FunctionComponent, useContext, useState } from 'react';
-import { Paper, colors, Box } from '@mui/material';
+import { Paper, colors, Box, useTheme } from '@mui/material';
 import { Close, Loop } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../state/hooks';
 import { changeStatus, Status } from '../state/appSlice';
@@ -32,13 +32,14 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
     availablePositionsForBlock(state.board, { block, pos })
   );
   const getBoardIsValid = (state: RootState) => boardIsValid(state.board);
-  const [isMovable, setIsMovable] = useState(false);
   const getRightCellIsFree = (state: RootState) =>
     cellIsFree(state.board.grid, pos.row, pos.col + 1);
   const getBelowCellIsFree = (state: RootState) =>
     cellIsFree(state.board.grid, pos.row + 1, pos.col);
   const getBelowRightCellIsFree = (state: RootState) =>
     cellIsFree(state.board.grid, pos.row + 1, pos.col + 1);
+  const theme = useTheme();
+  const [isMovable, setIsMovable] = useState(false);
 
   // Helpers
   const inLastRow = pos.row === NUM_ROWS - 1;
@@ -134,10 +135,7 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
   const blockButtonStyle = {
     display: 'block',
     cursor: 'pointer',
-    color: colors.grey[900],
-    '&:hover': {
-      color: 'black',
-    },
+    color: theme.palette.mode === 'dark' ? colors.grey[800] : colors.grey[900],
   };
   const closeButtonSize = isMobile ? 1 : 1.5;
   const cycleButtonSize = isMobile ? 2 : 2.5;
@@ -154,8 +152,10 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
         height: `calc(${isMovable ? scaledHeight : height})`,
         width: `calc(${isMovable ? scaledWidth : width})`,
         padding: `0.5rem`,
-        border: isMovable ? `${borderSize} solid black` : ``,
-        backgroundColor: blockColor[blockToInt(block) - 1][600],
+        border: isMovable ? `${borderSize} solid` : 0,
+        borderColor: theme.palette.text.primary,
+        backgroundColor:
+          blockColor[blockToInt(block) - 1][theme.palette.mode === 'dark' ? 400 : 600],
         cursor: isMovable ? 'pointer' : 'default',
         zIndex: isMovable ? 3 : 2,
       }}
@@ -191,6 +191,9 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
             sx={{
               ...blockButtonStyle,
               fontSize: `${closeButtonSize}rem`,
+              '&:hover': {
+                color: theme.palette.mode === 'dark' ? colors.grey[900] : 'black',
+              },
             }}
             key={`${block.rows}x${block.cols}@(${pos.row},${pos.col})-close-button`}
             onClick={onClickCloseButton}
@@ -211,6 +214,7 @@ const Block: FunctionComponent<Props> = ({ block, pos }) => {
               fontSize: `${cycleButtonSize}rem`,
               '&:hover': {
                 fontSize: `${isMobile ? cycleButtonSize : cycleButtonSize + 1}rem`,
+                color: theme.palette.mode === 'dark' ? colors.grey[900] : 'black',
               },
             }}
             key={`${block.rows}x${block.cols}@(${pos.row},${pos.col})-cycle-button`}

@@ -1,5 +1,5 @@
 import { FunctionComponent, useState, useEffect, useContext } from 'react';
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import Block from './Block';
 import Cell from './Cell';
 import { useAppSelector } from '../state/hooks';
@@ -8,6 +8,7 @@ import { SizeContext } from '../App';
 
 const Board: FunctionComponent = () => {
   // State
+  const theme = useTheme();
   const blocks = useAppSelector((state) => state.board.blocks);
   const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
@@ -28,7 +29,8 @@ const Board: FunctionComponent = () => {
   const cellStyles = {
     height: `calc(${cellSize} + ${borderSize})`,
     width: `calc(${cellSize} + ${borderSize})`,
-    border: `${borderSize} solid black`,
+    border: `${borderSize} solid`,
+    borderColor: theme.palette.text.primary,
     padding: 0,
   };
 

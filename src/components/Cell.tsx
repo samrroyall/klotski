@@ -1,5 +1,5 @@
 import { FunctionComponent, useEffect, useState } from 'react';
-import { Box, colors } from '@mui/material';
+import { Box, colors, useTheme } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../state/hooks';
 import { Status, changeStatus } from '../state/appSlice';
 import { addBlock, moveBlockToPos } from '../state/boardSlice';
@@ -22,6 +22,7 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   const blockToMove = useAppSelector((state) => state.manualSolve.blockToMove);
   const getBoardIsSolved = (state: RootState) => boardIsSolved(state.board);
   const getBoardIsValid = (state: RootState) => boardIsValid(state.board);
+  const theme = useTheme();
   const [isAvailablePosition, setIsAvailablePosition] = useState(false);
 
   // Helpers
@@ -70,21 +71,23 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
 
   // Styling
   const availablePositionBoxScaleFactor = 0.2;
+  const winningCellDefaut = theme.palette.mode === 'dark' ? colors.red[200] : colors.red[100];
+  const winningCellHover = theme.palette.mode === 'dark' ? colors.red[100] : colors.red[200];
 
   return (
     <Box
       sx={{
         height: '100%',
         width: '100%',
-        backgroundColor: isWinningCell ? colors.red[100] : colors.grey[100],
+        backgroundColor: isWinningCell ? winningCellDefaut : theme.palette.action.hover,
         '&:hover': {
           backgroundColor: [Status.Start, Status.ManualBuild].includes(status)
             ? isWinningCell
-              ? colors.red[200]
-              : colors.grey[200]
+              ? winningCellHover
+              : theme.palette.action.selected
             : isWinningCell
-            ? colors.red[100]
-            : colors.grey[100],
+            ? winningCellDefaut
+            : theme.palette.action.hover,
         },
         cursor: [Status.Start, Status.ManualBuild].includes(status) ? 'pointer' : 'default',
         pointerEvents: [Status.Start, Status.ManualBuild].includes(status) ? 'auto' : 'none',

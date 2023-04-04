@@ -24,18 +24,17 @@ export interface Sizes {
 }
 
 export const getSizes = (isMobile: boolean, isTablet: boolean): Sizes => {
-  const totalBorderSize = `${2 * BORDER_SIZE}px`;
+  const borderSize = `${BORDER_SIZE}px`;
   const cellSize = isMobile ? MOBILE_CELL_SIZE : isTablet ? TABLET_CELL_SIZE : DESKTOP_CELL_SIZE;
-  const totalCellSize = `(${cellSize} + ${totalBorderSize})`;
 
   return {
     isMobile,
     isTablet: !isMobile && isTablet,
     isDesktop: !isMobile && !isTablet,
-    borderSize: `${BORDER_SIZE}px`,
+    borderSize,
     cellSize,
-    boardHeight: `(${NUM_ROWS} * ${totalCellSize} + ${totalBorderSize})`,
-    boardWidth: `(${NUM_COLS} * ${totalCellSize} + ${totalBorderSize})`,
+    boardHeight: `(${NUM_ROWS} * (${cellSize} + ${borderSize}) + ${borderSize})`,
+    boardWidth: `(${NUM_COLS} * (${cellSize} + ${borderSize}) + ${borderSize})`,
   };
 };
 
