@@ -71,7 +71,7 @@ const TitleContainer: FunctionComponent = () => {
           }}
         >
           <HelpOutlineOutlined
-            color="action"
+            color="inherit"
             sx={{
               verticalAlign: 'end',
               fontSize: `${isMobile ? 14 : 16}px`,
