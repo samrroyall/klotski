@@ -6,14 +6,15 @@ export interface Position {
 export interface Block {
   block_id: number;
   min_position: Position;
-  max_position: Position;
-  range: [number, number][];
+  // max_position: Position;
+  // range: [number, number][];
 }
 
 export enum BoardState {
   Building = 'building',
   ReadyToSolve = 'ready_to_solve',
   ManualSolving = 'manual_solving',
+  AlgoSolving = 'algo_solving',
   Solved = 'solved',
 }
 
