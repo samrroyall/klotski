@@ -1,11 +1,11 @@
-import { colors } from '@mui/material';
+import { Theme, colors } from '@mui/material';
 
 const blockColors = [colors.yellow, colors.blue, colors.green, colors.red];
 
-const getBlockButtonStyle = (mode: string) => ({
+const getBlockButtonStyle = (theme: Theme) => ({
   display: 'block',
   cursor: 'pointer',
-  color: mode === 'dark' ? colors.grey[800] : colors.grey[900],
+  color: theme.palette.mode === 'dark' ? colors.grey[800] : colors.grey[900],
 });
 
 const getCloseButtonSize = (isMobile: boolean) => (isMobile ? 1 : 1.5);

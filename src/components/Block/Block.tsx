@@ -8,7 +8,7 @@ import { ApiService } from '../../services/api';
 import { ChangeBlock as ChangeBlockRequest } from '../../models/api/request';
 import { Status, updateBoard } from '../../state/boardSlice';
 import { setAvailableMinPositions, setCurrentBlock } from '../../state/manualSolveSlice';
-import { Helpers } from './Helpers';
+import { Helpers } from './helpers';
 import { SizeContext } from '../../App';
 import { Styles } from './styles';
 
@@ -43,7 +43,7 @@ const UIBlock: FunctionComponent<Props> = ({ block, idx }) => {
   const closeButtonSize = Styles.getCloseButtonSize(isMobile);
   const cycleButtonSize = Styles.getCycleButtonSize(isMobile);
 
-  const blockButtonStyle = Styles.getBlockButtonStyle(theme.palette.mode);
+  const blockButtonStyle = Styles.getBlockButtonStyle(theme);
 
   const status = Helpers.getStatus(store.getState());
   const availablePositions = Helpers.getAvailablePositions(store.getState(), block, idx);
