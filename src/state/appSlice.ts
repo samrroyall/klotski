@@ -1,15 +1,4 @@
-import { Satellite } from '@mui/icons-material';
-import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-export enum Status {
-  Start = 'start',
-  Building = 'building',
-  ReadyToSolve = 'ready_to_solve',
-  ManualSolving = 'manual_solving',
-  AlgoSolving = 'algo_solving',
-  Solved = 'solved',
-  UnableToSolve = 'unable_to_solve',
-}
+import { createSlice } from '@reduxjs/toolkit';
 
 export enum Severity {
   Error = 'error',
@@ -18,22 +7,14 @@ export enum Severity {
   Success = 'success',
 }
 
-interface AppState {
-  status: Status;
-}
+interface AppState {}
 
-const initialState: AppState = {
-  status: Status.Start,
-};
+const initialState: AppState = {};
 
 const appSlice = createSlice({
   name: 'app',
   initialState,
-  reducers: {
-    changeStatus: (state, { payload: status }) => { state.status = status; },
-  },
+  reducers: {},
 });
-
-export const { changeStatus } = appSlice.actions;
 
 export default appSlice.reducer;

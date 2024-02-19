@@ -27,8 +27,12 @@ const algoSolveSlice = createSlice({
   initialState,
   reducers: {
     init: initReducer,
-    decrementStepIdx: (state) => { state.stepIdx--; },
-    incrementStepIdx: (state) => { state.stepIdx++; },
+    decrementStepIdx: (state) => {
+      state.stepIdx--;
+    },
+    incrementStepIdx: (state) => {
+      state.stepIdx++;
+    },
   },
 });
 

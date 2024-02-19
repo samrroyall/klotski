@@ -1,13 +1,13 @@
-import { BoardState, Step } from './game';
+import { BlockId, BoardState, Step } from './game';
 
 export interface AddBlock {
-  block_id: number;
+  block_id: BlockId;
   min_row: number;
   min_col: number;
 }
 
 interface ChangeBlockData {
-  new_block_id: number;
+  new_block_id: BlockId;
 }
 
 export interface ChangeBlock extends ChangeBlockData {

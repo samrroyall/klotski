@@ -1,4 +1,3 @@
-import { ClientRequest } from 'http';
 import { AxiosError, AxiosResponse, Method } from 'axios';
 import {
   AddBlock as AddBlockRequest,
@@ -28,36 +27,39 @@ export class ApiService {
 
         switch (response.status) {
           case 400:
-            console.error(`Received HTTP 400 BadRequest response from API: ${response.data}`);
+            //console.error(`Received HTTP 400 BadRequest response from API: ${response.data}`);
             return;
           case 404:
-            console.error(`Received HTTP 404 NotFound response from API: ${response.data}`);
+            //console.error(`Received HTTP 404 NotFound response from API: ${response.data}`);
             return;
           case 405:
-            console.warn(`Received HTTP 405 NotAllowed response from API: ${response.data}`);
+            //console.warn(`Received HTTP 405 NotAllowed response from API: ${response.data}`);
             return;
           default:
-            console.error(
-              `Received HTTP ${response.status} Unhandled response from API: ${response.data}`
-            );
+            // console.error(
+            //   `Received HTTP ${response.status} Unhandled response from API: ${response.data}`
+            // );
             return;
         }
       } else if (axiosError.request) {
-        const request: ClientRequest = axiosError.request;
+        // const request: ClientRequest = axiosError.request;
 
-        console.error(
-          `Request ${request.method} '${request.path}' did not recieve response from API`
-        );
+        // console.error(
+        //   `Request ${request.method} '${request.path}' did not recieve response from API`
+        // );
+        return;
       } else {
-        console.error(`Unknown Error occurred: ${axiosError.message}`);
+        // console.error(`Unknown Error occurred: ${axiosError.message}`);
+        return;
       }
     } else {
-      console.error(`Unknown Error occurred: ${err.message}`);
+      // console.error(`Unknown Error occurred: ${err.message}`);
+      return;
     }
   }
 
   private handleResponse<T>(axiosResponse: AxiosResponse): T {
-    console.debug(`Recieved the following data from API: ${axiosResponse.data}`);
+    // console.debug(`Recieved the following data from API: ${axiosResponse.data}`);
 
     return JSON.parse(axiosResponse.data) as T;
   }
