@@ -1,22 +1,22 @@
-import {Block, BlockMove, BoardState, Move} from './game';
+import { Block, BlockMove, BoardState, Move } from './game';
 
 export interface Board {
-    id: number;
-    blocks: Block[];
-    state: BoardState;
-    next_moves: Move[][] | null;
+  id: number;
+  blocks: Block[];
+  state: BoardState;
+  next_moves: Move[][] | null;
 }
 
 interface SolvedData {
-    moves: BlockMove[];
+  moves: BlockMove[];
 }
 
 interface Solved extends SolvedData {
-    type: 'solved';
+  type: 'solved';
 }
 
 interface UnableToSolve {
-    type: 'unable_to_solve';
+  type: 'unable_to_solve';
 }
 
 export type Solve = Solved | UnableToSolve;
