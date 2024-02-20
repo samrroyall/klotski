@@ -1,45 +1,40 @@
 import { FunctionComponent, useContext } from 'react';
 import { SizeContext } from '../App';
-import { Status } from '../state/appSlice';
 import { useAppSelector } from '../state/hooks';
+import { Status } from '../state/boardSlice';
 
 const StatusMsg: FunctionComponent<{}> = () => {
-  // State
-  const status = useAppSelector((state) => state.app.status);
-  const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
-  const numOptimalMoves = useAppSelector((state) =>
-    state.manualSolve.optimalMoves ? state.manualSolve.optimalMoves.length : null
-  );
-  const numSteps = useAppSelector((state) =>
-    state.algoSolve.steps ? state.algoSolve.steps.length : null
-  );
+  const status = useAppSelector((state) => state.board.status);
+  const numMoves = useAppSelector((state) => state.manualSolve.moves.length);
+  const numOptimalMoves = useAppSelector((state) => state.manualSolve.optimalMoves?.length);
+  const numSteps = useAppSelector((state) => state.algoSolve.steps?.length);
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
 
-  // Styling
   const { isMobile } = useContext(SizeContext);
 
-  // Status Messages
   const msgText: { [k in Status]?: JSX.Element } = {
-    alreadySolved: <span>Oops! It looks like the board is already solved</span>,
-    failed: <span>No Solution Found :(</span>,
-    manualBuild: <span>A valid board has exactly one 2×2 block and two empty cells</span>,
-    manualSolve: (
-      <span>
-        Current Moves: <strong>{moveIdx}</strong>
-        <span style={{ marginLeft: '1rem' }}>
-          Fewest Possible Moves: <strong>{numOptimalMoves}</strong>
-        </span>
-      </span>
-    ),
-    readyToSolve: <span>Move the 2×2 block to the red area at the bottom to win</span>,
     start: <span>Click on a cell to add a block</span>,
-    stepThrough: (
+    building: <span>A valid board has exactly one 2×2 block and two empty cells</span>,
+    ready_to_solve: <span>Move the 2×2 block to the red area at the bottom to win</span>,
+    manual_solving:
+      numOptimalMoves === 0 ? (
+        <span>Oops! It looks like the board is already solved</span>
+      ) : (
+        <span>
+          Current Moves: <strong>{numMoves}</strong>
+          <span style={{ marginLeft: '1rem' }}>
+            Fewest Possible Moves: <strong>{numOptimalMoves}</strong>
+          </span>
+        </span>
+      ),
+    algo_solving: (
       <span>
         <strong>{numSteps ? numSteps - stepIdx - 1 : -1}</strong>/<strong>{numSteps || -1}</strong>
       </span>
     ),
-    done: <span>Great job!</span>,
-    doneOptimal: <span>Wow!</span>,
+    solved: <span>Great job!</span>,
+    solved_optimally: <span>Wow!</span>,
+    unable_to_solve: <span>No Solution Found :(</span>,
   };
 
   return (

@@ -12,11 +12,10 @@ import { SizeContext } from '../App';
 import { NUM_COLS } from '../constants';
 
 const TitleContainer: FunctionComponent = () => {
-  // State
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
-  // Styling
   const { isMobile, isTablet, cellSize } = useContext(SizeContext);
+
   const helpText = (
     <Box
       sx={{

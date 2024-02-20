@@ -1,29 +1,26 @@
 import { Box, colors, Modal } from '@mui/material';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
-import { Status } from '../state/appSlice';
 import { useAppSelector } from '../state/hooks';
 import { SizeContext } from '../App';
+import { Status } from '../state/boardSlice';
 
 const DoneModal: FunctionComponent = () => {
-  // State
-  const status = useAppSelector((state) => state.app.status);
-  const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
-  const optimalMoves = useAppSelector((state) => state.manualSolve.optimalMoves);
+  const status = useAppSelector((state) => state.board.status);
+  const solutionLength = useAppSelector((state) => state.manualSolve.moves.length);
+  const optimalMoveLength = useAppSelector((state) => state.manualSolve.optimalMoves?.length);
+
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if ([Status.Done, Status.DoneOptimal].includes(status)) {
+    if ([Status.Solved, Status.SolvedOptimally].includes(status)) {
       setOpen(true);
     } else {
       setOpen(false);
     }
   }, [status]);
 
-  // Styling
   const { isMobile, cellSize, boardWidth } = useContext(SizeContext);
-  const redText = { display: 'inline', color: colors.red[300] };
-  const greenText = { display: 'inline', color: colors.green[600] };
 
   return (
     <Modal
@@ -74,13 +71,29 @@ const DoneModal: FunctionComponent = () => {
             }}
           >
             Congratulations! You solved the board in
-            <Box sx={greenText}> {moveIdx} </Box> moves.{' '}
-            {status === Status.DoneOptimal ? (
+            <Box
+              sx={{
+                display: 'inline',
+                color: colors.green[600],
+              }}
+            >
+              {solutionLength}
+            </Box>
+            moves.{' '}
+            {status === Status.SolvedOptimally ? (
               <span>That is the fewest moves possible.</span>
             ) : (
               <span>
                 This board can be solved in as few as
-                <Box sx={redText}> {optimalMoves?.length || 0} </Box> moves.
+                <Box
+                  sx={{
+                    display: 'inline',
+                    color: colors.red[300],
+                  }}
+                >
+                  {optimalMoveLength || 0}
+                </Box>{' '}
+                moves.
               </span>
             )}
           </Box>
