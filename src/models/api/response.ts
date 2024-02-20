@@ -3,6 +3,7 @@ import { Block, BlockMove, BoardState, Move } from './game';
 export interface Board {
   id: number;
   blocks: Block[];
+  filled: boolean[][];
   state: BoardState;
   next_moves: Move[][] | null;
 }

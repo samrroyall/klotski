@@ -2,8 +2,8 @@ import { FunctionComponent, useContext, useState } from 'react';
 import { Paper, colors, Box, useTheme } from '@mui/material';
 import { Close, Loop } from '@mui/icons-material';
 import store from '../../state/store';
-import { BlockWithDimensions } from '../../models/api/game';
-import { useAppDispatch } from '../../state/hooks';
+import { BoardBlock } from '../../models/api/game';
+import { useAppDispatch, useAppSelector } from '../../state/hooks';
 import { ApiService } from '../../services/api';
 import { ChangeBlock as ChangeBlockRequest } from '../../models/api/request';
 import { Status, updateBoard } from '../../state/boardSlice';
@@ -13,20 +13,29 @@ import { SizeContext } from '../../App';
 import { Styles } from './styles';
 
 interface Props {
-  block: BlockWithDimensions;
-  idx: number;
+  block: BoardBlock;
 }
 
-const UIBlock: FunctionComponent<Props> = ({ block, idx }) => {
+const UIBlock: FunctionComponent<Props> = ({ block }) => {
   const theme = useTheme();
   const [isMovable, setIsMovable] = useState(false);
 
   const { isMobile, borderSize, cellSize } = useContext(SizeContext);
 
   const Api = new ApiService();
+
   const dispatch = useAppDispatch();
 
   const blockKey = Helpers.getBlockKey(block);
+
+  const status = useAppSelector((state) => state.board.status);
+
+  const boardId = useAppSelector((state) => state.board.id);
+
+  const availableMinPositionsForBlock = Helpers.getAvailablePositionsForBlock(
+    store.getState(),
+    block
+  );
 
   const xPos = Styles.getXPos(block.min_position.col, borderSize, cellSize);
   const yPos = Styles.getYPos(block.min_position.row, borderSize, cellSize);
@@ -45,14 +54,9 @@ const UIBlock: FunctionComponent<Props> = ({ block, idx }) => {
 
   const blockButtonStyle = Styles.getBlockButtonStyle(theme);
 
-  const status = Helpers.getStatus(store.getState());
-  const availablePositions = Helpers.getAvailablePositions(store.getState(), block, idx);
-
   const onClickCloseButton = async () => {
-    const boardId = Helpers.getBoardId(store.getState());
-
     if (boardId) {
-      const response = await Api.removeBlock(boardId, idx);
+      const response = await Api.removeBlock(boardId, block.idx);
 
       if (response) {
         dispatch(updateBoard(response));
@@ -61,17 +65,14 @@ const UIBlock: FunctionComponent<Props> = ({ block, idx }) => {
   };
 
   const onClickCycleButton = async () => {
-    const state = store.getState();
-
-    const boardId = Helpers.getBoardId(state);
-    const nextBlockId = Helpers.getNextChangeBlockId(state, block);
+    const nextBlockId = Helpers.getNextChangeBlockId(store.getState(), block);
 
     if (boardId && nextBlockId) {
-      const request: ChangeBlockRequest = { type: 'change_block', new_block_id: nextBlockId };
-      const result = await Api.changeBlock(boardId, idx, request);
+      const body: ChangeBlockRequest = { type: 'change_block', new_block_id: nextBlockId };
+      const response = await Api.changeBlock(boardId, block.idx, body);
 
-      if (result) {
-        dispatch(updateBoard(result));
+      if (response) {
+        dispatch(updateBoard(response));
       }
     }
   };
@@ -97,15 +98,15 @@ const UIBlock: FunctionComponent<Props> = ({ block, idx }) => {
       }}
       onMouseEnter={() => {
         if (status === Status.ManualSolving) {
-          setIsMovable(availablePositions.length > 0);
+          setIsMovable(availableMinPositionsForBlock.length > 0);
         }
       }}
       onMouseLeave={() => setIsMovable(false)}
       onClick={() => {
         if (status === Status.ManualSolving) {
-          setIsMovable(availablePositions.length > 0);
+          setIsMovable(availableMinPositionsForBlock.length > 0);
           dispatch(setCurrentBlock(block));
-          dispatch(setAvailableMinPositions(availablePositions));
+          dispatch(setAvailableMinPositions(availableMinPositionsForBlock));
         }
       }}
     >

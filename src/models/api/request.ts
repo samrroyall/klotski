@@ -1,4 +1,4 @@
-import { BlockId, BoardState, Step } from './game';
+import { BlockId, BoardState, Move } from './game';
 
 export interface AddBlock {
   block_id: BlockId;
@@ -15,7 +15,7 @@ export interface ChangeBlock extends ChangeBlockData {
 }
 
 interface MoveBlockData {
-  steps: Step[];
+  move: Move;
 }
 
 export interface MoveBlock extends MoveBlockData {

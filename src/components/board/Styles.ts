@@ -7,6 +7,8 @@ const getBoardSizing = (boardHeight: string, boardWidth: string) => ({
   width: `calc(${boardWidth})`,
 });
 
+const getBoardMargin = (boardWidth: string) => `calc(0.5 * (100% - ${boardWidth}))`;
+
 const getCellStyles = (borderSize: string, cellSize: string, theme: Theme) => ({
   height: `calc(${cellSize} + ${borderSize})`,
   width: `calc(${cellSize} + ${borderSize})`,
@@ -17,6 +19,7 @@ const getCellStyles = (borderSize: string, cellSize: string, theme: Theme) => ({
 
 export const Styles = {
   boardPositioning,
+  getBoardMargin,
   getBoardSizing,
   getCellStyles,
 };

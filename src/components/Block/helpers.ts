@@ -1,18 +1,6 @@
 import { NUM_COLS, NUM_ROWS } from '../../constants';
-import { BlockId, BlockWithDimensions } from '../../models/api/game';
+import { BlockId, BoardBlock } from '../../models/api/game';
 import { RootState } from '../../state/store';
-
-const getStatus = (state: RootState) => state.board.status;
-
-const getBlockKey = (block: BlockWithDimensions) => {
-  const {
-    block_id,
-    min_position: { row, col },
-  } = block;
-  return `${block_id}-${row}-${col}`;
-};
-
-const getBoardId = (state: RootState) => state.board.id;
 
 const getNumCellsFilled = (state: RootState) =>
   state.board.blocks.reduce((acc, { rows, cols }) => acc + rows * cols, 0);
@@ -20,20 +8,30 @@ const getNumCellsFilled = (state: RootState) =>
 const getNumTwoByTwoBlocks = (state: RootState) =>
   state.board.blocks.filter(({ block_id }) => block_id === 4).length;
 
+const getBlockKey = (block: BoardBlock) => {
+  const {
+    block_id,
+    min_position: { row, col },
+  } = block;
+  return `${block_id}-${row}-${col}`;
+};
+
 const getIsCellFilled = (state: RootState, row: number, col: number) =>
   state.board.filled[row][col];
 
-const getAvailablePositions = (state: RootState, block: BlockWithDimensions, idx: number) => {
+const getAvailablePositionsForBlock = (state: RootState, block: BoardBlock) => {
   const {
     min_position: { row: minRow, col: minCol },
+    idx,
   } = block;
+
   return state.manualSolve.nextMoves[idx].map(({ row_diff, col_diff }) => ({
     row: minRow + row_diff,
     col: minCol + col_diff,
   }));
 };
 
-const getNextChangeBlockId = (state: RootState, block: BlockWithDimensions): BlockId | null => {
+const getNextChangeBlockId = (state: RootState, block: BoardBlock): BlockId | null => {
   const {
     block_id: blockId,
     rows: numRows,
@@ -82,12 +80,10 @@ const getNextChangeBlockId = (state: RootState, block: BlockWithDimensions): Blo
 };
 
 export const Helpers = {
-  getStatus,
-  getBoardId,
   getBlockKey,
   getNumCellsFilled,
   getNumTwoByTwoBlocks,
   getIsCellFilled,
-  getAvailablePositions,
+  getAvailablePositionsForBlock,
   getNextChangeBlockId,
 };

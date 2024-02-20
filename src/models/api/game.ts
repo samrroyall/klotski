@@ -36,17 +36,19 @@ export interface Block {
   min_position: Position;
 }
 
-export interface BlockWithDimensions extends Block {
+export interface BoardBlock extends Block {
   rows: number;
   cols: number;
   min_position: Position;
+  idx: number;
 }
 
-export function blockToBlockWithDimensions(block: Block): BlockWithDimensions {
+export function blockToBoardBlock(block: Block, idx: number): BoardBlock {
   return {
     ...block,
     rows: rowsFromBlockId(block.block_id),
     cols: colsFromBlockId(block.block_id),
+    idx,
   };
 }
 
@@ -56,13 +58,6 @@ export enum BoardState {
   ManualSolving = 'manual_solving',
   AlgoSolving = 'algo_solving',
   Solved = 'solved',
-}
-
-export enum Step {
-  Up = 'up',
-  Down = 'down',
-  Left = 'left',
-  Reft = 'right',
 }
 
 export interface Move {

@@ -1,7 +1,7 @@
 import { FunctionComponent, useState, useEffect, useContext } from 'react';
 import { Box, useTheme } from '@mui/material';
 import Block from '../block/Block';
-import Cell from '../Cell';
+import Cell from '../cell/Cell';
 import { NUM_COLS, NUM_ROWS } from '../../constants';
 import { SizeContext } from '../../App';
 import { useAppSelector } from '../../state/hooks';
@@ -9,14 +9,17 @@ import { Styles } from './Styles';
 
 const UIBoard: FunctionComponent = () => {
   const theme = useTheme();
-  const blocks = useAppSelector((state) => state.board.blocks);
   const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
+  const blocks = useAppSelector((state) => state.board.blocks);
+
   useEffect(() => {
-    setUiBlocks(blocks.map((block, idx) => <Block key={`block-${idx}`} block={block} idx={idx} />));
+    setUiBlocks(blocks.map((block) => <Block key={`block-${block.idx}`} block={block} />));
   }, [blocks]);
 
   const { borderSize, boardHeight, boardWidth, cellSize } = useContext(SizeContext);
+
+  const boardMargin = Styles.getBoardMargin(boardWidth);
 
   const boardSizing = Styles.getBoardSizing(boardHeight, boardWidth);
 
@@ -26,7 +29,7 @@ const UIBoard: FunctionComponent = () => {
     <Box
       sx={{
         position: 'absolute',
-        marginLeft: `calc(0.5 * (100% - ${boardWidth}))`,
+        marginLeft: { boardMargin },
         ...boardSizing,
       }}
     >
