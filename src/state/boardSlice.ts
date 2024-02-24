@@ -1,89 +1,86 @@
-import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { CaseReducer, PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { blockToBoardBlock, BoardBlock, Move } from '../models/api/game';
 import { NUM_COLS, NUM_ROWS } from '../constants';
-import {
-  addBlock as addBlockHelper,
-  getMinPos,
-  getNewPosFromDir,
-  getRandomBoard,
-  Grid,
-  Move,
-  moveBlock as moveBlockHelper,
-  Pos,
-  PosBlock,
-  removeBlock as removeBlockHelper,
-} from '../models/global';
+import { BoardState as BoardState_ } from '../models/api/game';
+import { ParsedBoard as ParsedBoardResponse } from '../models/api/response';
 
-// State
+export enum Status {
+  Start = 'start',
+  Building = 'building',
+  AlreadySolved = 'already_solved',
+  ReadyToSolve = 'ready_to_solve',
+  ManualSolving = 'manual_solving',
+  AlgoSolving = 'algo_solving',
+  Solved = 'solved',
+  SolvedOptimally = 'solved_optimally',
+  UnableToSolve = 'unable_to_solve',
+}
+
+const boardStateToStatus = (state: BoardState_, defaultStatus: Status): Status => {
+  switch (state) {
+    case BoardState_.Building:
+      return Status.Building;
+    case BoardState_.ReadyToSolve:
+      return Status.ReadyToSolve;
+    case BoardState_.Solved:
+      return Status.Solved;
+    default:
+      return defaultStatus;
+  }
+};
 
 interface BoardState {
-  blocks: PosBlock[];
-  grid: Grid;
+  id: number | null;
+  status: Status;
+  blocks: BoardBlock[];
+  filled: boolean[][];
+  nextMoves: Move[][];
 }
 
 const initialState: BoardState = {
+  id: null,
+  status: 'start' as Status,
   blocks: [],
-  grid: Array(NUM_ROWS)
-    .fill(null)
-    .map(() => Array(NUM_COLS).fill(0)),
-};
-
-// Actions
-
-const addBlockReducer: CaseReducer<BoardState, PayloadAction<PosBlock>> = (
-  state,
-  { payload: pb }
-) => addBlockHelper(state, pb);
-
-const moveBlockReducer: CaseReducer<BoardState, PayloadAction<Move>> = (
-  state,
-  { payload: { pos, block, dirs } }
-) => {
-  const pb: PosBlock = { block, pos };
-  const newPos = dirs.reduce((acc, d) => getNewPosFromDir(acc, d), getMinPos(pb));
-  moveBlockHelper(state, pb, newPos);
-};
-
-const moveBlockToPosReducer: CaseReducer<
-  BoardState,
-  PayloadAction<{ pb: PosBlock; newPos: Pos }>
-> = (state, { payload: { pb, newPos } }) => moveBlockHelper(state, pb, newPos);
-
-const randomizeReducer: CaseReducer<BoardState> = (state) => {
-  const { blocks, grid } = getRandomBoard();
-  state.blocks = blocks;
-  state.grid = grid;
-};
-
-const removeBlockReducer: CaseReducer<BoardState, PayloadAction<PosBlock>> = (
-  state,
-  { payload: pb }
-) => {
-  removeBlockHelper(state, pb);
+  filled: new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(false)),
+  nextMoves: [],
 };
 
 const resetReducer: CaseReducer<BoardState> = (state) => {
-  const { blocks, grid } = initialState;
-  state.blocks = blocks;
-  state.grid = grid;
+  state.id = initialState.id;
+  state.status = initialState.status;
+  state.blocks = initialState.blocks;
+  state.filled = initialState.filled;
+  state.nextMoves = initialState.nextMoves;
 };
 
-// Slice
+const updateBoardReducer: CaseReducer<BoardState, PayloadAction<ParsedBoardResponse>> = (
+  state,
+  { payload }
+) => {
+  state.id = payload.id;
+  state.status = boardStateToStatus(payload.state, state.status);
+  state.blocks = payload.blocks.map((block, idx) => blockToBoardBlock(block, idx));
+  state.filled = payload.filled;
+  state.nextMoves = payload.nextMoves || [];
+};
+
+const updateStatusReducer: CaseReducer<BoardState, PayloadAction<Status>> = (
+  state,
+  { payload }
+) => {
+  state.status = payload;
+};
 
 export const boardSlice = createSlice({
   name: 'board',
   initialState,
   reducers: {
-    addBlock: addBlockReducer,
-    moveBlock: moveBlockReducer,
-    moveBlockToPos: moveBlockToPosReducer,
-    randomize: randomizeReducer,
-    removeBlock: removeBlockReducer,
     reset: resetReducer,
+    update: updateBoardReducer,
+    updateStatus: updateStatusReducer,
   },
 });
 
-// Exports
+export const { reset, update, updateStatus } = boardSlice.actions;
 
-export const { addBlock, moveBlock, moveBlockToPos, randomize, removeBlock, reset } =
-  boardSlice.actions;
 export default boardSlice.reducer;

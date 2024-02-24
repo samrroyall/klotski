@@ -1,118 +1,90 @@
 import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Pos, Block, Move, PosBlock, addBlock } from '../models/global';
-import { Board, solveBoard } from '../models/Solver';
-
-// State
-
-export interface ManualMove {
-  block: Block;
-  oldPos: Pos;
-  newPos: Pos;
-}
+import { BlockMove, BoardBlock, Position } from '../models/api/game';
+import { ParsedSolved as ParsedSolvedResponse } from '../models/api/response';
 
 interface ManualSolveState {
-  isSolved: boolean;
-  moves: ManualMove[];
-  moveIdx: number;
-  optimalMoves: Move[] | null;
-  blockToMove: PosBlock | null;
-  availablePositions: Pos[];
+  moves: BlockMove[];
+  numOptimalMoves: number | null;
+  currentBlock: BoardBlock | null;
+  availableMinPositions: Position[];
 }
 
 const initialState: ManualSolveState = {
-  isSolved: false,
   moves: [],
-  moveIdx: -1,
-  optimalMoves: null,
-  blockToMove: null,
-  availablePositions: [],
-};
-
-// Actions
-
-const initReducer: CaseReducer<ManualSolveState, PayloadAction<PosBlock[]>> = (
-  state,
-  { payload: blocks }
-) => {
-  const board = new Board();
-  blocks.forEach((pb) => addBlock(board, pb));
-  state.optimalMoves = solveBoard(board);
-  state.moveIdx = state.optimalMoves ? 0 : -1;
-  state.isSolved = true;
-};
-
-const doMoveReducer: CaseReducer<ManualSolveState, PayloadAction<{ pb: PosBlock; newPos: Pos }>> = (
-  state,
-  { payload: { pb, newPos } }
-) => {
-  state.moves = [...state.moves, { block: pb.block, oldPos: pb.pos, newPos }];
-  state.moveIdx = state.moveIdx + 1;
-};
-
-const undoMoveReducer: CaseReducer<ManualSolveState> = (state) => {
-  state.moves = state.moves.slice(0, -1);
-  state.moveIdx = state.moveIdx - 1;
+  numOptimalMoves: null,
+  currentBlock: null,
+  availableMinPositions: [],
 };
 
 const resetReducer: CaseReducer<ManualSolveState> = (state) => {
-  state.isSolved = false;
-  state.moves = [];
-  state.moveIdx = -1;
-  state.optimalMoves = null;
-  state.blockToMove = null;
-  state.availablePositions = [];
+  state.moves = initialState.moves;
+  state.numOptimalMoves = initialState.numOptimalMoves;
+  state.currentBlock = initialState.currentBlock;
+  state.availableMinPositions = initialState.availableMinPositions;
 };
 
-const clearAvailablePositionsReducer: CaseReducer<ManualSolveState> = (state) => {
-  state.availablePositions = [];
-};
-
-const setAvailablePositionsReducer: CaseReducer<ManualSolveState, PayloadAction<Pos[]>> = (
+const initReducer: CaseReducer<ManualSolveState, PayloadAction<ParsedSolvedResponse>> = (
   state,
-  { payload: positions }
+  { payload }
 ) => {
-  if (state.blockToMove) {
-    state.availablePositions = positions;
+  state.numOptimalMoves = payload.moves.length;
+};
+
+const updateMovesReducer: CaseReducer<ManualSolveState, PayloadAction<BlockMove[]>> = (
+  state,
+  { payload }
+) => {
+  state.moves = payload;
+  state.availableMinPositions = initialState.availableMinPositions;
+  state.currentBlock = initialState.currentBlock;
+};
+
+const setAvailableMinPositionsReducer: CaseReducer<ManualSolveState, PayloadAction<Position[]>> = (
+  state,
+  { payload }
+) => {
+  if (state.currentBlock) {
+    state.availableMinPositions = payload;
   }
 };
 
-const setBlockToMoveReducer: CaseReducer<ManualSolveState, PayloadAction<PosBlock>> = (
+const resetAvailableMinPositionsReducer: CaseReducer<ManualSolveState> = (state) => {
+  state.availableMinPositions = initialState.availableMinPositions;
+};
+
+const setCurrentBlockReducer: CaseReducer<ManualSolveState, PayloadAction<BoardBlock>> = (
   state,
-  { payload: { block, pos } }
+  { payload }
 ) => {
-  state.blockToMove = { block, pos };
+  state.currentBlock = payload;
 };
 
-const clearBlockToMoveReducer: CaseReducer<ManualSolveState> = (state) => {
-  state.blockToMove = null;
+const resetCurrentBlockReducer: CaseReducer<ManualSolveState> = (state) => {
+  state.currentBlock = initialState.currentBlock;
 };
-
-// Slice
 
 const manualSolveSlice = createSlice({
   name: 'manualSolve',
   initialState,
   reducers: {
     init: initReducer,
-    doMove: doMoveReducer,
-    undoMove: undoMoveReducer,
+    updateMoves: updateMovesReducer,
     reset: resetReducer,
-    clearBlockToMove: clearBlockToMoveReducer,
-    setBlockToMove: setBlockToMoveReducer,
-    clearAvailablePositions: clearAvailablePositionsReducer,
-    setAvailablePositions: setAvailablePositionsReducer,
+    resetAvailableMinPositions: resetAvailableMinPositionsReducer,
+    resetCurrentBlock: resetCurrentBlockReducer,
+    setAvailableMinPositions: setAvailableMinPositionsReducer,
+    setCurrentBlock: setCurrentBlockReducer,
   },
 });
 
 export const {
   init,
-  doMove,
-  undoMove,
+  updateMoves,
   reset,
-  clearBlockToMove,
-  setBlockToMove,
-  clearAvailablePositions,
-  setAvailablePositions,
+  resetAvailableMinPositions,
+  resetCurrentBlock,
+  setAvailableMinPositions,
+  setCurrentBlock,
 } = manualSolveSlice.actions;
 
 export default manualSolveSlice.reducer;

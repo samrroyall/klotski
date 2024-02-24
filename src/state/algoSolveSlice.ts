@@ -1,12 +1,10 @@
 import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { addBlock, Move, PosBlock } from '../models/global';
-import { Board, solveBoard } from '../models/Solver';
-
-// State
+import { BlockMove } from '../models/api/game';
+import { ParsedSolved as ParsedSolvedResponse } from '../models/api/response';
 
 interface AlgoSolveState {
   isSolved: boolean;
-  steps: Move[] | null;
+  steps: BlockMove[] | null;
   stepIdx: number;
 }
 
@@ -16,39 +14,41 @@ const initialState: AlgoSolveState = {
   stepIdx: -1,
 };
 
-// Actions
+const resetReducer: CaseReducer<AlgoSolveState> = (state) => {
+  state.isSolved = initialState.isSolved;
+  state.steps = initialState.steps;
+  state.stepIdx = initialState.stepIdx;
+};
 
-const initReducer: CaseReducer<AlgoSolveState, PayloadAction<PosBlock[]>> = (
+const initReducer: CaseReducer<AlgoSolveState, PayloadAction<ParsedSolvedResponse>> = (
   state,
-  { payload: blocks }
+  { payload }
 ) => {
-  const board = new Board();
-  blocks.forEach((pb) => addBlock(board, pb));
-  state.steps = solveBoard(board);
-  state.stepIdx = state.steps ? state.steps.length - 1 : -1;
-  state.isSolved = true;
+  state.steps = payload.moves || [];
+  state.isSolved = false;
 };
 
 const decrementStepReducer: CaseReducer<AlgoSolveState> = (state) => {
-  state.stepIdx -= 1;
+  state.stepIdx = state.stepIdx - 1;
+  state.isSolved ||= false;
 };
 
 const incrementStepReducer: CaseReducer<AlgoSolveState> = (state) => {
-  state.stepIdx += 1;
+  state.stepIdx = state.stepIdx + 1;
+  state.isSolved = state.steps !== null && state.stepIdx === state.steps.length - 1;
 };
-
-// Slice
 
 const algoSolveSlice = createSlice({
   name: 'algoSolve',
   initialState,
   reducers: {
+    reset: resetReducer,
     init: initReducer,
-    decrementStepIdx: decrementStepReducer,
-    incrementStepIdx: incrementStepReducer,
+    decrementStep: decrementStepReducer,
+    incrementStep: incrementStepReducer,
   },
 });
 
-export const { init, decrementStepIdx, incrementStepIdx } = algoSolveSlice.actions;
+export const { reset, init, decrementStep, incrementStep } = algoSolveSlice.actions;
 
 export default algoSolveSlice.reducer;

@@ -1,143 +1,203 @@
 import { FunctionComponent, useContext } from 'react';
 import { Box } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../state/hooks';
-import { changeStatus, Status } from '../state/appSlice';
-import { moveBlock, moveBlockToPos, randomize, reset as boardReset } from '../state/boardSlice';
-import { init as algoInit, incrementStepIdx, decrementStepIdx } from '../state/algoSolveSlice';
 import {
-  init as manualInit,
-  undoMove,
-  reset as manualSolveReset,
-  clearBlockToMove,
-  clearAvailablePositions,
+  decrementStep,
+  incrementStep,
+  init as initAlgoSolve,
+  reset as resetAlgoSolve,
+} from '../state/algoSolveSlice';
+import {
+  Status,
+  reset as resetBoard,
+  update as updateBoard,
+  updateStatus,
+} from '../state/boardSlice';
+import {
+  init as initManualSolve,
+  reset as resetManualSolve,
+  updateMoves,
 } from '../state/manualSolveSlice';
-import { getOppositeMove } from '../models/global';
-import store, { RootState } from '../state/store';
 import ButtonWrapper from './ButtonWrapper';
 import { SizeContext } from '../App';
+import { ApiService } from '../services/api';
+import {
+  ParsedBoard as ParsedBoardResponse,
+  ParsedSolve as ParsedSolveResponse,
+} from '../models/api/response';
+import { BlockMove, BoardState } from '../models/api/game';
 
 const Buttons: FunctionComponent = () => {
-  // State
   const dispatch = useAppDispatch();
-  const status = useAppSelector((state) => state.app.status);
-  const blocks = useAppSelector((state) => state.board.blocks);
-  const currentStep = useAppSelector((state) =>
-    state.algoSolve.steps ? state.algoSolve.steps[state.algoSolve.stepIdx] : null
-  );
-  const numSteps = useAppSelector((state) => state.algoSolve.steps?.length);
-  const getPreviousStep = (state: RootState) => {
-    const steps = state.algoSolve.steps;
-    const stepIdx = state.algoSolve.stepIdx;
-    return steps && stepIdx < steps.length - 1 ? steps[stepIdx + 1] : null;
-  };
+  const Api = new ApiService();
+
+  const boardId = useAppSelector((state) => state.board.id);
+  const boardStatus = useAppSelector((state) => state.board.status);
+
+  const moves = useAppSelector((state) => state.manualSolve.moves);
+
+  const steps = useAppSelector((state) => state.algoSolve.steps);
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
-  const getCurrentMove = (state: RootState) =>
-    state.manualSolve.moves[state.manualSolve.moveIdx - 1];
-  const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
 
-  // Button Actions
-  const getRandomBoard = () => {
-    dispatch(randomize());
-    dispatch(changeStatus(Status.ReadyToSolve));
-  };
-  const clearBoard = () => {
-    dispatch(boardReset());
-    dispatch(manualSolveReset());
-    dispatch(changeStatus(Status.Start));
-  };
-  const initAlgoSolve = () => {
-    dispatch(algoInit(blocks));
-    const steps = store.getState().algoSolve.steps;
-    dispatch(
-      changeStatus(
-        !steps
-          ? Status.Failed
-          : steps.length > 0
-          ? Status.StepThroughSolution
-          : Status.AlreadySolved
-      )
-    );
-  };
-  const undoStep = () => {
-    const previousStep = getPreviousStep(store.getState());
-    if (previousStep) {
-      dispatch(moveBlock(getOppositeMove(previousStep)));
-      dispatch(incrementStepIdx());
-    }
-  };
-  const getNextStep = () => {
-    if (status !== Status.StepThroughSolution) {
-      dispatch(changeStatus(Status.StepThroughSolution));
-    }
-    if (currentStep) {
-      dispatch(moveBlock(currentStep));
-      dispatch(decrementStepIdx());
-    }
-  };
-  const initManualSolve = () => {
-    dispatch(manualInit(blocks));
+  const nullPromise: Promise<null> = new Promise((resolve) => resolve(null));
 
-    const optimalMoves = store.getState().manualSolve.optimalMoves;
-    dispatch(
-      changeStatus(
-        !optimalMoves
-          ? Status.Failed
-          : optimalMoves.length > 0
-          ? Status.ManualSolve
-          : Status.AlreadySolved
-      )
-    );
+  const deleteBoard = (): Promise<boolean> => {
+    if (boardId) {
+      return Api.deleteBoard(boardId).then((response) => response !== null);
+    }
+    return new Promise((resolve) => resolve(false));
   };
-  const undoLastMove = () => {
-    const { block, oldPos, newPos } = getCurrentMove(store.getState());
-    dispatch(moveBlockToPos({ pb: { block, pos: newPos }, newPos: oldPos }));
-    dispatch(undoMove());
-    dispatch(clearBlockToMove());
-    dispatch(clearAvailablePositions());
+
+  const solveBoard = (): Promise<ParsedSolveResponse | null> => {
+    if (boardId) {
+      return Api.solveBoard(boardId);
+    }
+    return nullPromise;
   };
-  const startOver = () => {
-    if (status === Status.StepThroughSolution) {
-      for (let i = stepIdx; i < numSteps!; i++) {
-        undoStep();
+
+  const undoMove = (): Promise<ParsedBoardResponse | null> => {
+    if (boardId) {
+      return Api.undoMove(boardId);
+    }
+    return nullPromise;
+  };
+
+  const moveBlock = (move: BlockMove): Promise<ParsedBoardResponse | null> => {
+    if (boardId) {
+      return Api.moveBlock(boardId, move.block_idx, move.row_diff, move.col_diff);
+    }
+    return nullPromise;
+  };
+
+  const onClickCreateForMe = () => {
+    // const response = await Api.randomBoard();
+    // if (response) {
+    //   dispatch(updateBoard(response));
+    // }
+  };
+
+  const onClickClear = () => {
+    deleteBoard().then((response) => {
+      if (response) {
+        dispatch(resetBoard());
+        dispatch(resetAlgoSolve());
+        dispatch(resetManualSolve());
       }
-    } else {
-      for (let i = moveIdx; i > 0; i--) {
-        undoLastMove();
-      }
-    }
-    dispatch(changeStatus(Status.ReadyToSolve));
+    });
   };
 
-  // Buttons
-  const randomizeButton = <ButtonWrapper title="Create board for me" onClick={getRandomBoard} />;
-  const clearButton = <ButtonWrapper title="Clear" onClick={clearBoard} />;
-  const startOverButton = <ButtonWrapper title="Start Over" onClick={startOver} />;
+  const onClickStartOver = () => {
+    if (boardId) {
+      Api.reset(boardId).then((response) => {
+        if (response) {
+          dispatch(updateBoard(response));
+          dispatch(resetAlgoSolve());
+          dispatch(resetManualSolve());
+        }
+      });
+    }
+  };
+
+  const onClickSolveMyself = () => {
+    if (boardId) {
+      dispatch(updateStatus(Status.ManualSolving));
+
+      solveBoard().then((response) => {
+        if (response && response.type === 'solved') {
+          if (response.moves.length === 0) {
+            dispatch(updateStatus(Status.AlreadySolved));
+          } else {
+            dispatch(initManualSolve(response));
+          }
+        } else {
+          dispatch(updateStatus(Status.UnableToSolve));
+        }
+      });
+    }
+  };
+
+  const onClickUndoMove = () => {
+    undoMove().then((response) => {
+      if (response) {
+        dispatch(updateBoard(response));
+        dispatch(updateMoves(moves.slice(0, -1)));
+      }
+    });
+  };
+
+  const onClickSolveForMe = () => {
+    if (boardId) {
+      dispatch(updateStatus(Status.AlgoSolving));
+
+      solveBoard().then((response) => {
+        if (response && response.type === 'solved') {
+          if (response.moves.length === 0) {
+            dispatch(updateStatus(Status.AlreadySolved));
+          } else {
+            dispatch(initAlgoSolve(response));
+          }
+        } else {
+          dispatch(updateStatus(Status.UnableToSolve));
+        }
+      });
+    }
+  };
+
+  const onClickPrevStep = () => {
+    undoMove().then((response) => {
+      if (response) {
+        dispatch(updateBoard({ ...response, state: BoardState.Solving }));
+        dispatch(decrementStep());
+      }
+    });
+  };
+
+  const onClickNextStep = () => {
+    if (steps && stepIdx < steps.length - 1) {
+      moveBlock(steps[stepIdx + 1]).then((response) => {
+        if (response) {
+          dispatch(updateBoard({ ...response, state: BoardState.Solving }));
+          dispatch(incrementStep());
+        }
+      });
+    }
+  };
+
+  const randomizeButton = (
+    <ButtonWrapper title="Create board for me" onClick={onClickCreateForMe} />
+  );
+
+  const clearButton = <ButtonWrapper title="Clear" onClick={onClickClear} />;
+
+  const startOverButton = <ButtonWrapper title="Start Over" onClick={onClickStartOver} />;
+
   const readyToSolveButtons = (
     <>
-      <ButtonWrapper title="Solve myself" onClick={initManualSolve} />
+      <ButtonWrapper title="Solve myself" onClick={onClickSolveMyself} />
       {clearButton}
-      <ButtonWrapper title="Solve for me" onClick={initAlgoSolve} />
-    </>
-  );
-  const stepThroughSolutionButtons = (
-    <>
-      {startOverButton}
-      <ButtonWrapper
-        title="Previous Step"
-        onClick={undoStep}
-        disabled={!numSteps || stepIdx >= numSteps - 1}
-      />
-      <ButtonWrapper title="Next Step" onClick={getNextStep} disabled={stepIdx < 0} />
-    </>
-  );
-  const manualSolveButtons = (
-    <>
-      {startOverButton}
-      <ButtonWrapper title="Undo Move" onClick={undoLastMove} disabled={moveIdx <= 0} />
+      <ButtonWrapper title="Solve for me" onClick={onClickSolveForMe} />
     </>
   );
 
-  // Styling
+  const algoSolvingButtons = (
+    <>
+      {startOverButton}
+      <ButtonWrapper title="Previous Step" onClick={onClickPrevStep} disabled={stepIdx < 0} />
+      <ButtonWrapper
+        title="Next Step"
+        onClick={onClickNextStep}
+        disabled={!steps || stepIdx >= steps.length - 1}
+      />
+    </>
+  );
+
+  const manualSolvingButtons = (
+    <>
+      {startOverButton}
+      <ButtonWrapper title="Undo Move" onClick={onClickUndoMove} disabled={moves.length === 0} />
+    </>
+  );
+
   const { boardHeight } = useContext(SizeContext);
   const buttonStyling = { position: 'absolute', width: '100%', left: 0 };
 
@@ -151,17 +211,17 @@ const Buttons: FunctionComponent = () => {
         justifyContent: 'center',
       }}
     >
-      {[Status.Done, Status.DoneOptimal].includes(status) ? (
+      {[Status.Solved, Status.SolvedOptimally].includes(boardStatus) ? (
         startOverButton
-      ) : [Status.ManualBuild, Status.Failed, Status.AlreadySolved].includes(status) ? (
+      ) : [Status.Building, Status.UnableToSolve, Status.AlreadySolved].includes(boardStatus) ? (
         clearButton
-      ) : status === Status.StepThroughSolution ? (
-        stepThroughSolutionButtons
-      ) : status === Status.Start ? (
+      ) : boardStatus === Status.AlgoSolving ? (
+        algoSolvingButtons
+      ) : boardStatus === Status.Start ? (
         randomizeButton
-      ) : status === Status.ManualSolve ? (
-        manualSolveButtons
-      ) : status === Status.ReadyToSolve ? (
+      ) : boardStatus === Status.ManualSolving ? (
+        manualSolvingButtons
+      ) : boardStatus === Status.ReadyToSolve ? (
         readyToSolveButtons
       ) : (
         <></>
