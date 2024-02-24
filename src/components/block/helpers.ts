@@ -16,8 +16,7 @@ const getBlockKey = (block: BoardBlock) => {
   return `${block_id}-${row}-${col}`;
 };
 
-const getIsCellFilled = (state: RootState, row: number, col: number) =>
-  state.board.filled[row][col];
+const getIsCellFilled = (state: RootState, row: number, col: number) => state.board.grid[row][col];
 
 const getAvailablePositionsForBlock = (state: RootState, block: BoardBlock) => {
   const {

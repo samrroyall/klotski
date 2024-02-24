@@ -21,10 +21,7 @@ import {
 import ButtonWrapper from './ButtonWrapper';
 import { SizeContext } from '../App';
 import { ApiService } from '../services/api';
-import {
-  ParsedBoard as ParsedBoardResponse,
-  ParsedSolve as ParsedSolveResponse,
-} from '../models/api/response';
+import { Board as BoardResponse, Solve as SolveResponse } from '../models/api/response';
 import { BlockMove, BoardState } from '../models/api/game';
 
 const Buttons: FunctionComponent = () => {
@@ -48,21 +45,21 @@ const Buttons: FunctionComponent = () => {
     return new Promise((resolve) => resolve(false));
   };
 
-  const solveBoard = (): Promise<ParsedSolveResponse | null> => {
+  const solveBoard = (): Promise<SolveResponse | null> => {
     if (boardId) {
       return Api.solveBoard(boardId);
     }
     return nullPromise;
   };
 
-  const undoMove = (): Promise<ParsedBoardResponse | null> => {
+  const undoMove = (): Promise<BoardResponse | null> => {
     if (boardId) {
       return Api.undoMove(boardId);
     }
     return nullPromise;
   };
 
-  const moveBlock = (move: BlockMove): Promise<ParsedBoardResponse | null> => {
+  const moveBlock = (move: BlockMove): Promise<BoardResponse | null> => {
     if (boardId) {
       return Api.moveBlock(boardId, move.block_idx, move.row_diff, move.col_diff);
     }

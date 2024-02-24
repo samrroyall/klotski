@@ -1,6 +1,6 @@
 import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { BlockMove, BoardBlock, Position } from '../models/api/game';
-import { ParsedSolved as ParsedSolvedResponse } from '../models/api/response';
+import { Solved as SolvedResponse } from '../models/api/response';
 
 interface ManualSolveState {
   moves: BlockMove[];
@@ -23,7 +23,7 @@ const resetReducer: CaseReducer<ManualSolveState> = (state) => {
   state.availableMinPositions = initialState.availableMinPositions;
 };
 
-const initReducer: CaseReducer<ManualSolveState, PayloadAction<ParsedSolvedResponse>> = (
+const initReducer: CaseReducer<ManualSolveState, PayloadAction<SolvedResponse>> = (
   state,
   { payload }
 ) => {

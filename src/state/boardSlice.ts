@@ -2,7 +2,7 @@ import { CaseReducer, PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { blockToBoardBlock, BoardBlock, Move } from '../models/api/game';
 import { NUM_COLS, NUM_ROWS } from '../constants';
 import { BoardState as BoardState_ } from '../models/api/game';
-import { ParsedBoard as ParsedBoardResponse } from '../models/api/response';
+import { Board as BoardResponse } from '../models/api/response';
 
 export enum Status {
   Start = 'start',
@@ -33,7 +33,7 @@ interface BoardState {
   id: number | null;
   status: Status;
   blocks: BoardBlock[];
-  filled: boolean[][];
+  grid: number[][];
   nextMoves: Move[][];
 }
 
@@ -41,7 +41,7 @@ const initialState: BoardState = {
   id: null,
   status: 'start' as Status,
   blocks: [],
-  filled: new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(false)),
+  grid: new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(0)),
   nextMoves: [],
 };
 
@@ -49,18 +49,18 @@ const resetReducer: CaseReducer<BoardState> = (state) => {
   state.id = initialState.id;
   state.status = initialState.status;
   state.blocks = initialState.blocks;
-  state.filled = initialState.filled;
+  state.grid = initialState.grid;
   state.nextMoves = initialState.nextMoves;
 };
 
-const updateBoardReducer: CaseReducer<BoardState, PayloadAction<ParsedBoardResponse>> = (
+const updateBoardReducer: CaseReducer<BoardState, PayloadAction<BoardResponse>> = (
   state,
   { payload }
 ) => {
   state.id = payload.id;
   state.status = boardStateToStatus(payload.state, state.status);
   state.blocks = payload.blocks.map((block, idx) => blockToBoardBlock(block, idx));
-  state.filled = payload.filled;
+  state.grid = payload.grid;
   state.nextMoves = payload.nextMoves || [];
 };
 

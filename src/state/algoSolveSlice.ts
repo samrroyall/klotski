@@ -1,6 +1,6 @@
 import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { BlockMove } from '../models/api/game';
-import { ParsedSolved as ParsedSolvedResponse } from '../models/api/response';
+import { Solved as SolvedResponse } from '../models/api/response';
 
 interface AlgoSolveState {
   isSolved: boolean;
@@ -20,7 +20,7 @@ const resetReducer: CaseReducer<AlgoSolveState> = (state) => {
   state.stepIdx = initialState.stepIdx;
 };
 
-const initReducer: CaseReducer<AlgoSolveState, PayloadAction<ParsedSolvedResponse>> = (
+const initReducer: CaseReducer<AlgoSolveState, PayloadAction<SolvedResponse>> = (
   state,
   { payload }
 ) => {
