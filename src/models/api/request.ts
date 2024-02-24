@@ -1,4 +1,4 @@
-import { BlockId, BoardState, Move } from './game';
+import { BlockId, BoardState } from './game';
 
 export interface AddBlock {
   block_id: BlockId;
@@ -15,7 +15,8 @@ export interface ChangeBlock extends ChangeBlockData {
 }
 
 interface MoveBlockData {
-  move: Move;
+  row_diff: number;
+  col_diff: number;
 }
 
 export interface MoveBlock extends MoveBlockData {
@@ -36,4 +37,8 @@ export interface UndoMove {
   type: 'undo_move';
 }
 
-export type AlterBoard = ChangeState | UndoMove;
+export interface Reset {
+  type: 'reset';
+}
+
+export type AlterBoard = ChangeState | Reset | UndoMove;

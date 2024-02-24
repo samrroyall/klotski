@@ -1,12 +1,13 @@
 import { CaseReducer, PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { blockToBoardBlock, BoardBlock } from '../models/api/game';
+import { blockToBoardBlock, BoardBlock, Move } from '../models/api/game';
 import { NUM_COLS, NUM_ROWS } from '../constants';
-import { BoardState as _BoardState } from '../models/api/game';
-import { Board as BoardResponse } from '../models/api/response';
+import { BoardState as BoardState_ } from '../models/api/game';
+import { ParsedBoard as ParsedBoardResponse } from '../models/api/response';
 
 export enum Status {
   Start = 'start',
   Building = 'building',
+  AlreadySolved = 'already_solved',
   ReadyToSolve = 'ready_to_solve',
   ManualSolving = 'manual_solving',
   AlgoSolving = 'algo_solving',
@@ -15,18 +16,16 @@ export enum Status {
   UnableToSolve = 'unable_to_solve',
 }
 
-const boardStateToStatus = (state: _BoardState): Status => {
+const boardStateToStatus = (state: BoardState_, defaultStatus: Status): Status => {
   switch (state) {
-    case _BoardState.Building:
+    case BoardState_.Building:
       return Status.Building;
-    case _BoardState.ReadyToSolve:
+    case BoardState_.ReadyToSolve:
       return Status.ReadyToSolve;
-    case _BoardState.ManualSolving:
-      return Status.ManualSolving;
-    case _BoardState.AlgoSolving:
-      return Status.AlgoSolving;
-    case _BoardState.Solved:
+    case BoardState_.Solved:
       return Status.Solved;
+    default:
+      return defaultStatus;
   }
 };
 
@@ -35,6 +34,7 @@ interface BoardState {
   status: Status;
   blocks: BoardBlock[];
   filled: boolean[][];
+  nextMoves: Move[][];
 }
 
 const initialState: BoardState = {
@@ -42,15 +42,26 @@ const initialState: BoardState = {
   status: 'start' as Status,
   blocks: [],
   filled: new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(false)),
+  nextMoves: [],
 };
 
-const updateBoardReducer: CaseReducer<BoardState, PayloadAction<BoardResponse>> = (
+const resetReducer: CaseReducer<BoardState> = (state) => {
+  state.id = initialState.id;
+  state.status = initialState.status;
+  state.blocks = initialState.blocks;
+  state.filled = initialState.filled;
+  state.nextMoves = initialState.nextMoves;
+};
+
+const updateBoardReducer: CaseReducer<BoardState, PayloadAction<ParsedBoardResponse>> = (
   state,
   { payload }
 ) => {
-  state.status = boardStateToStatus(payload.state);
+  state.id = payload.id;
+  state.status = boardStateToStatus(payload.state, state.status);
   state.blocks = payload.blocks.map((block, idx) => blockToBoardBlock(block, idx));
   state.filled = payload.filled;
+  state.nextMoves = payload.nextMoves || [];
 };
 
 const updateStatusReducer: CaseReducer<BoardState, PayloadAction<Status>> = (
@@ -64,11 +75,12 @@ export const boardSlice = createSlice({
   name: 'board',
   initialState,
   reducers: {
-    updateBoard: updateBoardReducer,
+    reset: resetReducer,
+    update: updateBoardReducer,
     updateStatus: updateStatusReducer,
   },
 });
 
-export const { updateBoard, updateStatus } = boardSlice.actions;
+export const { reset, update, updateStatus } = boardSlice.actions;
 
 export default boardSlice.reducer;

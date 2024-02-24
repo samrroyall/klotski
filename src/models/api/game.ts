@@ -55,8 +55,7 @@ export function blockToBoardBlock(block: Block, idx: number): BoardBlock {
 export enum BoardState {
   Building = 'building',
   ReadyToSolve = 'ready_to_solve',
-  ManualSolving = 'manual_solving',
-  AlgoSolving = 'algo_solving',
+  Solving = 'solving',
   Solved = 'solved',
 }
 
