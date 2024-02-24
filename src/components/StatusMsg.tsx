@@ -5,36 +5,39 @@ import { Status } from '../state/boardSlice';
 
 const StatusMsg: FunctionComponent<{}> = () => {
   const status = useAppSelector((state) => state.board.status);
-  const numMoves = useAppSelector((state) => state.manualSolve.moves.length);
-  const numOptimalMoves = useAppSelector((state) => state.manualSolve.optimalMoves?.length);
+  const moves = useAppSelector((state) => state.manualSolve.moves);
+  const numOptimalMoves = useAppSelector((state) => state.manualSolve.numOptimalMoves);
   const numSteps = useAppSelector((state) => state.algoSolve.steps?.length);
   const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
 
   const { isMobile } = useContext(SizeContext);
+  const fontSize = `${isMobile ? 0.8 : 1}rem`;
 
   const msgText: { [k in Status]?: JSX.Element } = {
-    start: <span>Click on a cell to add a block</span>,
-    building: <span>A valid board has exactly one 2×2 block and two empty cells</span>,
-    ready_to_solve: <span>Move the 2×2 block to the red area at the bottom to win</span>,
-    manual_solving:
-      numOptimalMoves === 0 ? (
-        <span>Oops! It looks like the board is already solved</span>
-      ) : (
+    start: <span>{'Click on a cell to add a block'}</span>,
+    building: <span>{'A valid board has exactly one 2×2 block and two empty cells'}</span>,
+    ready_to_solve: <span>{'Move the 2×2 block to the red area at the bottom to win'}</span>,
+    already_solved: <span>{'Oops! It looks like the board is already solved'}</span>,
+    manual_solving: (
+      <>
         <span>
-          Current Moves: <strong>{numMoves}</strong>
-          <span style={{ marginLeft: '1rem' }}>
-            Fewest Possible Moves: <strong>{numOptimalMoves}</strong>
-          </span>
+          {'Current Moves: '}
+          <strong>{moves.length}</strong>
         </span>
-      ),
-    algo_solving: (
-      <span>
-        <strong>{numSteps ? numSteps - stepIdx - 1 : -1}</strong>/<strong>{numSteps || -1}</strong>
-      </span>
+        <span style={{ marginLeft: '1rem' }}>
+          {'Fewest Possible Moves: '}
+          <strong>{numOptimalMoves || '-'}</strong>
+        </span>
+      </>
     ),
-    solved: <span>Great job!</span>,
-    solved_optimally: <span>Wow!</span>,
-    unable_to_solve: <span>No Solution Found :(</span>,
+    algo_solving: (
+      <>
+        <strong>{stepIdx + 1}</strong>
+        <span>{'/'}</span>
+        <strong>{numSteps || '-'}</strong>
+      </>
+    ),
+    unable_to_solve: <span>{'No Solution Found :('}</span>,
   };
 
   return (
@@ -43,12 +46,13 @@ const StatusMsg: FunctionComponent<{}> = () => {
         display: 'block',
         marginTop: 0,
         marginBottom: '0.5rem',
+        minHeight: fontSize,
         textAlign: 'center',
-        fontSize: `${isMobile ? 0.8 : 1}rem`,
+        fontSize,
         lineHeight: 1,
       }}
     >
-      {status in msgText ? msgText[status] : <></>}
+      {status in msgText ? msgText[status] : <span> </span>}
     </p>
   );
 };

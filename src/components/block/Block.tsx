@@ -5,8 +5,7 @@ import store from '../../state/store';
 import { BoardBlock } from '../../models/api/game';
 import { useAppDispatch, useAppSelector } from '../../state/hooks';
 import { ApiService } from '../../services/api';
-import { ChangeBlock as ChangeBlockRequest } from '../../models/api/request';
-import { Status, updateBoard } from '../../state/boardSlice';
+import { Status, update as updateBoard } from '../../state/boardSlice';
 import { setAvailableMinPositions, setCurrentBlock } from '../../state/manualSolveSlice';
 import { Helpers } from './helpers';
 import { SizeContext } from '../../App';
@@ -23,19 +22,24 @@ const UIBlock: FunctionComponent<Props> = ({ block }) => {
   const { isMobile, borderSize, cellSize } = useContext(SizeContext);
 
   const Api = new ApiService();
-
   const dispatch = useAppDispatch();
 
-  const blockKey = Helpers.getBlockKey(block);
-
-  const status = useAppSelector((state) => state.board.status);
-
+  const boardStatus = useAppSelector((state) => state.board.status);
   const boardId = useAppSelector((state) => state.board.id);
-
-  const availableMinPositionsForBlock = Helpers.getAvailablePositionsForBlock(
-    store.getState(),
-    block
-  );
+  const blockKey = Helpers.getBlockKey(block);
+  const blockMoves = useAppSelector((state) => {
+    const moves = state.board.nextMoves;
+    return block.idx < moves.length ? moves[block.idx] : [];
+  });
+  const availableMinPositionsForBlock = useAppSelector((state) => {
+    const moves = state.board.nextMoves;
+    return block.idx < moves.length
+      ? moves[block.idx].map(({ row_diff, col_diff }) => ({
+          row: block.min_position.row + row_diff,
+          col: block.min_position.col + col_diff,
+        }))
+      : [];
+  });
 
   const xPos = Styles.getXPos(block.min_position.col, borderSize, cellSize);
   const yPos = Styles.getYPos(block.min_position.row, borderSize, cellSize);
@@ -68,8 +72,7 @@ const UIBlock: FunctionComponent<Props> = ({ block }) => {
     const nextBlockId = Helpers.getNextChangeBlockId(store.getState(), block);
 
     if (boardId && nextBlockId) {
-      const body: ChangeBlockRequest = { type: 'change_block', new_block_id: nextBlockId };
-      const response = await Api.changeBlock(boardId, block.idx, body);
+      const response = await Api.changeBlock(boardId, block.idx, nextBlockId);
 
       if (response) {
         dispatch(updateBoard(response));
@@ -97,14 +100,14 @@ const UIBlock: FunctionComponent<Props> = ({ block }) => {
         zIndex: isMovable ? 3 : 2,
       }}
       onMouseEnter={() => {
-        if (status === Status.ManualSolving) {
-          setIsMovable(availableMinPositionsForBlock.length > 0);
+        if (boardStatus === Status.ManualSolving) {
+          setIsMovable(blockMoves.length > 0);
         }
       }}
       onMouseLeave={() => setIsMovable(false)}
       onClick={() => {
-        if (status === Status.ManualSolving) {
-          setIsMovable(availableMinPositionsForBlock.length > 0);
+        if (boardStatus === Status.ManualSolving) {
+          setIsMovable(blockMoves.length > 0);
           dispatch(setCurrentBlock(block));
           dispatch(setAvailableMinPositions(availableMinPositionsForBlock));
         }
@@ -113,7 +116,7 @@ const UIBlock: FunctionComponent<Props> = ({ block }) => {
       <Box
         sx={{
           width: '100%',
-          display: [Status.Building, Status.ReadyToSolve].includes(status) ? 'block' : 'none',
+          display: [Status.Building, Status.ReadyToSolve].includes(boardStatus) ? 'block' : 'none',
           justifyContent: 'end',
         }}
       >

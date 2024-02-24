@@ -1,9 +1,6 @@
 import { WINNING_COL, WINNING_ROW } from '../../constants';
 import { BoardBlock, Move } from '../../models/api/game';
-import { Status } from '../../state/boardSlice';
 import { RootState } from '../../state/store';
-
-const getStatus = (state: RootState): Status => state.board.status;
 
 const getBoardIsSolved = (state: RootState): boolean =>
   state.board.blocks.find(
@@ -13,13 +10,8 @@ const getBoardIsSolved = (state: RootState): boolean =>
       block.min_position.col === WINNING_COL
   ) !== undefined;
 
-const getIsAvailableMinPosition = (state: RootState, cellRow: number, cellCol: number): boolean =>
-  state.manualSolve.availableMinPositions.filter(
-    (pos) => pos.row === cellRow && pos.col === cellCol
-  ).length > 0;
-
 const getMovesOverOptimal = (state: RootState): number =>
-  state.manualSolve.moves.length - state.manualSolve.optimalMoves!.length;
+  state.manualSolve.moves.length - state.manualSolve.numOptimalMoves!;
 
 const getAssociatedMove = (
   state: RootState,
@@ -31,7 +23,7 @@ const getAssociatedMove = (
   const col_diff_to_cell = cellCol - block.min_position.col;
 
   return (
-    state.manualSolve.nextMoves[block.idx].find(
+    state.board.nextMoves[block.idx].find(
       ({ row_diff, col_diff }) => row_diff === row_diff_to_cell && col_diff === col_diff_to_cell
     ) || null
   );
@@ -42,10 +34,8 @@ const getIsWinningCell = (row: number, col: number) =>
   (col === WINNING_COL || col === WINNING_COL + 1);
 
 export const Helpers = {
-  getStatus,
   getBoardIsSolved,
   getMovesOverOptimal,
-  getIsAvailableMinPosition,
   getAssociatedMove,
   getIsWinningCell,
 };

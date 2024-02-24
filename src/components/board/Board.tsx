@@ -11,11 +11,11 @@ const UIBoard: FunctionComponent = () => {
   const theme = useTheme();
   const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
-  const blocks = useAppSelector((state) => state.board.blocks);
+  const board = useAppSelector((state) => state.board);
 
   useEffect(() => {
-    setUiBlocks(blocks.map((block) => <Block key={`block-${block.idx}`} block={block} />));
-  }, [blocks]);
+    setUiBlocks(board.blocks.map((block) => <Block key={`block-${block.idx}`} block={block} />));
+  }, [board.blocks, board.filled]);
 
   const { borderSize, boardHeight, boardWidth, cellSize } = useContext(SizeContext);
 
@@ -29,7 +29,7 @@ const UIBoard: FunctionComponent = () => {
     <Box
       sx={{
         position: 'absolute',
-        marginLeft: { boardMargin },
+        marginLeft: boardMargin,
         ...boardSizing,
       }}
     >

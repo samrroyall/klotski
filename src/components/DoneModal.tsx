@@ -8,7 +8,7 @@ import { Status } from '../state/boardSlice';
 const DoneModal: FunctionComponent = () => {
   const status = useAppSelector((state) => state.board.status);
   const solutionLength = useAppSelector((state) => state.manualSolve.moves.length);
-  const optimalMoveLength = useAppSelector((state) => state.manualSolve.optimalMoves?.length);
+  const numOptimalMoves = useAppSelector((state) => state.manualSolve.numOptimalMoves);
 
   const [open, setOpen] = useState(false);
 
@@ -70,7 +70,7 @@ const DoneModal: FunctionComponent = () => {
               textAlign: 'center',
             }}
           >
-            Congratulations! You solved the board in
+            <span>{'Congratulations! You solved the board in '}</span>
             <Box
               sx={{
                 display: 'inline',
@@ -79,22 +79,22 @@ const DoneModal: FunctionComponent = () => {
             >
               {solutionLength}
             </Box>
-            moves.{' '}
+            <span>{solutionLength === 1 ? ' move. ' : ' moves. '}</span>
             {status === Status.SolvedOptimally ? (
-              <span>That is the fewest moves possible.</span>
+              <span>{'That is the fewest moves possible moves!'}</span>
             ) : (
-              <span>
-                This board can be solved in as few as
+              <>
+                <span>{'This board can be solved in as few as '}</span>
                 <Box
                   sx={{
                     display: 'inline',
                     color: colors.red[300],
                   }}
                 >
-                  {optimalMoveLength || 0}
-                </Box>{' '}
-                moves.
-              </span>
+                  {numOptimalMoves || 0}
+                </Box>
+                <span>{solutionLength === 1 ? ' move.' : ' moves.'}</span>
+              </>
             )}
           </Box>
         </Box>

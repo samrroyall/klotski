@@ -1,6 +1,6 @@
 import { Theme, colors } from '@mui/material';
 
-const blockColors = [colors.yellow, colors.blue, colors.green, colors.red];
+const blockColors = [colors.yellow, colors.green, colors.blue, colors.red];
 
 const getBlockButtonStyle = (theme: Theme) => ({
   display: 'block',

@@ -12,10 +12,9 @@ const getCellColor = (theme: Theme, row: number, col: number) =>
   Helpers.getIsWinningCell(row, col) ? winningCellDefault(theme) : theme.palette.action.hover;
 
 const getCellHoverColor = (state: RootState, theme: Theme, row: number, col: number) => {
-  const status = Helpers.getStatus(state);
   const isWinningCell = Helpers.getIsWinningCell(row, col);
 
-  return [Status.Start, Status.Building].includes(status)
+  return [Status.Start, Status.Building].includes(state.board.status)
     ? isWinningCell
       ? winningCellHover
       : theme.palette.action.selected
@@ -25,10 +24,10 @@ const getCellHoverColor = (state: RootState, theme: Theme, row: number, col: num
 };
 
 const getCursor = (state: RootState) =>
-  [Status.Start, Status.Building].includes(Helpers.getStatus(state)) ? 'pointer' : 'default';
+  [Status.Start, Status.Building].includes(state.board.status) ? 'pointer' : 'default';
 
 const getPointerEvents = (state: RootState) =>
-  [Status.Start, Status.Building].includes(Helpers.getStatus(state)) ? 'auto' : 'none';
+  [Status.Start, Status.Building].includes(state.board.status) ? 'auto' : 'none';
 
 export const Styles = {
   availablePositionBoxScaleFactor: 0.2,

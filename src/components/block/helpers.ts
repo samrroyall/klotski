@@ -25,10 +25,14 @@ const getAvailablePositionsForBlock = (state: RootState, block: BoardBlock) => {
     idx,
   } = block;
 
-  return state.manualSolve.nextMoves[idx].map(({ row_diff, col_diff }) => ({
-    row: minRow + row_diff,
-    col: minCol + col_diff,
-  }));
+  const moves = state.board.nextMoves;
+
+  return idx < moves.length - 1
+    ? state.board.nextMoves[idx].map(({ row_diff, col_diff }) => ({
+        row: minRow + row_diff,
+        col: minCol + col_diff,
+      }))
+    : [];
 };
 
 const getNextChangeBlockId = (state: RootState, block: BoardBlock): BlockId | null => {
@@ -39,18 +43,23 @@ const getNextChangeBlockId = (state: RootState, block: BoardBlock): BlockId | nu
     min_position: { row: minRow, col: minCol },
   } = block;
 
-  const inLastRow = minRow + numRows >= NUM_ROWS;
-  const inLastCol = minCol + numCols >= NUM_COLS;
+  const inLastRow = minRow >= NUM_ROWS - 1;
+  const inLastCol = minCol >= NUM_COLS - 1;
 
-  const cellsFree = NUM_COLS * NUM_ROWS - 2 - getNumCellsFilled(state);
-  const rightCellIsFree = !inLastCol && !getIsCellFilled(state, minRow, minCol + numCols);
-  const bottomCellIsFree = !inLastRow && !getIsCellFilled(state, minRow + numRows, minCol);
+  const blockSize = numRows * numCols;
+  const cellsFree = NUM_COLS * NUM_ROWS - 2 - (getNumCellsFilled(state) - blockSize);
+
+  const rightCellIsFree =
+    numCols > 1 || (!inLastCol && !getIsCellFilled(state, minRow, minCol + 1));
+  const bottomCellIsFree =
+    numRows > 1 || (!inLastRow && !getIsCellFilled(state, minRow + 1, minCol));
   const bottomRightCellIsFree =
-    !inLastRow && !inLastCol && !getIsCellFilled(state, minRow + numRows, minCol + numCols);
+    (numRows > 1 && numCols > 1) ||
+    (!inLastRow && !inLastCol && !getIsCellFilled(state, minRow + 1, minCol + 1));
 
   const blockIds = [1, 2, 3, 4];
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 3; i++) {
     const nextBlockId = blockIds[(blockId + i) % 4];
 
     if (nextBlockId === 1 && cellsFree < 1) {
@@ -62,6 +71,7 @@ const getNextChangeBlockId = (state: RootState, block: BoardBlock): BlockId | nu
     if (nextBlockId === 3 && (cellsFree < 2 || !bottomCellIsFree)) {
       continue;
     }
+
     if (
       nextBlockId === 4 &&
       (cellsFree < 4 ||

@@ -4,13 +4,10 @@ import { useAppDispatch, useAppSelector } from '../../state/hooks';
 import store from '../../state/store';
 import MoveBlockSelector from '../MoveBlockSelector';
 import { ApiService } from '../../services/api';
-import {
-  AddBlock as AddBlockRequest,
-  MoveBlock as MoveBlockRequest,
-} from '../../models/api/request';
 import { Helpers } from './helpers';
-import { Status, updateBoard, updateStatus } from '../../state/boardSlice';
+import { Status, update as updateBoard, updateStatus } from '../../state/boardSlice';
 import { Styles } from './styles';
+import { updateMoves } from '../../state/manualSolveSlice';
 
 interface Props {
   row: number;
@@ -22,55 +19,74 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   const [isAvailablePosition, setIsAvailablePosition] = useState(false);
 
   const Api = new ApiService();
-
   const dispatch = useAppDispatch();
 
   const boardId = useAppSelector((state) => state.board.id);
+  const boardStatus = useAppSelector((state) => state.board.status);
 
-  const isAvailableMinPosition = Helpers.getIsAvailableMinPosition(store.getState(), row, col);
-
+  const availableMinPositions = useAppSelector((state) => state.manualSolve.availableMinPositions);
   const currentBlock = useAppSelector((state) => state.manualSolve.currentBlock);
+  const moves = useAppSelector((state) => state.manualSolve.moves);
 
   useEffect(() => {
-    setIsAvailablePosition(isAvailableMinPosition);
-  }, [isAvailableMinPosition, setIsAvailablePosition]);
+    setIsAvailablePosition(
+      availableMinPositions.filter((pos) => pos.row === row && pos.col === col).length > 0
+    );
+  }, [availableMinPositions, setIsAvailablePosition, col, row]);
 
-  const onClickMoveBlockSelector = async () => {
+  const onClickMoveBlockSelector = () => {
     if (isAvailablePosition && boardId && currentBlock) {
       const move = Helpers.getAssociatedMove(store.getState(), currentBlock, row, col);
 
       if (move) {
-        const body: MoveBlockRequest = { type: 'move_block', move };
-        const response = await Api.moveBlock(boardId, currentBlock.idx, body);
+        Api.moveBlock(boardId, currentBlock.idx, move.row_diff, move.col_diff).then((response) => {
+          if (response) {
+            dispatch(updateBoard(response));
+            //dispatch(updateStatus(Status.ManualSolving));
+            dispatch(updateMoves([...moves, { block_idx: currentBlock.idx, ...move }]));
 
-        if (response) {
-          dispatch(updateBoard(response));
-        }
-      }
-
-      if (Helpers.getBoardIsSolved(store.getState())) {
-        const movesFromOptimal = Helpers.getMovesOverOptimal(store.getState());
-        dispatch(updateStatus(movesFromOptimal === 0 ? Status.SolvedOptimally : Status.Solved));
+            if (Helpers.getBoardIsSolved(store.getState())) {
+              const movesFromOptimal = Helpers.getMovesOverOptimal(store.getState());
+              dispatch(
+                updateStatus(movesFromOptimal === 0 ? Status.SolvedOptimally : Status.Solved)
+              );
+            }
+          }
+        });
       }
     }
   };
 
-  const onClickCell = async (e: any) => {
-    const status = Helpers.getStatus(store.getState());
+  const newBoard = () =>
+    Api.newBoard().then((response) => {
+      if (response) {
+        dispatch(updateBoard(response));
+      }
+      return response;
+    });
 
-    if (![Status.Start, Status.Building].includes(status)) {
+  const addBlock = (boardId: number) =>
+    Api.addBlock(boardId, 1, row, col).then((response) => {
+      if (response) {
+        dispatch(updateBoard(response));
+      }
+    });
+
+  const onClickCell = async (e: any) => {
+    if (![Status.Start, Status.Building].includes(boardStatus)) {
       e.stopPropagation();
       e.nativeEvent.stopImmediatePropagation();
       return;
     }
 
-    if (boardId) {
-      const body: AddBlockRequest = { block_id: 1, min_row: row, min_col: col };
-      const response = await Api.addBlock(boardId, body);
-
-      if (response) {
-        dispatch(updateBoard(response));
-      }
+    if (boardStatus === Status.Start) {
+      newBoard().then((response) => {
+        if (response && response.id) {
+          addBlock(response.id);
+        }
+      });
+    } else if (boardId) {
+      addBlock(boardId);
     }
   };
 
