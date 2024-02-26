@@ -1,22 +1,24 @@
 import { NUM_COLS, NUM_ROWS } from '../../constants';
-import { BlockId, BoardBlock } from '../../models/api/game';
+import { Block, BoardBlock, getBlockCols, getBlockRows } from '../../models/api/game';
 import { RootState } from '../../state/store';
 
 const getNumCellsFilled = (state: RootState) =>
   state.board.blocks.reduce((acc, { rows, cols }) => acc + rows * cols, 0);
 
 const getNumTwoByTwoBlocks = (state: RootState) =>
-  state.board.blocks.filter(({ block_id }) => block_id === 4).length;
+  state.board.blocks.filter(({ block }) => block === Block.TwoByTwo).length;
 
-const getBlockKey = (block: BoardBlock) => {
+const getBlockKey = (boardBlock: BoardBlock) => {
   const {
-    block_id,
+    block,
     min_position: { row, col },
-  } = block;
-  return `${block_id}-${row}-${col}`;
+  } = boardBlock;
+
+  return `${getBlockRows(block)}x${getBlockCols(block)}-${row}-${col}`;
 };
 
-const getIsCellFilled = (state: RootState, row: number, col: number) => state.board.grid[row][col];
+const getIsCellFilled = (state: RootState, row: number, col: number) =>
+  state.board.grid[row * NUM_COLS + col];
 
 const getAvailablePositionsForBlock = (state: RootState, block: BoardBlock) => {
   const {
@@ -34,13 +36,13 @@ const getAvailablePositionsForBlock = (state: RootState, block: BoardBlock) => {
     : [];
 };
 
-const getNextChangeBlockId = (state: RootState, block: BoardBlock): BlockId | null => {
+const getNextChangeBlock = (state: RootState, boardBlock: BoardBlock): Block | null => {
   const {
-    block_id: blockId,
+    block,
     rows: numRows,
     cols: numCols,
     min_position: { row: minRow, col: minCol },
-  } = block;
+  } = boardBlock;
 
   const inLastRow = minRow >= NUM_ROWS - 1;
   const inLastCol = minCol >= NUM_COLS - 1;
@@ -56,33 +58,42 @@ const getNextChangeBlockId = (state: RootState, block: BoardBlock): BlockId | nu
     (numRows > 1 && numCols > 1) ||
     (!inLastRow && !inLastCol && !getIsCellFilled(state, minRow + 1, minCol + 1));
 
-  const blockIds = [1, 2, 3, 4];
+  const blocks = [Block.OneByOne, Block.OneByTwo, Block.TwoByOne, Block.TwoByTwo];
+  const blockIdx = blocks.indexOf(block);
 
   for (let i = 0; i < 3; i++) {
-    const nextBlockId = blockIds[(blockId + i) % 4];
+    const nextBlock = blocks[(blockIdx + i + 1) % 4];
 
-    if (nextBlockId === 1 && cellsFree < 1) {
-      continue;
-    }
-    if (nextBlockId === 2 && (cellsFree < 2 || !rightCellIsFree)) {
-      continue;
-    }
-    if (nextBlockId === 3 && (cellsFree < 2 || !bottomCellIsFree)) {
-      continue;
+    switch (nextBlock) {
+      case Block.OneByOne:
+        if (cellsFree < 1) {
+          return null;
+        }
+        break;
+      case Block.OneByTwo:
+        if (cellsFree < 2 || !rightCellIsFree) {
+          continue;
+        }
+        break;
+      case Block.TwoByOne:
+        if (cellsFree < 2 || !bottomCellIsFree) {
+          continue;
+        }
+        break;
+      case Block.TwoByTwo:
+        if (
+          getNumTwoByTwoBlocks(state) > 0 ||
+          cellsFree < 4 ||
+          !rightCellIsFree ||
+          !bottomCellIsFree ||
+          !bottomRightCellIsFree
+        ) {
+          continue;
+        }
+        break;
     }
 
-    if (
-      nextBlockId === 4 &&
-      (cellsFree < 4 ||
-        getNumTwoByTwoBlocks(state) > 0 ||
-        !rightCellIsFree ||
-        !bottomCellIsFree ||
-        !bottomRightCellIsFree)
-    ) {
-      continue;
-    }
-
-    return nextBlockId as BlockId;
+    return nextBlock;
   }
 
   return null;
@@ -94,5 +105,5 @@ export const Helpers = {
   getNumTwoByTwoBlocks,
   getIsCellFilled,
   getAvailablePositionsForBlock,
-  getNextChangeBlockId,
+  getNextChangeBlock,
 };

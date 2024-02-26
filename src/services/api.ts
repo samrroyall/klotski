@@ -5,7 +5,7 @@ import {
   AlterBoard as AlterBoardRequest,
 } from '../models/api/request';
 import { Board as BoardResponse, Solve as SolveResponse } from '../models/api/response';
-import { BlockId, BoardState } from '../models/api/game';
+import { Block, BoardState } from '../models/api/game';
 
 export class ApiService {
   baseUrl: string;
@@ -103,12 +103,12 @@ export class ApiService {
 
   addBlock(
     boardId: number,
-    blockId: BlockId,
+    block: Block,
     minRow: number,
     minCol: number
   ): Promise<BoardResponse | null> {
     return this.makeRequest<AddBlockRequest, BoardResponse>('POST', `/board/${boardId}/block`, {
-      block_id: blockId,
+      block,
       min_row: minRow,
       min_col: minCol,
     });
@@ -126,14 +126,10 @@ export class ApiService {
     );
   }
 
-  changeBlock(
-    boardId: number,
-    blockIdx: number,
-    newBlockId: BlockId
-  ): Promise<BoardResponse | null> {
+  changeBlock(boardId: number, blockIdx: number, newBlock: Block): Promise<BoardResponse | null> {
     return this.alterBlock(boardId, blockIdx, {
       type: 'change_block',
-      new_block_id: newBlockId,
+      new_block: newBlock,
     });
   }
 

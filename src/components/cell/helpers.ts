@@ -1,11 +1,11 @@
 import { WINNING_COL, WINNING_ROW } from '../../constants';
-import { BoardBlock, Move } from '../../models/api/game';
+import { Block, BoardBlock, Move } from '../../models/api/game';
 import { RootState } from '../../state/store';
 
 const getBoardIsSolved = (state: RootState): boolean =>
   state.board.blocks.find(
     (block) =>
-      block.block_id === 4 &&
+      block.block === Block.TwoByTwo &&
       block.min_position.row === WINNING_ROW &&
       block.min_position.col === WINNING_COL
   ) !== undefined;

@@ -1,6 +1,18 @@
 import { Theme, colors } from '@mui/material';
+import { Block } from '../../models/api/game';
 
-const blockColors = [colors.yellow, colors.green, colors.blue, colors.red];
+const blockColors = (block: Block) => {
+  switch (block) {
+    case Block.OneByOne:
+      return colors.yellow;
+    case Block.OneByTwo:
+      return colors.green;
+    case Block.TwoByOne:
+      return colors.blue;
+    case Block.TwoByTwo:
+      return colors.red;
+  }
+};
 
 const getBlockButtonStyle = (theme: Theme) => ({
   display: 'block',

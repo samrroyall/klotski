@@ -14,7 +14,11 @@ const UIBoard: FunctionComponent = () => {
   const board = useAppSelector((state) => state.board);
 
   useEffect(() => {
-    setUiBlocks(board.blocks.map((block) => <Block key={`block-${block.idx}`} block={block} />));
+    setUiBlocks(
+      board.blocks.map((boardBlock) => (
+        <Block key={`block-${boardBlock.idx}`} boardBlock={boardBlock} />
+      ))
+    );
   }, [board.blocks, board.grid]);
 
   const { borderSize, boardHeight, boardWidth, cellSize } = useContext(SizeContext);

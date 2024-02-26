@@ -8,6 +8,7 @@ import { Helpers } from './helpers';
 import { Status, update as updateBoard, updateStatus } from '../../state/boardSlice';
 import { Styles } from './styles';
 import { updateMoves } from '../../state/manualSolveSlice';
+import { Block } from '../../models/api/game';
 
 interface Props {
   row: number;
@@ -66,7 +67,7 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
     });
 
   const addBlock = (boardId: number) =>
-    Api.addBlock(boardId, 1, row, col).then((response) => {
+    Api.addBlock(boardId, Block.OneByOne, row, col).then((response) => {
       if (response) {
         dispatch(updateBoard(response));
       }

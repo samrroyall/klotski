@@ -12,10 +12,17 @@ import { SizeContext } from '../../App';
 import { Styles } from './styles';
 
 interface Props {
-  block: BoardBlock;
+  boardBlock: BoardBlock;
 }
 
-const UIBlock: FunctionComponent<Props> = ({ block }) => {
+const UIBlock: FunctionComponent<Props> = ({ boardBlock }) => {
+  const {
+    idx: blockIdx,
+    min_position: { row: blockMinRow, col: blockMinCol },
+    rows: blockRows,
+    cols: blockCols,
+  } = boardBlock;
+
   const theme = useTheme();
   const [isMovable, setIsMovable] = useState(false);
 
@@ -26,26 +33,26 @@ const UIBlock: FunctionComponent<Props> = ({ block }) => {
 
   const boardStatus = useAppSelector((state) => state.board.status);
   const boardId = useAppSelector((state) => state.board.id);
-  const blockKey = Helpers.getBlockKey(block);
+  const blockKey = Helpers.getBlockKey(boardBlock);
   const blockMoves = useAppSelector((state) => {
     const moves = state.board.nextMoves;
-    return block.idx < moves.length ? moves[block.idx] : [];
+    return blockIdx < moves.length ? moves[blockIdx] : [];
   });
   const availableMinPositionsForBlock = useAppSelector((state) => {
     const moves = state.board.nextMoves;
-    return block.idx < moves.length
-      ? moves[block.idx].map(({ row_diff, col_diff }) => ({
-          row: block.min_position.row + row_diff,
-          col: block.min_position.col + col_diff,
+    return blockIdx < moves.length
+      ? moves[blockIdx].map(({ row_diff, col_diff }) => ({
+          row: blockMinRow + row_diff,
+          col: blockMinCol + col_diff,
         }))
       : [];
   });
 
-  const xPos = Styles.getXPos(block.min_position.col, borderSize, cellSize);
-  const yPos = Styles.getYPos(block.min_position.row, borderSize, cellSize);
+  const xPos = Styles.getXPos(blockMinCol, borderSize, cellSize);
+  const yPos = Styles.getYPos(blockMinRow, borderSize, cellSize);
 
-  const height = Styles.getHeight(block.rows, borderSize, cellSize);
-  const width = Styles.getWidth(block.cols, borderSize, cellSize);
+  const height = Styles.getHeight(blockRows, borderSize, cellSize);
+  const width = Styles.getWidth(blockCols, borderSize, cellSize);
 
   const scaledXPos = Styles.getScaledXPos(xPos, width);
   const scaledYPos = Styles.getScaledXPos(yPos, width);
@@ -60,7 +67,7 @@ const UIBlock: FunctionComponent<Props> = ({ block }) => {
 
   const onClickCloseButton = async () => {
     if (boardId) {
-      const response = await Api.removeBlock(boardId, block.idx);
+      const response = await Api.removeBlock(boardId, blockIdx);
 
       if (response) {
         dispatch(updateBoard(response));
@@ -69,10 +76,10 @@ const UIBlock: FunctionComponent<Props> = ({ block }) => {
   };
 
   const onClickCycleButton = async () => {
-    const nextBlockId = Helpers.getNextChangeBlockId(store.getState(), block);
+    const nextBlock = Helpers.getNextChangeBlock(store.getState(), boardBlock);
 
-    if (boardId && nextBlockId) {
-      const response = await Api.changeBlock(boardId, block.idx, nextBlockId);
+    if (boardId && nextBlock) {
+      const response = await Api.changeBlock(boardId, blockIdx, nextBlock);
 
       if (response) {
         dispatch(updateBoard(response));
@@ -94,8 +101,9 @@ const UIBlock: FunctionComponent<Props> = ({ block }) => {
         padding: `0.5rem`,
         border: isMovable ? `${borderSize} solid` : 0,
         borderColor: theme.palette.text.primary,
-        backgroundColor:
-          Styles.blockColors[block.block_id - 1][theme.palette.mode === 'dark' ? 400 : 600],
+        backgroundColor: Styles.blockColors(boardBlock.block)[
+          theme.palette.mode === 'dark' ? 400 : 600
+        ],
         cursor: isMovable ? 'pointer' : 'default',
         zIndex: isMovable ? 3 : 2,
       }}
@@ -108,7 +116,7 @@ const UIBlock: FunctionComponent<Props> = ({ block }) => {
       onClick={() => {
         if (boardStatus === Status.ManualSolving) {
           setIsMovable(blockMoves.length > 0);
-          dispatch(setCurrentBlock(block));
+          dispatch(setCurrentBlock(boardBlock));
           dispatch(setAvailableMinPositions(availableMinPositionsForBlock));
         }
       }}

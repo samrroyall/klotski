@@ -1,5 +1,5 @@
 import { CaseReducer, PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { blockToBoardBlock, BoardBlock, Move } from '../models/api/game';
+import { Block, BoardBlock, Move, positionedBlockToBoardBlock } from '../models/api/game';
 import { NUM_COLS, NUM_ROWS } from '../constants';
 import { BoardState as BoardState_ } from '../models/api/game';
 import { Board as BoardResponse } from '../models/api/response';
@@ -33,7 +33,7 @@ interface BoardState {
   id: number | null;
   status: Status;
   blocks: BoardBlock[];
-  grid: number[][];
+  grid: (Block | null)[];
   nextMoves: Move[][];
 }
 
@@ -41,7 +41,7 @@ const initialState: BoardState = {
   id: null,
   status: 'start' as Status,
   blocks: [],
-  grid: new Array(NUM_ROWS).fill(new Array(NUM_COLS).fill(0)),
+  grid: new Array(NUM_ROWS * NUM_COLS).fill(null),
   nextMoves: [],
 };
 
@@ -59,9 +59,9 @@ const updateBoardReducer: CaseReducer<BoardState, PayloadAction<BoardResponse>> 
 ) => {
   state.id = payload.id;
   state.status = boardStateToStatus(payload.state, state.status);
-  state.blocks = payload.blocks.map((block, idx) => blockToBoardBlock(block, idx));
+  state.blocks = payload.blocks.map(positionedBlockToBoardBlock);
   state.grid = payload.grid;
-  state.nextMoves = payload.nextMoves || [];
+  state.nextMoves = payload.next_moves;
 };
 
 const updateStatusReducer: CaseReducer<BoardState, PayloadAction<Status>> = (

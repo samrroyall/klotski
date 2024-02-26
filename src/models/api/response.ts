@@ -1,11 +1,11 @@
-import { Block, BlockMove, BoardState, Move } from './game';
+import { Block, BlockMove, BoardState, Move, PositionedBlock } from './game';
 
 export interface Board {
   id: number;
   state: BoardState;
-  blocks: Block[];
-  grid: number[][];
-  nextMoves: Move[][];
+  blocks: PositionedBlock[];
+  grid: (Block | null)[];
+  next_moves: Move[][];
 }
 
 interface SolvedData {
