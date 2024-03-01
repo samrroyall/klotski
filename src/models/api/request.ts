@@ -1,5 +1,21 @@
 import { Block, BoardState } from './game';
 
+interface EmptyBoard {
+  type: 'empty';
+}
+
+interface RandomBoard {
+  type: 'random';
+}
+
+export type NewBoard = EmptyBoard | RandomBoard;
+
+export interface Reset {
+  type: 'reset';
+}
+
+export type AlterBoard = ChangeState | Reset | UndoMove;
+
 export interface AddBlock {
   block: Block;
   min_row: number;
@@ -36,9 +52,3 @@ export interface ChangeState extends ChangeStateData {
 export interface UndoMove {
   type: 'undo_move';
 }
-
-export interface Reset {
-  type: 'reset';
-}
-
-export type AlterBoard = ChangeState | Reset | UndoMove;

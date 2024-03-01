@@ -3,6 +3,7 @@ import {
   AddBlock as AddBlockRequest,
   AlterBlock as AlterBlockRequest,
   AlterBoard as AlterBoardRequest,
+  NewBoard as NewBoardRequest,
 } from '../models/api/request';
 import { Board as BoardResponse, Solve as SolveResponse } from '../models/api/response';
 import { Block, BoardState } from '../models/api/game';
@@ -73,8 +74,16 @@ export class ApiService {
       });
   }
 
-  newBoard(): Promise<BoardResponse | null> {
-    return this.makeRequest<undefined, BoardResponse>('POST', '/board');
+  newBoard(body: NewBoardRequest): Promise<BoardResponse | null> {
+    return this.makeRequest<NewBoardRequest, BoardResponse>('POST', '/board', body);
+  }
+
+  emptyBoard(): Promise<BoardResponse | null> {
+    return this.newBoard({ type: 'empty' });
+  }
+
+  randomBoard(): Promise<BoardResponse | null> {
+    return this.newBoard({ type: 'random' });
   }
 
   private alterBoard(boardId: number, body: AlterBoardRequest): Promise<BoardResponse | null> {

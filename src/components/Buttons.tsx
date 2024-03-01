@@ -67,10 +67,11 @@ const Buttons: FunctionComponent = () => {
   };
 
   const onClickCreateForMe = () => {
-    // const response = await Api.randomBoard();
-    // if (response) {
-    //   dispatch(updateBoard(response));
-    // }
+    Api.randomBoard().then((response) => {
+      if (response) {
+        dispatch(updateBoard(response));
+      }
+    });
   };
 
   const onClickClear = () => {

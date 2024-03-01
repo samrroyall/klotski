@@ -43,7 +43,6 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
         Api.moveBlock(boardId, currentBlock.idx, move.row_diff, move.col_diff).then((response) => {
           if (response) {
             dispatch(updateBoard(response));
-            //dispatch(updateStatus(Status.ManualSolving));
             dispatch(updateMoves([...moves, { block_idx: currentBlock.idx, ...move }]));
 
             if (Helpers.getBoardIsSolved(store.getState())) {
@@ -57,14 +56,6 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
       }
     }
   };
-
-  const newBoard = () =>
-    Api.newBoard().then((response) => {
-      if (response) {
-        dispatch(updateBoard(response));
-      }
-      return response;
-    });
 
   const addBlock = (boardId: number) =>
     Api.addBlock(boardId, Block.OneByOne, row, col).then((response) => {
@@ -81,7 +72,7 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
     }
 
     if (boardStatus === Status.Start) {
-      newBoard().then((response) => {
+      Api.emptyBoard().then((response) => {
         if (response && response.id) {
           addBlock(response.id);
         }
