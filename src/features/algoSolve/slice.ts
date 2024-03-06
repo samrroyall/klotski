@@ -1,39 +1,36 @@
 import { CaseReducer, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { BlockMove } from '../models/api/game';
-import { Solved as SolvedResponse } from '../models/api/response';
+import { BlockMove } from '../../models/api/game';
+import { Solved as SolvedResponse } from '../../models/api/response';
 
-interface AlgoSolveState {
+interface State {
   isSolved: boolean;
   steps: BlockMove[] | null;
   stepIdx: number;
 }
 
-const initialState: AlgoSolveState = {
+const initialState: State = {
   isSolved: false,
   steps: null,
   stepIdx: -1,
 };
 
-const resetReducer: CaseReducer<AlgoSolveState> = (state) => {
+const resetReducer: CaseReducer<State> = (state) => {
   state.isSolved = initialState.isSolved;
   state.steps = initialState.steps;
   state.stepIdx = initialState.stepIdx;
 };
 
-const initReducer: CaseReducer<AlgoSolveState, PayloadAction<SolvedResponse>> = (
-  state,
-  { payload }
-) => {
+const initReducer: CaseReducer<State, PayloadAction<SolvedResponse>> = (state, { payload }) => {
   state.steps = payload.moves || [];
   state.isSolved = false;
 };
 
-const decrementStepReducer: CaseReducer<AlgoSolveState> = (state) => {
+const decrementStepReducer: CaseReducer<State> = (state) => {
   state.stepIdx = state.stepIdx - 1;
   state.isSolved ||= false;
 };
 
-const incrementStepReducer: CaseReducer<AlgoSolveState> = (state) => {
+const incrementStepReducer: CaseReducer<State> = (state) => {
   state.stepIdx = state.stepIdx + 1;
   state.isSolved = state.steps !== null && state.stepIdx === state.steps.length - 1;
 };
