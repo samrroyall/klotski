@@ -3,16 +3,10 @@ import {
   AddBlock as AddBlockRequest,
   AlterBlock as AlterBlockRequest,
   AlterBoard as AlterBoardRequest,
+  NewBoard as NewBoardRequest,
 } from '../models/api/request';
-import {
-  Board as BoardResponse,
-  ParsedBoard as ParsedBoardResponse,
-  Solve as SolveResponse,
-  ParsedSolve as ParsedSolveResponse,
-  parseBoard as parseBoardResponse,
-  parseSolved as parseSolvedResponse,
-} from '../models/api/response';
-import { BlockId, BoardState } from '../models/api/game';
+import { Board as BoardResponse, Solve as SolveResponse } from '../models/api/response';
+import { Block, BoardState } from '../models/api/game';
 
 export class ApiService {
   baseUrl: string;
@@ -80,36 +74,31 @@ export class ApiService {
       });
   }
 
-  private handleBoardResponse(response: BoardResponse | null): ParsedBoardResponse | null {
-    return response ? parseBoardResponse(response) : null;
+  newBoard(body: NewBoardRequest): Promise<BoardResponse | null> {
+    return this.makeRequest<NewBoardRequest, BoardResponse>('POST', '/board', body);
   }
 
-  newBoard(): Promise<ParsedBoardResponse | null> {
-    return this.makeRequest<undefined, BoardResponse>('POST', '/board').then(
-      this.handleBoardResponse
-    );
+  emptyBoard(): Promise<BoardResponse | null> {
+    return this.newBoard({ type: 'empty' });
   }
 
-  private alterBoard(
-    boardId: number,
-    body: AlterBoardRequest
-  ): Promise<ParsedBoardResponse | null> {
-    return this.makeRequest<AlterBoardRequest, BoardResponse>(
-      'PUT',
-      `/board/${boardId}`,
-      body
-    ).then(this.handleBoardResponse);
+  randomBoard(): Promise<BoardResponse | null> {
+    return this.newBoard({ type: 'random' });
   }
 
-  changeBoardState(boardId: number, new_state: BoardState): Promise<ParsedBoardResponse | null> {
+  private alterBoard(boardId: number, body: AlterBoardRequest): Promise<BoardResponse | null> {
+    return this.makeRequest<AlterBoardRequest, BoardResponse>('PUT', `/board/${boardId}`, body);
+  }
+
+  changeBoardState(boardId: number, new_state: BoardState): Promise<BoardResponse | null> {
     return this.alterBoard(boardId, { type: 'change_state', new_state });
   }
 
-  undoMove(boardId: number): Promise<ParsedBoardResponse | null> {
+  undoMove(boardId: number): Promise<BoardResponse | null> {
     return this.alterBoard(boardId, { type: 'undo_move' });
   }
 
-  reset(boardId: number): Promise<ParsedBoardResponse | null> {
+  reset(boardId: number): Promise<BoardResponse | null> {
     return this.alterBoard(boardId, { type: 'reset' });
   }
 
@@ -117,53 +106,39 @@ export class ApiService {
     return this.makeRequest<undefined, {}>('DELETE', `/board/${boardId}`);
   }
 
-  private handleSolveResponse(response: SolveResponse | null): ParsedSolveResponse | null {
-    return response
-      ? response.type === 'solved'
-        ? parseSolvedResponse(response)
-        : response
-      : null;
-  }
-
-  solveBoard(boardId: number): Promise<ParsedSolveResponse | null> {
-    return this.makeRequest<undefined, SolveResponse>('POST', `/board/${boardId}/solve`).then(
-      this.handleSolveResponse
-    );
+  solveBoard(boardId: number): Promise<SolveResponse | null> {
+    return this.makeRequest<undefined, SolveResponse>('POST', `/board/${boardId}/solve`);
   }
 
   addBlock(
     boardId: number,
-    blockId: BlockId,
+    block: Block,
     minRow: number,
     minCol: number
-  ): Promise<ParsedBoardResponse | null> {
+  ): Promise<BoardResponse | null> {
     return this.makeRequest<AddBlockRequest, BoardResponse>('POST', `/board/${boardId}/block`, {
-      block_id: blockId,
+      block,
       min_row: minRow,
       min_col: minCol,
-    }).then(this.handleBoardResponse);
+    });
   }
 
   private alterBlock(
     boardId: number,
     blockIdx: number,
     body: AlterBlockRequest
-  ): Promise<ParsedBoardResponse | null> {
+  ): Promise<BoardResponse | null> {
     return this.makeRequest<AlterBlockRequest, BoardResponse>(
       'PUT',
       `/board/${boardId}/block/${blockIdx}`,
       body
-    ).then(this.handleBoardResponse);
+    );
   }
 
-  changeBlock(
-    boardId: number,
-    blockIdx: number,
-    newBlockId: BlockId
-  ): Promise<ParsedBoardResponse | null> {
+  changeBlock(boardId: number, blockIdx: number, newBlock: Block): Promise<BoardResponse | null> {
     return this.alterBlock(boardId, blockIdx, {
       type: 'change_block',
-      new_block_id: newBlockId,
+      new_block: newBlock,
     });
   }
 
@@ -172,7 +147,7 @@ export class ApiService {
     blockIdx: number,
     rowDiff: number,
     colDiff: number
-  ): Promise<ParsedBoardResponse | null> {
+  ): Promise<BoardResponse | null> {
     return this.alterBlock(boardId, blockIdx, {
       type: 'move_block',
       row_diff: rowDiff,
@@ -180,10 +155,10 @@ export class ApiService {
     });
   }
 
-  removeBlock(boardId: number, blockIdx: number): Promise<ParsedBoardResponse | null> {
+  removeBlock(boardId: number, blockIdx: number): Promise<BoardResponse | null> {
     return this.makeRequest<undefined, BoardResponse>(
       'DELETE',
       `/board/${boardId}/block/${blockIdx}`
-    ).then(this.handleBoardResponse);
+    );
   }
 }

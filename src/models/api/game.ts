@@ -1,27 +1,28 @@
-export type BlockId = 1 | 2 | 3 | 4;
+export enum Block {
+  OneByOne = 'one_by_one',
+  OneByTwo = 'one_by_two',
+  TwoByOne = 'two_by_one',
+  TwoByTwo = 'two_by_two',
+}
 
-export const rowsFromBlockId = (blockId: BlockId) => {
-  switch (blockId) {
-    case 1:
+export const getBlockRows = (block: Block) => {
+  switch (block) {
+    case Block.OneByOne:
+    case Block.OneByTwo:
       return 1;
-    case 2:
-      return 1;
-    case 3:
-      return 2;
-    case 4:
+    case Block.TwoByOne:
+    case Block.TwoByTwo:
       return 2;
   }
 };
 
-export const colsFromBlockId = (blockId: 1 | 2 | 3 | 4) => {
-  switch (blockId) {
-    case 1:
+export const getBlockCols = (block: Block) => {
+  switch (block) {
+    case Block.OneByOne:
+    case Block.TwoByOne:
       return 1;
-    case 2:
-      return 2;
-    case 3:
-      return 1;
-    case 4:
+    case Block.OneByTwo:
+    case Block.TwoByTwo:
       return 2;
   }
 };
@@ -31,23 +32,26 @@ export interface Position {
   col: number;
 }
 
-export interface Block {
-  block_id: BlockId;
+export interface PositionedBlock {
+  block: Block;
   min_position: Position;
+  max_position: Position;
 }
 
-export interface BoardBlock extends Block {
+export interface BoardBlock extends PositionedBlock {
+  idx: number;
   rows: number;
   cols: number;
-  min_position: Position;
-  idx: number;
 }
 
-export function blockToBoardBlock(block: Block, idx: number): BoardBlock {
+export function positionedBlockToBoardBlock(
+  positionedBlock: PositionedBlock,
+  idx: number
+): BoardBlock {
   return {
-    ...block,
-    rows: rowsFromBlockId(block.block_id),
-    cols: colsFromBlockId(block.block_id),
+    ...positionedBlock,
+    rows: getBlockRows(positionedBlock.block),
+    cols: getBlockCols(positionedBlock.block),
     idx,
   };
 }

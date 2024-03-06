@@ -1,13 +1,29 @@
-import { BlockId, BoardState } from './game';
+import { Block, BoardState } from './game';
+
+interface EmptyBoard {
+  type: 'empty';
+}
+
+interface RandomBoard {
+  type: 'random';
+}
+
+export type NewBoard = EmptyBoard | RandomBoard;
+
+export interface Reset {
+  type: 'reset';
+}
+
+export type AlterBoard = ChangeState | Reset | UndoMove;
 
 export interface AddBlock {
-  block_id: BlockId;
+  block: Block;
   min_row: number;
   min_col: number;
 }
 
 interface ChangeBlockData {
-  new_block_id: BlockId;
+  new_block: Block;
 }
 
 export interface ChangeBlock extends ChangeBlockData {
@@ -36,9 +52,3 @@ export interface ChangeState extends ChangeStateData {
 export interface UndoMove {
   type: 'undo_move';
 }
-
-export interface Reset {
-  type: 'reset';
-}
-
-export type AlterBoard = ChangeState | Reset | UndoMove;

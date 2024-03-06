@@ -1,24 +1,26 @@
 import { Box, colors, Modal } from '@mui/material';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
-import { useAppSelector } from '../state/hooks';
 import { SizeContext } from '../App';
-import { Status } from '../state/boardSlice';
+import { Status } from '../models/ui';
+import { selectBoardStatus } from '../features/board';
+import { useAppSelector } from '../store';
+import { selectNumMoves, selectNumOptimalMoves } from '../features/manualSolve';
 
 const DoneModal: FunctionComponent = () => {
-  const status = useAppSelector((state) => state.board.status);
-  const solutionLength = useAppSelector((state) => state.manualSolve.moves.length);
-  const numOptimalMoves = useAppSelector((state) => state.manualSolve.numOptimalMoves);
+  const boardStatus = useAppSelector(selectBoardStatus);
+  const numMoves = useAppSelector(selectNumMoves);
+  const numOptimalMoves = useAppSelector(selectNumOptimalMoves);
 
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if ([Status.Solved, Status.SolvedOptimally].includes(status)) {
+    if ([Status.Solved, Status.SolvedOptimally].includes(boardStatus)) {
       setOpen(true);
     } else {
       setOpen(false);
     }
-  }, [status]);
+  }, [boardStatus]);
 
   const { isMobile, cellSize, boardWidth } = useContext(SizeContext);
 
@@ -77,10 +79,10 @@ const DoneModal: FunctionComponent = () => {
                 color: colors.green[600],
               }}
             >
-              {solutionLength}
+              {numMoves}
             </Box>
-            <span>{solutionLength === 1 ? ' move. ' : ' moves. '}</span>
-            {status === Status.SolvedOptimally ? (
+            <span>{numMoves === 1 ? ' move. ' : ' moves. '}</span>
+            {boardStatus === Status.SolvedOptimally ? (
               <span>{'That is the fewest moves possible moves!'}</span>
             ) : (
               <>
@@ -93,7 +95,7 @@ const DoneModal: FunctionComponent = () => {
                 >
                   {numOptimalMoves || 0}
                 </Box>
-                <span>{solutionLength === 1 ? ' move.' : ' moves.'}</span>
+                <span>{numMoves === 1 ? ' move.' : ' moves.'}</span>
               </>
             )}
           </Box>
