@@ -1,6 +1,6 @@
 import { createContext, FunctionComponent, useEffect, useState } from 'react';
 import { Box, createTheme, CssBaseline, ThemeProvider, useMediaQuery } from '@mui/material';
-import Board from './components/board/Board';
+import Board from './components/Board';
 import Buttons from './components/Buttons';
 import StatusMsg from './components/StatusMsg';
 import TitleContainer from './components/TitleContainer';

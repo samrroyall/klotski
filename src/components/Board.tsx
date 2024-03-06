@@ -1,33 +1,40 @@
 import { FunctionComponent, useState, useEffect, useContext } from 'react';
 import { Box, useTheme } from '@mui/material';
-import Block from '../block/Block';
-import Cell from '../cell/Cell';
-import { NUM_COLS, NUM_ROWS } from '../../constants';
-import { SizeContext } from '../../App';
-import { useAppSelector } from '../../state/hooks';
-import { Styles } from './Styles';
+import Block from './Block';
+import Cell from './Cell';
+import { NUM_COLS, NUM_ROWS } from '../constants';
+import { SizeContext } from '../App';
+import { useSelector } from 'react-redux';
+import { selectBlocks } from '../features/board';
 
-const UIBoard: FunctionComponent = () => {
+const Board: FunctionComponent = () => {
   const theme = useTheme();
   const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
-  const board = useAppSelector((state) => state.board);
+  const blocks = useSelector(selectBlocks);
 
   useEffect(() => {
-    setUiBlocks(
-      board.blocks.map((boardBlock) => (
-        <Block key={`block-${boardBlock.idx}`} boardBlock={boardBlock} />
-      ))
-    );
-  }, [board.blocks, board.grid]);
+    setUiBlocks(blocks.map((block) => <Block key={`block-${block.idx}`} block={block} />));
+  }, [blocks]);
 
   const { borderSize, boardHeight, boardWidth, cellSize } = useContext(SizeContext);
 
-  const boardMargin = Styles.getBoardMargin(boardWidth);
+  const boardPositioning = { position: 'absolute', top: 0, left: 0 };
 
-  const boardSizing = Styles.getBoardSizing(boardHeight, boardWidth);
+  const boardMargin = `calc(0.5 * (100% - ${boardWidth}))`;
 
-  const cellStyles = Styles.getCellStyles(borderSize, cellSize, theme);
+  const boardSizing = {
+    height: `calc(${boardHeight})`,
+    width: `calc(${boardWidth})`,
+  };
+
+  const cellStyles = {
+    height: `calc(${cellSize} + ${borderSize})`,
+    width: `calc(${cellSize} + ${borderSize})`,
+    border: `${borderSize} solid`,
+    borderColor: theme.palette.text.primary,
+    padding: 0,
+  };
 
   return (
     <Box
@@ -37,7 +44,7 @@ const UIBoard: FunctionComponent = () => {
         ...boardSizing,
       }}
     >
-      <Box sx={{ ...boardSizing, ...Styles.boardPositioning }}>{uiBlocks}</Box>
+      <Box sx={{ ...boardSizing, ...boardPositioning }}>{uiBlocks}</Box>
       <table style={{ position: 'absolute', top: 0, left: 0, borderCollapse: 'collapse' }}>
         <tbody>
           {Array.from(Array(NUM_ROWS).keys()).map((i) => (
@@ -55,4 +62,4 @@ const UIBoard: FunctionComponent = () => {
   );
 };
 
-export default UIBoard;
+export default Board;
