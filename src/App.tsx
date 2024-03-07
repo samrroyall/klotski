@@ -15,9 +15,9 @@ import {
 export const SizeContext = createContext<Sizes>(getSizes(false, false));
 
 const App: FunctionComponent = () => {
-  // State
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF})`);
   const isTablet = useMediaQuery(`(max-width:${TABLET_CUTOFF})`);
+
   const [theme, setTheme] = useState(
     createTheme({
       palette: {
@@ -25,12 +25,13 @@ const App: FunctionComponent = () => {
       },
     })
   );
+
   const [sizes, setSizes] = useState(getSizes(isMobile, isTablet));
+
   useEffect(() => {
     setSizes(getSizes(isMobile, isTablet));
   }, [isMobile, isTablet]);
 
-  // Styling
   const containerStyle = {
     height: '100vh',
     display: 'flex',
@@ -41,6 +42,7 @@ const App: FunctionComponent = () => {
     touchAction: 'manipulation',
     userSelect: 'none',
   };
+
   const mobileHeights = [
     { height: 'fill-available' },
     { height: '-webkit-fill-available' },
