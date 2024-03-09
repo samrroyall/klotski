@@ -7,8 +7,6 @@ import {
   TABLET_CELL_SIZE,
 } from '../constants';
 
-// Responsive helpers
-
 export interface Sizes {
   isMobile: boolean;
   isTablet: boolean;

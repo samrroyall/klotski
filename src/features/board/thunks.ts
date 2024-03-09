@@ -5,6 +5,8 @@ import { resetAlgoSolve } from '../algoSolve';
 import { resetManualSolve } from '../manualSolve';
 import { createThunk } from '../../store';
 
+const _ = require('lodash/fp');
+
 const api = new ApiService();
 
 export const createEmptyBoard = createThunk<void, void>(
@@ -79,16 +81,34 @@ export const removeBlock = createThunk<BoardBlock, void>(
   }
 );
 
-export const changeBlock = createThunk<{ idx: number; nextBlock: Block }, void>(
-  'board/changeBlock',
-  async (args, thunkAPI): Promise<void> => {
-    const boardId = thunkAPI.getState().board.id;
-    if (boardId) {
-      api.changeBlock(boardId, args.idx, args.nextBlock).then((response) => {
+export const changeBlock = createThunk<
+  { idx: number; newBlock: Block; minPosition: Position },
+  void
+>('board/changeBlock', async (args, thunkAPI): Promise<void> => {
+  const boardId = thunkAPI.getState().board.id;
+  if (boardId) {
+    const oldBlock = thunkAPI.getState().board.blocks[args.idx];
+
+    if (!_.isEqual(oldBlock.min_position, args.minPosition)) {
+      await api.removeBlock(boardId, args.idx).then((response) => {
+        if (response) {
+          thunkAPI.dispatch(updateBoard(response));
+        }
+      });
+
+      api
+        .addBlock(boardId, args.newBlock, args.minPosition.row, args.minPosition.col)
+        .then((response) => {
+          if (response) {
+            thunkAPI.dispatch(updateBoard(response));
+          }
+        });
+    } else {
+      api.changeBlock(boardId, args.idx, args.newBlock).then((response) => {
         if (response) {
           thunkAPI.dispatch(updateBoard(response));
         }
       });
     }
   }
-);
+});
