@@ -22,14 +22,35 @@ const TitleContainer: FunctionComponent = () => {
     <Box
       sx={{
         padding: `${isMobile ? 0.3 : isTablet ? 0.5 : 1}rem`,
-        fontSize: '1rem',
+        fontSize: `${isMobile ? 0.8 : 1}rem`,
       }}
     >
-      Click on a cell to add a block, click the <b>⟲</b> icon to change the block, and click the{' '}
-      <b>×</b> icon to remove the block. A valid board contains
-      <b> exactly one </b> 2×2 block and <b> exactly two </b> free spaces. You can also click{' '}
-      <b>Create Board For Me</b> to get a random board. Move the 2×2 block to the red area at the
-      bottom of the board to win!
+      <Box style={{ marginBottom: '0.1rem' }}>
+        <b>Building a Board:</b>
+        <ul style={{ margin: '0' }}>
+          <li>Click on an empty cell to add a block</li>
+          <li>Click on a block to change its size</li>
+          <li>
+            Click the <b>×</b> icon to remove the block
+          </li>
+          <li>
+            A valid board contains <em>exactly one</em> 2×2 block and <em>exactly two</em> free
+            spaces
+          </li>
+        </ul>
+      </Box>
+      <Box style={{ marginBottom: '0.1rem' }}>
+        <b>
+          <em>Note: </em>
+        </b>
+        You can also click the <em>Create Board For Me</em> button to get a random board
+      </Box>
+      <Box style={{ marginBottom: '0.1rem' }}>
+        <b style={{ display: 'block' }}>How to win:</b>
+        <ul style={{ margin: '0' }}>
+          <li>Move the 2×2 block to the red area at the bottom of the board </li>
+        </ul>
+      </Box>
     </Box>
   );
 
