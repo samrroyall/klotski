@@ -40,33 +40,30 @@ const Block: FunctionComponent<Props> = ({ block }) => {
       })) || []
   );
 
-  const inLastRow = block.min_position.row >= NUM_ROWS - 1;
-  const inLastCol = block.min_position.col >= NUM_COLS - 1;
   const cellsFree = NUM_COLS * NUM_ROWS - 2 - (numCellsFilled - block.rows * block.cols);
 
-  const isCellFilled = (i: number, j: number) => grid[i * NUM_COLS + j];
-
-  const isRightCellFree = () =>
-    block.cols > 1 ||
-    (!inLastCol && !isCellFilled(block.min_position.row, block.min_position.col + 1));
-
-  const isBottomCellFree = () =>
-    block.rows > 1 ||
-    (!inLastRow && !isCellFilled(block.min_position.row + 1, block.min_position.col));
-
-  const isBottomRightCellFree = () =>
-    (block.rows > 1 && block.cols > 1) ||
-    (!inLastRow &&
-      !inLastCol &&
-      !isCellFilled(block.min_position.row + 1, block.min_position.col + 1));
+  const inLastRow = block.min_position.row >= NUM_ROWS - 1;
+  const inLastCol = block.min_position.col >= NUM_COLS - 1;
 
   useEffect(() => {
     const blocks = [Block_.OneByOne, Block_.OneByTwo, Block_.TwoByOne, Block_.TwoByTwo];
     const blockIdx = blocks.indexOf(block.block);
 
-    const rightCellIsFree = isRightCellFree();
-    const bottomCellIsFree = isBottomCellFree();
-    const bottomRightCellIsFree = isBottomRightCellFree();
+    const isCellFilled = (i: number, j: number) => grid[i * NUM_COLS + j];
+
+    const rightCellIsFree =
+      block.cols > 1 ||
+      (!inLastCol && !isCellFilled(block.min_position.row, block.min_position.col + 1));
+
+    const bottomCellIsFree =
+      block.rows > 1 ||
+      (!inLastRow && !isCellFilled(block.min_position.row + 1, block.min_position.col));
+
+    const bottomRightCellIsFree =
+      (block.rows > 1 && block.cols > 1) ||
+      (!inLastRow &&
+        !inLastCol &&
+        !isCellFilled(block.min_position.row + 1, block.min_position.col + 1));
 
     for (let i = 0; i < 3; i++) {
       switch (blocks[(blockIdx + i + 1) % 4]) {
@@ -104,7 +101,7 @@ const Block: FunctionComponent<Props> = ({ block }) => {
     }
 
     setNextBlock(null);
-  }, [block, cellsFree, grid, numCellsFilled, numTwoByTwoBlocks]);
+  }, [block, cellsFree, grid, inLastRow, inLastCol, numCellsFilled, numTwoByTwoBlocks]);
 
   const onClickBlock = () => {
     if (boardStatus !== Status.ManualSolving) {
