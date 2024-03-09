@@ -53,8 +53,8 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   const isWinningCell =
     [WINNING_ROW, WINNING_ROW + 1].includes(row) && [WINNING_COL, WINNING_COL + 1].includes(col);
 
-  const winningCellColor = theme.palette.mode === 'dark' ? colors.red[50] : colors.red[100];
-  const winningCellHoverColor = theme.palette.mode === 'dark' ? colors.red[100] : colors.red[200];
+  const winningCellColor = colors.red[100];
+  const winningCellHoverColor = colors.red[200];
 
   const cellColor = isWinningCell ? winningCellColor : theme.palette.action.hover;
   const cellHoverColor = [Status.Start, Status.Building].includes(boardStatus)

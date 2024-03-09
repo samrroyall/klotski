@@ -1,5 +1,5 @@
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
-import { Paper, colors, Box, useTheme } from '@mui/material';
+import { Paper, Box, useTheme } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { Block as Block_, BoardBlock, Position } from '../models/api/game';
 import { SizeContext } from '../App';
@@ -87,7 +87,7 @@ const Block: FunctionComponent<Props> = ({ block }) => {
         border: isMovable ? `${borderSize} solid` : 0,
         borderColor: theme.palette.text.primary,
         backgroundColor: BLOCK_COLOR(block.block)[
-          theme.palette.mode === 'dark' ? (hovering ? 600 : 400) : hovering ? 700 : 600
+          theme.palette.mode === 'dark' ? (hovering ? 600 : 500) : hovering ? 700 : 600
         ],
         cursor: boardStatus === Status.Building || isMovable ? 'pointer' : 'default',
         zIndex: isMovable ? 3 : 2,
@@ -105,17 +105,17 @@ const Block: FunctionComponent<Props> = ({ block }) => {
           justifyContent: 'flex-end',
           padding: `0.1rem 0.1rem ${closeButtonSize / 3}rem ${closeButtonSize / 3}rem`,
           zIndex: 2,
-          '& svg': {
-            color: theme.palette.mode === 'dark' ? colors.grey[800] : colors.grey[900],
-          },
-          '&:hover svg': {
-            color: theme.palette.mode === 'dark' ? colors.grey[900] : 'black',
-          },
           cursor: 'pointer',
         }}
         onClick={onClickCloseButton}
       >
-        <Close sx={{ fontSize: `${closeButtonSize}rem` }} key={`${blockKey}-close-button`} />
+        <Close
+          sx={{
+            fontSize: `${closeButtonSize}rem`,
+            color: 'black',
+          }}
+          key={`${blockKey}-close-button`}
+        />
       </Box>
       <Box
         sx={{
