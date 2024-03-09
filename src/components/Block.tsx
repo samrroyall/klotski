@@ -4,16 +4,104 @@ import { Close, Loop } from '@mui/icons-material';
 import { Block as Block_, BoardBlock, Position } from '../models/api/game';
 import { SizeContext } from '../App';
 import { changeBlock, removeBlock, selectBoardStatus } from '../features/board';
-import {
-  selectGrid,
-  selectNextMoves,
-  selectNumCellsFilled,
-  selectNumTwoByTwoBlocks,
-} from '../features/board/selectors';
+import { selectGrid, selectNextMoves } from '../features/board/selectors';
 import { setCurrentBlock, setAvailableMinPositions } from '../features/manualSolve';
 import { Status } from '../models/ui';
 import { BLOCK_COLOR, NUM_COLS, NUM_ROWS } from '../constants';
 import { RootState, useAppDispatch, useAppSelector } from '../store';
+
+interface ChangeBlock {
+  newBlock: Block_;
+  minPosition: Position;
+}
+
+const getNextChangeBlock = (block: BoardBlock, grid: (Block_ | null)[]): ChangeBlock | null => {
+  const numTwoByTwoBlocks = grid.filter((cell) => cell === Block_.TwoByTwo).length / 4;
+
+  const numCellsFilled = grid.filter((cell) => cell !== null).length;
+  const cellsFree = NUM_COLS * NUM_ROWS - 2 - (numCellsFilled - block.rows * block.cols);
+
+  const inLastRow = block.min_position.row >= NUM_ROWS - 1;
+  const inLastCol = block.min_position.col >= NUM_COLS - 1;
+
+  const blocks = [Block_.OneByOne, Block_.OneByTwo, Block_.TwoByOne, Block_.TwoByTwo];
+  const blockIdx = blocks.indexOf(block.block);
+
+  const isCellFilled = (i: number, j: number) => grid[i * NUM_COLS + j];
+
+  const leftCellIsFree = () =>
+    block.min_position.col > 0 && !isCellFilled(block.min_position.row, block.min_position.col - 1);
+
+  const rightCellIsFree = () =>
+    block.cols > 1 ||
+    (!inLastCol && !isCellFilled(block.min_position.row, block.min_position.col + 1));
+
+  const upCellIsFree = () =>
+    block.min_position.row > 0 && !isCellFilled(block.min_position.row - 1, block.min_position.col);
+
+  const downCellIsFree = () =>
+    block.rows > 1 ||
+    (!inLastRow && !isCellFilled(block.min_position.row + 1, block.min_position.col));
+
+  for (let i = 0; i < 3; i++) {
+    switch (blocks[(blockIdx + i + 1) % 4]) {
+      case Block_.OneByOne:
+        if (cellsFree >= 1) {
+          return { newBlock: Block_.OneByOne, minPosition: block.min_position };
+        }
+        break;
+      case Block_.OneByTwo:
+        if (cellsFree >= 2) {
+          if (rightCellIsFree()) {
+            return { newBlock: Block_.OneByTwo, minPosition: block.min_position };
+          }
+          if (leftCellIsFree()) {
+            return {
+              newBlock: Block_.OneByTwo,
+              minPosition: { row: block.min_position.row, col: block.min_position.col - 1 },
+            };
+          }
+        }
+        break;
+      case Block_.TwoByOne:
+        if (cellsFree >= 2) {
+          if (downCellIsFree()) {
+            return { newBlock: Block_.TwoByOne, minPosition: block.min_position };
+          }
+          if (upCellIsFree()) {
+            return {
+              newBlock: Block_.TwoByOne,
+              minPosition: { row: block.min_position.row - 1, col: block.min_position.col },
+            };
+          }
+        }
+        break;
+      case Block_.TwoByTwo:
+        if (numTwoByTwoBlocks === 0 && cellsFree >= 4) {
+          if (
+            rightCellIsFree() &&
+            downCellIsFree() &&
+            !isCellFilled(block.min_position.row + 1, block.min_position.col + 1)
+          ) {
+            return { newBlock: Block_.TwoByTwo, minPosition: block.min_position };
+          }
+          if (
+            leftCellIsFree() &&
+            upCellIsFree() &&
+            !isCellFilled(block.min_position.row - 1, block.min_position.col - 1)
+          ) {
+            return {
+              newBlock: Block_.TwoByTwo,
+              minPosition: { row: block.min_position.row - 1, col: block.min_position.col - 1 },
+            };
+          }
+        }
+        break;
+    }
+  }
+
+  return null;
+};
 
 interface Props {
   block: BoardBlock;
@@ -24,13 +112,11 @@ const Block: FunctionComponent<Props> = ({ block }) => {
   const theme = useTheme();
 
   const [isMovable, setIsMovable] = useState(false);
-  const [nextBlock, setNextBlock] = useState<Block_ | null>(null);
+  const [nextChangeBlock, setNextChangeBlock] = useState<ChangeBlock | null>(null);
 
   const boardStatus = useAppSelector(selectBoardStatus);
   const grid = useAppSelector(selectGrid);
   const nextMoves = useAppSelector(selectNextMoves);
-  const numCellsFilled = useAppSelector(selectNumCellsFilled);
-  const numTwoByTwoBlocks = useAppSelector(selectNumTwoByTwoBlocks);
 
   const minPositionsForBlock = useAppSelector(
     (state: RootState): Position[] =>
@@ -40,68 +126,9 @@ const Block: FunctionComponent<Props> = ({ block }) => {
       })) || []
   );
 
-  const cellsFree = NUM_COLS * NUM_ROWS - 2 - (numCellsFilled - block.rows * block.cols);
-
-  const inLastRow = block.min_position.row >= NUM_ROWS - 1;
-  const inLastCol = block.min_position.col >= NUM_COLS - 1;
-
   useEffect(() => {
-    const blocks = [Block_.OneByOne, Block_.OneByTwo, Block_.TwoByOne, Block_.TwoByTwo];
-    const blockIdx = blocks.indexOf(block.block);
-
-    const isCellFilled = (i: number, j: number) => grid[i * NUM_COLS + j];
-
-    const rightCellIsFree =
-      block.cols > 1 ||
-      (!inLastCol && !isCellFilled(block.min_position.row, block.min_position.col + 1));
-
-    const bottomCellIsFree =
-      block.rows > 1 ||
-      (!inLastRow && !isCellFilled(block.min_position.row + 1, block.min_position.col));
-
-    const bottomRightCellIsFree =
-      (block.rows > 1 && block.cols > 1) ||
-      (!inLastRow &&
-        !inLastCol &&
-        !isCellFilled(block.min_position.row + 1, block.min_position.col + 1));
-
-    for (let i = 0; i < 3; i++) {
-      switch (blocks[(blockIdx + i + 1) % 4]) {
-        case Block_.OneByOne:
-          if (cellsFree >= 1) {
-            setNextBlock(Block_.OneByOne);
-            return;
-          }
-          break;
-        case Block_.OneByTwo:
-          if (cellsFree >= 2 && rightCellIsFree) {
-            setNextBlock(Block_.OneByTwo);
-            return;
-          }
-          break;
-        case Block_.TwoByOne:
-          if (cellsFree >= 2 && bottomCellIsFree) {
-            setNextBlock(Block_.TwoByOne);
-            return;
-          }
-          break;
-        case Block_.TwoByTwo:
-          if (
-            numTwoByTwoBlocks === 0 &&
-            cellsFree >= 4 &&
-            rightCellIsFree &&
-            bottomCellIsFree &&
-            bottomRightCellIsFree
-          ) {
-            setNextBlock(Block_.TwoByTwo);
-            return;
-          }
-          break;
-      }
-    }
-
-    setNextBlock(null);
-  }, [block, cellsFree, grid, inLastRow, inLastCol, numCellsFilled, numTwoByTwoBlocks]);
+    setNextChangeBlock(getNextChangeBlock(block, grid));
+  }, [block, grid]);
 
   const onClickBlock = () => {
     if (boardStatus !== Status.ManualSolving) {
@@ -118,8 +145,8 @@ const Block: FunctionComponent<Props> = ({ block }) => {
   };
 
   const onClickCycleButton = () => {
-    if (nextBlock) {
-      dispatch(changeBlock({ idx: block.idx, nextBlock }));
+    if (nextChangeBlock) {
+      dispatch(changeBlock({ idx: block.idx, ...nextChangeBlock }));
     }
   };
 
