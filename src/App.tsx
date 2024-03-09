@@ -1,5 +1,12 @@
-import { createContext, FunctionComponent, useEffect, useState } from 'react';
-import { Box, createTheme, CssBaseline, ThemeProvider, useMediaQuery } from '@mui/material';
+import { createContext, FunctionComponent, useEffect, useMemo, useState } from 'react';
+import {
+  Box,
+  createTheme,
+  CssBaseline,
+  PaletteMode,
+  ThemeProvider,
+  useMediaQuery,
+} from '@mui/material';
 import Board from './components/Board';
 import Buttons from './components/Buttons';
 import StatusMsg from './components/StatusMsg';
@@ -18,13 +25,16 @@ const App: FunctionComponent = () => {
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF})`);
   const isTablet = useMediaQuery(`(max-width:${TABLET_CUTOFF})`);
 
-  const [theme, setTheme] = useState(
-    createTheme({
-      palette: {
-        mode: 'light',
-      },
-    })
-  );
+  if (!localStorage.getItem('theme')) {
+    localStorage.setItem('theme', 'light');
+  }
+
+  const [mode, setMode] = useState(localStorage.getItem('theme') as PaletteMode);
+
+  const theme = useMemo(() => {
+    localStorage.setItem('theme', mode);
+    return createTheme({ palette: { mode } });
+  }, [mode]);
 
   const [sizes, setSizes] = useState(getSizes(isMobile, isTablet));
 
@@ -57,15 +67,9 @@ const App: FunctionComponent = () => {
           <Box sx={isMobile ? [containerStyle, ...mobileHeights] : [containerStyle]}>
             <Box sx={{ position: 'absolute', top: '1rem', right: '1rem' }}>
               {theme.palette.mode === 'light' ? (
-                <DarkMode
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => setTheme(createTheme({ palette: { mode: 'dark' } }))}
-                />
+                <DarkMode sx={{ cursor: 'pointer' }} onClick={() => setMode('dark')} />
               ) : (
-                <LightMode
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => setTheme(createTheme({ palette: { mode: 'light' } }))}
-                />
+                <LightMode sx={{ cursor: 'pointer' }} onClick={() => setMode('light')} />
               )}
             </Box>
             <TitleContainer />
