@@ -157,7 +157,7 @@ const getNextChangeBlock = (block: BoardBlock, grid: (Block_ | null)[]): ChangeB
   const inLastRow = block.min_position.row >= NUM_ROWS - 1;
   const inLastCol = block.min_position.col >= NUM_COLS - 1;
 
-  const blocks = [Block_.OneByOne, Block_.OneByTwo, Block_.TwoByOne, Block_.TwoByTwo];
+  const blocks = [Block_.OneByOne, Block_.TwoByOne, Block_.OneByTwo, Block_.TwoByTwo];
   const blockIdx = blocks.indexOf(block.block);
 
   const isCellFilled = (i: number, j: number) => grid[i * NUM_COLS + j];
@@ -183,19 +183,6 @@ const getNextChangeBlock = (block: BoardBlock, grid: (Block_ | null)[]): ChangeB
           return { newBlock: Block_.OneByOne, minPosition: block.min_position };
         }
         break;
-      case Block_.OneByTwo:
-        if (cellsFree >= 2) {
-          if (rightCellIsFree()) {
-            return { newBlock: Block_.OneByTwo, minPosition: block.min_position };
-          }
-          if (leftCellIsFree()) {
-            return {
-              newBlock: Block_.OneByTwo,
-              minPosition: { row: block.min_position.row, col: block.min_position.col - 1 },
-            };
-          }
-        }
-        break;
       case Block_.TwoByOne:
         if (cellsFree >= 2) {
           if (downCellIsFree()) {
@@ -205,6 +192,19 @@ const getNextChangeBlock = (block: BoardBlock, grid: (Block_ | null)[]): ChangeB
             return {
               newBlock: Block_.TwoByOne,
               minPosition: { row: block.min_position.row - 1, col: block.min_position.col },
+            };
+          }
+        }
+        break;
+      case Block_.OneByTwo:
+        if (cellsFree >= 2) {
+          if (rightCellIsFree()) {
+            return { newBlock: Block_.OneByTwo, minPosition: block.min_position };
+          }
+          if (leftCellIsFree()) {
+            return {
+              newBlock: Block_.OneByTwo,
+              minPosition: { row: block.min_position.row, col: block.min_position.col - 1 },
             };
           }
         }
