@@ -1,9 +1,9 @@
 import { ApiService } from '../../services/api';
-import { updateBoard, updateBoardStatus } from '../board';
+import { updateBoardStatus } from '../board';
 import { decrementStep, incrementStep, initAlgoSolve } from '.';
 import { Status } from '../../models/ui';
-import { BoardState } from '../../models/api/game';
 import { createThunk } from '../../store';
+import { updateBlock } from '../board/slice';
 
 const api = new ApiService();
 
@@ -27,29 +27,35 @@ export const solveBoard = createThunk<void, void>('algoSolve/solveBoard', async 
 });
 
 export const prevStep = createThunk<void, void>('algoSolve/prevStep', async (_, thunkAPI) => {
-  const boardId = thunkAPI.getState().board.id;
-  if (boardId) {
-    api.undoMove(boardId).then((response) => {
-      if (response) {
-        thunkAPI.dispatch(updateBoard({ ...response, state: BoardState.Solving }));
-        thunkAPI.dispatch(decrementStep());
-      }
-    });
+  const state = thunkAPI.getState();
+  const steps = state.algoSolve.steps;
+  const stepIdx = state.algoSolve.stepIdx;
+
+  if (steps && stepIdx >= 0) {
+    const move = steps[stepIdx];
+
+    thunkAPI.dispatch(
+      updateBlock({
+        block_idx: move.block_idx,
+        row_diff: -move.row_diff,
+        col_diff: -move.col_diff,
+      })
+    );
+
+    thunkAPI.dispatch(decrementStep());
   }
 });
 
 export const nextStep = createThunk<void, void>('algoSolve/nextStep', async (_, thunkAPI) => {
   const state = thunkAPI.getState();
-  const boardId = state.board.id;
   const steps = state.algoSolve.steps;
   const stepIdx = state.algoSolve.stepIdx;
-  if (boardId && steps && stepIdx < steps.length - 1) {
+
+  if (steps && stepIdx < steps.length - 1) {
     const move = steps[stepIdx + 1];
-    api.moveBlock(boardId, move.block_idx, move.row_diff, move.col_diff).then((response) => {
-      if (response) {
-        thunkAPI.dispatch(updateBoard({ ...response, state: BoardState.Solving }));
-        thunkAPI.dispatch(incrementStep());
-      }
-    });
+
+    thunkAPI.dispatch(incrementStep());
+
+    thunkAPI.dispatch(updateBlock(move));
   }
 });

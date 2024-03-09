@@ -1,5 +1,11 @@
 import { CaseReducer, PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { Block, BoardBlock, Move, positionedBlockToBoardBlock } from '../../models/api/game';
+import {
+  Block,
+  BlockMove,
+  BoardBlock,
+  Move,
+  positionedBlockToBoardBlock,
+} from '../../models/api/game';
 import { NUM_COLS, NUM_ROWS } from '../../constants';
 import { Board as BoardResponse } from '../../models/api/response';
 import { Status, boardStateToStatus } from '../../models/ui';
@@ -36,6 +42,25 @@ const updateReducer: CaseReducer<State, PayloadAction<BoardResponse>> = (state, 
   state.nextMoves = payload.next_moves;
 };
 
+const updateBlockReducer: CaseReducer<State, PayloadAction<BlockMove>> = (state, { payload }) => {
+  const block = state.blocks[payload.block_idx];
+  state.blocks = [
+    ...state.blocks.slice(0, payload.block_idx),
+    {
+      ...block,
+      min_position: {
+        row: block.min_position.row + payload.row_diff,
+        col: block.min_position.col + payload.col_diff,
+      },
+      max_position: {
+        row: block.max_position.row + payload.row_diff,
+        col: block.max_position.col + payload.col_diff,
+      },
+    },
+    ...state.blocks.slice(payload.block_idx + 1),
+  ];
+};
+
 const updateStatusReducer: CaseReducer<State, PayloadAction<Status>> = (state, { payload }) => {
   state.status = payload;
 };
@@ -46,10 +71,11 @@ const boardSlice = createSlice({
   reducers: {
     reset: resetReducer,
     update: updateReducer,
+    updateBlock: updateBlockReducer,
     updateBoardStatus: updateStatusReducer,
   },
 });
 
-export const { reset, update, updateBoardStatus } = boardSlice.actions;
+export const { reset, update, updateBlock, updateBoardStatus } = boardSlice.actions;
 
 export default boardSlice.reducer;
