@@ -1,4 +1,4 @@
-import { Box, colors, Modal } from '@mui/material';
+import { Box, colors, Modal, useTheme } from '@mui/material';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { SizeContext } from '../App';
@@ -8,11 +8,12 @@ import { useAppSelector } from '../store';
 import { selectNumMoves, selectNumOptimalMoves } from '../features/manualSolve';
 
 const DoneModal: FunctionComponent = () => {
+  const theme = useTheme();
+  const [open, setOpen] = useState(false);
+
   const boardStatus = useAppSelector(selectBoardStatus);
   const numMoves = useAppSelector(selectNumMoves);
   const numOptimalMoves = useAppSelector(selectNumOptimalMoves);
-
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if ([Status.Solved, Status.SolvedOptimally].includes(boardStatus)) {
@@ -43,7 +44,7 @@ const DoneModal: FunctionComponent = () => {
           height: `${isMobile ? 12 : 20}rem`,
           width: `calc(${isMobile ? boardWidth : `${boardWidth} + ${cellSize}`})`,
           padding: `${isMobile ? 2 : 5}rem`,
-          bgcolor: 'background.paper',
+          bgcolor: theme.palette.background.default,
           borderRadius: '0.5rem',
           boxShadow: 24,
         }}
@@ -70,6 +71,7 @@ const DoneModal: FunctionComponent = () => {
             sx={{
               marginTop: `${isMobile ? 0.5 : 1}rem`,
               textAlign: 'center',
+              fontWeight: 'medium',
             }}
           >
             <span>{'Congratulations! You solved the board in '}</span>
@@ -79,7 +81,7 @@ const DoneModal: FunctionComponent = () => {
                 color: colors.green[600],
               }}
             >
-              {numMoves}
+              <b>{numMoves}</b>
             </Box>
             <span>{numMoves === 1 ? ' move. ' : ' moves. '}</span>
             {boardStatus === Status.SolvedOptimally ? (
@@ -93,7 +95,7 @@ const DoneModal: FunctionComponent = () => {
                     color: colors.red[300],
                   }}
                 >
-                  {numOptimalMoves || 0}
+                  <b>{numOptimalMoves || 0}</b>
                 </Box>
                 <span>{numMoves === 1 ? ' move.' : ' moves.'}</span>
               </>

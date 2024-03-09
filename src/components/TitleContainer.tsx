@@ -6,6 +6,7 @@ import {
   Tooltip,
   tooltipClasses,
   TooltipProps,
+  useTheme,
 } from '@mui/material';
 import { FunctionComponent, useContext, useState } from 'react';
 import { SizeContext } from '../App';
@@ -14,6 +15,7 @@ import { NUM_COLS } from '../constants';
 const TitleContainer: FunctionComponent = () => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
+  const theme = useTheme();
   const { isMobile, isTablet, cellSize } = useContext(SizeContext);
 
   const helpText = (
@@ -23,13 +25,14 @@ const TitleContainer: FunctionComponent = () => {
         fontSize: '1rem',
       }}
     >
-      Click on a cell to add a block. Click the '⟲' icon to change the block, and click the '×' icon
-      to remove the block. A valid board contains
+      Click on a cell to add a block, click the <b>⟲</b> icon to change the block, and click the{' '}
+      <b>×</b> icon to remove the block. A valid board contains
       <b> exactly one </b> 2×2 block and <b> exactly two </b> free spaces. You can also click{' '}
-      <em> Create Board For Me </em> to get a random board. Move the 2×2 block to the red area at
-      the bottom of the board to win!
+      <b>Create Board For Me</b> to get a random board. Move the 2×2 block to the red area at the
+      bottom of the board to win!
     </Box>
   );
+
   const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
     <ClickAwayListener onClickAway={() => setTooltipOpen(false)}>
       <Tooltip {...props} classes={{ popper: className }} />
@@ -38,6 +41,13 @@ const TitleContainer: FunctionComponent = () => {
     [`& .${tooltipClasses.tooltip}`]: {
       maxWidth: `calc(${NUM_COLS} * ${cellSize} + ${isMobile ? '1rem' : cellSize})`,
       marginTop: '0.25rem !important',
+      backgroundColor: theme.palette.background.default,
+      border: `1px solid ${theme.palette.text.primary}`,
+      color: theme.palette.text.primary,
+    },
+    [`& .${tooltipClasses.arrow}::before`]: {
+      backgroundColor: theme.palette.background.default,
+      border: `1px solid ${theme.palette.text.primary}`,
     },
   });
 
@@ -70,10 +80,12 @@ const TitleContainer: FunctionComponent = () => {
           }}
         >
           <HelpOutlineOutlined
-            color="inherit"
             sx={{
               verticalAlign: 'end',
               fontSize: `${isMobile ? 14 : 16}px`,
+              [`& svg`]: {
+                fill: theme.palette.text.primary,
+              },
             }}
             onClick={() => {
               if (isMobile) setTooltipOpen(!tooltipOpen);

@@ -86,7 +86,7 @@ const Buttons: FunctionComponent = () => {
         setButtons(<></>);
         break;
     }
-  }, [boardStatus, numMoves, stepIdx, steps]);
+  }, [boardStatus, dispatch, numMoves, stepIdx, steps]);
 
   const { boardHeight } = useContext(SizeContext);
   const buttonStyling = { position: 'absolute', width: '100%', left: 0 };

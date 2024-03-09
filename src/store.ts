@@ -4,12 +4,19 @@ import boardReducer from './features/board/slice';
 import manualSolveReducer from './features/manualSolve/slice';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
+const persistedState = localStorage.getItem('reduxState');
+
 const store = configureStore({
   reducer: {
     algoSolve: algoSolveReducer,
     board: boardReducer,
     manualSolve: manualSolveReducer,
   },
+  preloadedState: persistedState ? JSON.parse(persistedState) : {},
+});
+
+store.subscribe(() => {
+  localStorage.setItem('reduxState', JSON.stringify(store.getState()));
 });
 
 export type RootState = ReturnType<typeof store.getState>;
