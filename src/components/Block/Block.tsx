@@ -1,14 +1,15 @@
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { Paper, Box, useTheme } from '@mui/material';
 import { Close } from '@mui/icons-material';
-import { Block as Block_, BoardBlock, Position } from '../models/api/game';
-import { SizeContext } from '../App';
-import { changeBlock, removeBlock, selectBoardStatus } from '../features/board';
-import { selectGrid, selectNextMoves } from '../features/board/selectors';
-import { setCurrentBlock, setAvailableMinPositions } from '../features/manualSolve';
-import { Status } from '../models/ui';
-import { BLOCK_COLOR, NUM_COLS, NUM_ROWS } from '../constants';
-import { RootState, useAppDispatch, useAppSelector } from '../store';
+import { BoardBlock, Position } from '../../models/api/game';
+import { SizeContext } from '../../App';
+import { changeBlock, removeBlock, selectBoardStatus } from '../../features/board';
+import { selectGrid, selectNextMoves } from '../../features/board/selectors';
+import { setCurrentBlock, setAvailableMinPositions } from '../../features/manualSolve';
+import { ChangeBlock, getNextChangeBlock } from './changeBlock';
+import { Status } from '../../models/ui';
+import { BLOCK_COLOR } from '../../constants';
+import { RootState, useAppDispatch, useAppSelector } from '../../store';
 
 interface Props {
   block: BoardBlock;
@@ -141,99 +142,6 @@ const Block: FunctionComponent<Props> = ({ block }) => {
       />
     </Paper>
   );
-};
-
-interface ChangeBlock {
-  newBlock: Block_;
-  minPosition: Position;
-}
-
-const getNextChangeBlock = (block: BoardBlock, grid: (Block_ | null)[]): ChangeBlock | null => {
-  const numTwoByTwoBlocks = grid.filter((cell) => cell === Block_.TwoByTwo).length / 4;
-
-  const numCellsFilled = grid.filter((cell) => cell !== null).length;
-  const cellsFree = NUM_COLS * NUM_ROWS - 2 - (numCellsFilled - block.rows * block.cols);
-
-  const inLastRow = block.min_position.row >= NUM_ROWS - 1;
-  const inLastCol = block.min_position.col >= NUM_COLS - 1;
-
-  const blocks = [Block_.OneByOne, Block_.TwoByOne, Block_.OneByTwo, Block_.TwoByTwo];
-  const blockIdx = blocks.indexOf(block.block);
-
-  const isCellFilled = (i: number, j: number) => grid[i * NUM_COLS + j];
-
-  const leftCellIsFree = () =>
-    block.min_position.col > 0 && !isCellFilled(block.min_position.row, block.min_position.col - 1);
-
-  const rightCellIsFree = () =>
-    block.cols > 1 ||
-    (!inLastCol && !isCellFilled(block.min_position.row, block.min_position.col + 1));
-
-  const upCellIsFree = () =>
-    block.min_position.row > 0 && !isCellFilled(block.min_position.row - 1, block.min_position.col);
-
-  const downCellIsFree = () =>
-    block.rows > 1 ||
-    (!inLastRow && !isCellFilled(block.min_position.row + 1, block.min_position.col));
-
-  for (let i = 0; i < 3; i++) {
-    switch (blocks[(blockIdx + i + 1) % 4]) {
-      case Block_.OneByOne:
-        if (cellsFree >= 1) {
-          return { newBlock: Block_.OneByOne, minPosition: block.min_position };
-        }
-        break;
-      case Block_.TwoByOne:
-        if (cellsFree >= 2) {
-          if (downCellIsFree()) {
-            return { newBlock: Block_.TwoByOne, minPosition: block.min_position };
-          }
-          if (upCellIsFree()) {
-            return {
-              newBlock: Block_.TwoByOne,
-              minPosition: { row: block.min_position.row - 1, col: block.min_position.col },
-            };
-          }
-        }
-        break;
-      case Block_.OneByTwo:
-        if (cellsFree >= 2) {
-          if (rightCellIsFree()) {
-            return { newBlock: Block_.OneByTwo, minPosition: block.min_position };
-          }
-          if (leftCellIsFree()) {
-            return {
-              newBlock: Block_.OneByTwo,
-              minPosition: { row: block.min_position.row, col: block.min_position.col - 1 },
-            };
-          }
-        }
-        break;
-      case Block_.TwoByTwo:
-        if (numTwoByTwoBlocks === 0 && cellsFree >= 4) {
-          if (
-            rightCellIsFree() &&
-            downCellIsFree() &&
-            !isCellFilled(block.min_position.row + 1, block.min_position.col + 1)
-          ) {
-            return { newBlock: Block_.TwoByTwo, minPosition: block.min_position };
-          }
-          if (
-            leftCellIsFree() &&
-            upCellIsFree() &&
-            !isCellFilled(block.min_position.row - 1, block.min_position.col - 1)
-          ) {
-            return {
-              newBlock: Block_.TwoByTwo,
-              minPosition: { row: block.min_position.row - 1, col: block.min_position.col - 1 },
-            };
-          }
-        }
-        break;
-    }
-  }
-
-  return null;
 };
 
 export default Block;

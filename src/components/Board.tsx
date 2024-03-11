@@ -1,6 +1,6 @@
 import { FunctionComponent, useState, useEffect, useContext } from 'react';
 import { Box } from '@mui/material';
-import Block from './Block';
+import Block from './Block/Block';
 import Cell from './Cell';
 import { NUM_COLS, NUM_ROWS } from '../constants';
 import { SizeContext } from '../App';
