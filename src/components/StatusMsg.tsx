@@ -20,29 +20,16 @@ const StatusMsg: FunctionComponent<{}> = () => {
 
   useEffect(() => {
     switch (boardStatus) {
-      case Status.Start:
-        setMsg(<span>{'Click on a cell to add a block'}</span>);
-        break;
-      case Status.Building:
-        setMsg(<span>{'A valid board has exactly one 2×2 block and two empty cells'}</span>);
-        break;
-      case Status.ReadyToSolve:
-        setMsg(<span>{'Move the 2×2 block to the red area at the bottom to win'}</span>);
-        break;
       case Status.AlreadySolved:
-        setMsg(<span>{'Oops! It looks like the board is already solved'}</span>);
+        setMsg(<span>{'The board is already solved'}</span>);
         break;
       case Status.ManualSolving:
         setMsg(
           <>
-            <span>
-              {'Current Moves: '}
-              <strong>{numMoves}</strong>
-            </span>
-            <span style={{ marginLeft: '1rem' }}>
-              {'Fewest Possible Moves: '}
-              <strong>{numOptimalMoves || '-'}</strong>
-            </span>
+            <span>{'Current Moves: '}</span>
+            <strong>{numMoves}</strong>
+            <span style={{ marginLeft: '1rem' }}>{'Fewest Possible Moves: '}</span>
+            <strong>{numOptimalMoves || '-'}</strong>
           </>
         );
         break;
@@ -56,7 +43,7 @@ const StatusMsg: FunctionComponent<{}> = () => {
         );
         break;
       case Status.UnableToSolve:
-        setMsg(<span>{'No Solution Found :('}</span>);
+        setMsg(<span>{'The board has no solution'}</span>);
         break;
       default:
         setMsg(<span> </span>);

@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, Method } from 'axios';
+import axios, { AxiosRequestConfig, Method } from 'axios';
 import {
   AddBlock as AddBlockRequest,
   AlterBlock as AlterBlockRequest,
@@ -8,52 +8,13 @@ import {
 import { Board as BoardResponse, Solve as SolveResponse } from '../models/api/response';
 import { Block, BoardState } from '../models/api/game';
 
+import * as Sentry from '@sentry/react';
+
 export class ApiService {
   baseUrl: string;
 
-  constructor(baseUrl: string = 'http://127.0.0.1:8081/api') {
-    this.baseUrl = baseUrl;
-  }
-
-  private handleError(err: Error | AxiosError): void {
-    if (axios.isAxiosError(err)) {
-      const axiosError = err as AxiosError;
-
-      if (axiosError.response) {
-        const response: AxiosResponse = axiosError.response;
-
-        switch (response.status) {
-          case 400:
-            //console.error(`Received HTTP 400 BadRequest response from API: ${response.data}`);
-            return;
-          case 404:
-            //console.error(`Received HTTP 404 NotFound response from API: ${response.data}`);
-            return;
-          case 405:
-            //console.warn(`Received HTTP 405 NotAllowed response from API: ${response.data}`);
-            return;
-          default:
-            //console.error(
-            //  `Received HTTP ${response.status} Unhandled response from API: ${response.data}`
-            //);
-            return;
-        }
-      } else if (axiosError.request) {
-        //console.log(axiosError);
-        //const request: ClientRequest = axiosError.request;
-
-        //console.error(
-        //  `Request ${request.method} '${request.path}' did not recieve response from API`
-        //);
-        return;
-      } else {
-        //console.error(`Unknown Error occurred: ${axiosError.message}`);
-        return;
-      }
-    } else {
-      //console.error(`Unknown Error occurred: ${err.message}`);
-      return;
-    }
+  constructor() {
+    this.baseUrl = process.env.REACT_APP_API_URL! + '/api';
   }
 
   private makeRequest<T, U>(method: Method, path: string, data?: T): Promise<U | null> {
@@ -65,11 +26,9 @@ export class ApiService {
 
     return axios
       .request(request)
-      .then((response) => {
-        return response.data as U;
-      })
+      .then((response) => response.data as U)
       .catch((err) => {
-        this.handleError(err as AxiosError | Error);
+        Sentry.captureException(err);
         return null;
       });
   }

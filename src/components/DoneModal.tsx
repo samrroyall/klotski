@@ -1,4 +1,4 @@
-import { Box, colors, Modal, useTheme } from '@mui/material';
+import { Box, Modal, useTheme } from '@mui/material';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { SizeContext } from '../App';
@@ -44,8 +44,8 @@ const DoneModal: FunctionComponent = () => {
           height: `${isMobile ? 12 : 20}rem`,
           width: `calc(${isMobile ? boardWidth : `${boardWidth} + ${cellSize}`})`,
           padding: `${isMobile ? 2 : 5}rem`,
+          border: `1px solid ${theme.palette.text.primary}`,
           bgcolor: theme.palette.background.default,
-          borderRadius: '0.5rem',
           boxShadow: 24,
         }}
       >
@@ -54,14 +54,11 @@ const DoneModal: FunctionComponent = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            fontSize: `${isMobile ? 1 : 1.3}rem`,
           }}
         >
           <Box
             sx={{
-              display: 'flex',
               alignItems: 'center',
-              color: colors.amber[200],
               fontSize: `${isMobile ? 3 : 5}rem`,
             }}
           >
@@ -70,35 +67,23 @@ const DoneModal: FunctionComponent = () => {
           <Box
             sx={{
               marginTop: `${isMobile ? 0.5 : 1}rem`,
+              fontSize: `${isMobile ? 0.8 : 1}rem`,
               textAlign: 'center',
-              fontWeight: 'medium',
             }}
           >
-            <span>{'Congratulations! You solved the board in '}</span>
-            <Box
-              sx={{
-                display: 'inline',
-                color: colors.green[600],
-              }}
-            >
+            <span>
+              {'Congratulations! You solved the board in '}
               <b>{numMoves}</b>
-            </Box>
-            <span>{numMoves === 1 ? ' move. ' : ' moves. '}</span>
+              {numMoves > 1 ? ' moves. ' : ' move. '}
+            </span>
             {boardStatus === Status.SolvedOptimally ? (
-              <span>{'That is the fewest moves possible moves!'}</span>
+              <span>{'That is the fewest possible moves!'}</span>
             ) : (
-              <>
-                <span>{'This board can be solved in as few as '}</span>
-                <Box
-                  sx={{
-                    display: 'inline',
-                    color: colors.red[300],
-                  }}
-                >
-                  <b>{numOptimalMoves || 0}</b>
-                </Box>
-                <span>{numMoves === 1 ? ' move.' : ' moves.'}</span>
-              </>
+              <span>
+                {'This board can be solved in as few as '}
+                <b>{numOptimalMoves || 0}</b>
+                {numMoves > 1 ? ' moves.' : ' move.'}
+              </span>
             )}
           </Box>
         </Box>

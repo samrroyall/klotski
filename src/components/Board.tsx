@@ -1,6 +1,6 @@
 import { FunctionComponent, useState, useEffect, useContext } from 'react';
-import { Box, useTheme } from '@mui/material';
-import Block from './Block';
+import { Box } from '@mui/material';
+import Block from './Block/Block';
 import Cell from './Cell';
 import { NUM_COLS, NUM_ROWS } from '../constants';
 import { SizeContext } from '../App';
@@ -8,7 +8,6 @@ import { useSelector } from 'react-redux';
 import { selectBlocks } from '../features/board';
 
 const Board: FunctionComponent = () => {
-  const theme = useTheme();
   const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
   const blocks = useSelector(selectBlocks);
@@ -32,7 +31,7 @@ const Board: FunctionComponent = () => {
     height: `calc(${cellSize} + ${borderSize})`,
     width: `calc(${cellSize} + ${borderSize})`,
     border: `${borderSize} solid`,
-    borderColor: theme.palette.text.primary,
+    borderColor: 'black',
     padding: 0,
   };
 
