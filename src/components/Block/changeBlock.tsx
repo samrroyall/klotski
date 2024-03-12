@@ -151,7 +151,7 @@ export const getNextChangeBlock = (
   currentBlock: BoardBlock,
   grid: (Block | null)[]
 ): ChangeBlock | null => {
-  const blocks = [Block.OneByOne, Block.OneByTwo, Block.TwoByOne, Block.TwoByTwo];
+  const blocks = [Block.OneByOne, Block.TwoByOne, Block.OneByTwo, Block.TwoByTwo];
   const blockIdx = blocks.indexOf(currentBlock.block);
 
   for (let i = 0; i < 3; i++) {
