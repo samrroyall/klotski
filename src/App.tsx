@@ -15,9 +15,26 @@ import DoneModal from './components/DoneModal';
 import { MOBILE_CUTOFF, TABLET_CUTOFF } from './constants';
 import { getSizes, Sizes } from './models/global';
 import {
-  Brightness4Rounded as DarkMode,
-  Brightness7Rounded as LightMode,
+  Brightness4Rounded as DarkModeIcon,
+  Brightness7Rounded as LightModeIcon,
 } from '@mui/icons-material';
+import * as Sentry from '@sentry/react';
+
+Sentry.init({
+  environment: process.env.NODE_ENV,
+  dsn: process.env.REACT_APP_SENTRY_DSN,
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration({
+      maskAllText: false,
+      blockAllMedia: false,
+    }),
+  ],
+  tracesSampleRate: 1.0,
+  tracePropagationTargets: ['localhost'],
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+});
 
 export const SizeContext = createContext<Sizes>(getSizes(false, false));
 
@@ -67,9 +84,9 @@ const App: FunctionComponent = () => {
           <Box sx={isMobile ? [containerStyle, ...mobileHeights] : [containerStyle]}>
             <Box sx={{ position: 'absolute', top: '1rem', right: '1rem' }}>
               {theme.palette.mode === 'light' ? (
-                <DarkMode sx={{ cursor: 'pointer' }} onClick={() => setMode('dark')} />
+                <DarkModeIcon sx={{ cursor: 'pointer' }} onClick={() => setMode('dark')} />
               ) : (
-                <LightMode sx={{ cursor: 'pointer' }} onClick={() => setMode('light')} />
+                <LightModeIcon sx={{ cursor: 'pointer' }} onClick={() => setMode('light')} />
               )}
             </Box>
             <TitleContainer />
