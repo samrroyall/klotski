@@ -107,12 +107,9 @@ const TitleContainer: FunctionComponent = () => {
               [`& svg`]: {
                 fill: theme.palette.text.primary,
               },
+              cursor: 'pointer',
             }}
-            onClick={() => {
-              if (isMobile) setTooltipOpen(!tooltipOpen);
-            }}
-            onMouseEnter={() => setTooltipOpen(true)}
-            onMouseLeave={() => setTooltipOpen(false)}
+            onClick={() => setTooltipOpen(!tooltipOpen)}
           />
         </Box>
       </Box>
