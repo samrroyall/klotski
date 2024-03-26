@@ -1,15 +1,5 @@
 import { Block, BoardState } from './game';
 
-interface EmptyBoard {
-  type: 'empty';
-}
-
-interface RandomBoard {
-  type: 'random';
-}
-
-export type NewBoard = EmptyBoard | RandomBoard;
-
 export interface Reset {
   type: 'reset';
 }
