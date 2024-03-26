@@ -2,8 +2,8 @@ import { Box, Modal, useTheme } from '@mui/material';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { SizeContext } from '../App';
-import { Status } from '../models/ui';
-import { selectBoardStatus } from '../features/board';
+import { AppState } from '../models/ui';
+import { selectBoardState } from '../features/board';
 import { useAppSelector } from '../store';
 import { selectNumMoves, selectNumOptimalMoves } from '../features/manualSolve';
 
@@ -11,17 +11,17 @@ const DoneModal: FunctionComponent = () => {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
 
-  const boardStatus = useAppSelector(selectBoardStatus);
+  const boardState = useAppSelector(selectBoardState);
   const numMoves = useAppSelector(selectNumMoves);
   const numOptimalMoves = useAppSelector(selectNumOptimalMoves);
 
   useEffect(() => {
-    if ([Status.Solved, Status.SolvedOptimally].includes(boardStatus)) {
+    if ([AppState.Solved, AppState.SolvedOptimally].includes(boardState)) {
       setOpen(true);
     } else {
       setOpen(false);
     }
-  }, [boardStatus]);
+  }, [boardState]);
 
   const { isMobile, cellSize, boardWidth } = useContext(SizeContext);
 
@@ -76,7 +76,7 @@ const DoneModal: FunctionComponent = () => {
               <b>{numMoves}</b>
               {numMoves > 1 ? ' moves. ' : ' move. '}
             </span>
-            {boardStatus === Status.SolvedOptimally ? (
+            {boardState === AppState.SolvedOptimally ? (
               <span>{'That is the fewest possible moves!'}</span>
             ) : (
               <span>

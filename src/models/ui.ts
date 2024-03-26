@@ -8,7 +8,7 @@ import {
 } from '../constants';
 import { BoardState } from './api/game';
 
-export enum Status {
+export enum AppState {
   Start = 'start',
   Building = 'building',
   AlreadySolved = 'already_solved',
@@ -21,16 +21,16 @@ export enum Status {
   Solving = 'Solving',
 }
 
-export const boardStateToStatus = (state: BoardState, defaultStatus: Status): Status => {
+export const boardStateToAppState = (state: BoardState, defaultAppState: AppState): AppState => {
   switch (state) {
     case BoardState.Building:
-      return Status.Building;
+      return AppState.Building;
     case BoardState.ReadyToSolve:
-      return Status.ReadyToSolve;
+      return AppState.ReadyToSolve;
     case BoardState.Solved:
-      return Status.Solved;
+      return AppState.Solved;
     default:
-      return defaultStatus;
+      return defaultAppState;
   }
 };
 

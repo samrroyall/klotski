@@ -1,7 +1,7 @@
 import { ApiService } from '../../services/api';
-import { updateBoardStatus } from '../board';
+import { updateBoardState } from '../board';
 import { decrementStep, incrementStep, initAlgoSolve } from '.';
-import { Status } from '../../models/ui';
+import { AppState } from '../../models/ui';
 import { createThunk } from '../../store';
 import { updateBlock } from '../board/slice';
 
@@ -10,17 +10,17 @@ const api = new ApiService();
 export const solveBoard = createThunk<void, void>('algoSolve/solveBoard', async (_, thunkAPI) => {
   const boardId = thunkAPI.getState().board.id;
   if (boardId) {
-    thunkAPI.dispatch(updateBoardStatus(Status.AlgoSolving));
+    thunkAPI.dispatch(updateBoardState(AppState.AlgoSolving));
 
     api.solveBoard(boardId).then((response) => {
       if (response && response.type === 'solved') {
         if (response.moves.length === 0) {
-          thunkAPI.dispatch(updateBoardStatus(Status.AlreadySolved));
+          thunkAPI.dispatch(updateBoardState(AppState.AlreadySolved));
         } else {
           thunkAPI.dispatch(initAlgoSolve(response));
         }
       } else {
-        thunkAPI.dispatch(updateBoardStatus(Status.UnableToSolve));
+        thunkAPI.dispatch(updateBoardState(AppState.UnableToSolve));
       }
     });
   }

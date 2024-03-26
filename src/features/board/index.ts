@@ -1,7 +1,7 @@
-import { reset, update, updateBoardStatus } from './slice';
+import { reset, update, updateBoardState } from './slice';
 import {
   selectBoardId,
-  selectBoardStatus,
+  selectBoardState,
   selectBlocks,
   selectGrid,
   selectNextMoves,
@@ -19,7 +19,7 @@ import {
 export {
   reset as resetBoard,
   update as updateBoard,
-  updateBoardStatus,
+  updateBoardState,
   createEmptyBoard,
   createRandomBoard,
   deleteBoard,
@@ -28,7 +28,7 @@ export {
   removeBlock,
   changeBlock,
   selectBoardId,
-  selectBoardStatus,
+  selectBoardState,
   selectBlocks,
   selectGrid,
   selectNextMoves,

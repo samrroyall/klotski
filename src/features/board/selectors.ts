@@ -1,6 +1,6 @@
 import { WINNING_COL, WINNING_ROW } from '../../constants';
 import { Block, BoardBlock, Move } from '../../models/api/game';
-import { Status } from '../../models/ui';
+import { AppState } from '../../models/ui';
 import { RootState } from '../../store';
 
 export const selectBoardId = (state: RootState): number | null => state.board.id;
@@ -13,7 +13,7 @@ export const selectBoardIsSolved = (state: RootState): boolean =>
       block.min_position.col === WINNING_COL
   ) !== undefined;
 
-export const selectBoardStatus = (state: RootState): Status => state.board.status;
+export const selectBoardState = (state: RootState): AppState => state.board.state;
 
 export const selectBlocks = (state: RootState): BoardBlock[] => state.board.blocks;
 

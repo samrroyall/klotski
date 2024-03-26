@@ -1,16 +1,16 @@
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { SizeContext } from '../App';
-import { selectBoardStatus } from '../features/board';
+import { selectBoardState } from '../features/board';
 import { selectNumMoves, selectNumOptimalMoves } from '../features/manualSolve';
 import { selectNumSteps, selectStepIdx } from '../features/algoSolve/selectors';
-import { Status } from '../models/ui';
+import { AppState } from '../models/ui';
 import { useAppSelector } from '../store';
 
 const StatusMsg: FunctionComponent<{}> = () => {
   const { isMobile } = useContext(SizeContext);
   const [msg, setMsg] = useState<JSX.Element>(<span> </span>);
 
-  const boardStatus = useAppSelector(selectBoardStatus);
+  const boardState = useAppSelector(selectBoardState);
   const numMoves = useAppSelector(selectNumMoves);
   const numOptimalMoves = useAppSelector(selectNumOptimalMoves);
   const numSteps = useAppSelector(selectNumSteps);
@@ -19,11 +19,11 @@ const StatusMsg: FunctionComponent<{}> = () => {
   const fontSize = `${isMobile ? 0.8 : 1}rem`;
 
   useEffect(() => {
-    switch (boardStatus) {
-      case Status.AlreadySolved:
+    switch (boardState) {
+      case AppState.AlreadySolved:
         setMsg(<span>{'The board is already solved'}</span>);
         break;
-      case Status.ManualSolving:
+      case AppState.ManualSolving:
         setMsg(
           <>
             <span>{'Current Moves: '}</span>
@@ -33,7 +33,7 @@ const StatusMsg: FunctionComponent<{}> = () => {
           </>
         );
         break;
-      case Status.AlgoSolving:
+      case AppState.AlgoSolving:
         setMsg(
           <>
             <strong>{stepIdx + 1}</strong>
@@ -42,14 +42,14 @@ const StatusMsg: FunctionComponent<{}> = () => {
           </>
         );
         break;
-      case Status.UnableToSolve:
+      case AppState.UnableToSolve:
         setMsg(<span>{'The board has no solution'}</span>);
         break;
       default:
         setMsg(<span> </span>);
         break;
     }
-  }, [boardStatus, numMoves, numOptimalMoves, numSteps, stepIdx]);
+  }, [boardState, numMoves, numOptimalMoves, numSteps, stepIdx]);
 
   return (
     <p

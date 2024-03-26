@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import ButtonWrapper from './ButtonWrapper';
 import { SizeContext } from '../App';
 import { useSelector } from 'react-redux';
-import { createRandomBoard, deleteBoard, selectBoardStatus, undoMoves } from '../features/board';
+import { createRandomBoard, deleteBoard, selectBoardState, undoMoves } from '../features/board';
 import { manualSolveBoard, selectNumMoves, undoMove } from '../features/manualSolve';
 import {
   algoSolveBoard,
@@ -12,7 +12,7 @@ import {
   selectStepIdx,
   selectSteps,
 } from '../features/algoSolve';
-import { Status } from '../models/ui';
+import { AppState } from '../models/ui';
 import { useAppDispatch } from '../store';
 
 const Buttons: FunctionComponent = () => {
@@ -20,23 +20,23 @@ const Buttons: FunctionComponent = () => {
 
   const [buttons, setButtons] = useState<JSX.Element>(<></>);
 
-  const boardStatus = useSelector(selectBoardStatus);
+  const boardState = useSelector(selectBoardState);
   const numMoves = useSelector(selectNumMoves);
   const steps = useSelector(selectSteps);
   const stepIdx = useSelector(selectStepIdx);
 
   useEffect(() => {
-    switch (boardStatus) {
-      case Status.Solved:
-      case Status.SolvedOptimally:
+    switch (boardState) {
+      case AppState.Solved:
+      case AppState.SolvedOptimally:
         setButtons(<ButtonWrapper title="Start Over" onClick={() => dispatch(undoMoves())} />);
         break;
-      case Status.Building:
-      case Status.UnableToSolve:
-      case Status.AlreadySolved:
+      case AppState.Building:
+      case AppState.UnableToSolve:
+      case AppState.AlreadySolved:
         setButtons(<ButtonWrapper title="Clear" onClick={() => dispatch(deleteBoard())} />);
         break;
-      case Status.AlgoSolving:
+      case AppState.AlgoSolving:
         setButtons(
           <>
             <ButtonWrapper title="Start Over" onClick={() => dispatch(undoMoves())} />
@@ -53,7 +53,7 @@ const Buttons: FunctionComponent = () => {
           </>
         );
         break;
-      case Status.Start:
+      case AppState.Start:
         setButtons(
           <ButtonWrapper
             title="Create board for me"
@@ -61,7 +61,7 @@ const Buttons: FunctionComponent = () => {
           />
         );
         break;
-      case Status.ManualSolving:
+      case AppState.ManualSolving:
         setButtons(
           <>
             <ButtonWrapper title="Start Over" onClick={() => dispatch(undoMoves())} />
@@ -73,7 +73,7 @@ const Buttons: FunctionComponent = () => {
           </>
         );
         break;
-      case Status.ReadyToSolve:
+      case AppState.ReadyToSolve:
         setButtons(
           <>
             <ButtonWrapper title="Solve myself" onClick={() => dispatch(manualSolveBoard())} />
@@ -86,7 +86,7 @@ const Buttons: FunctionComponent = () => {
         setButtons(<></>);
         break;
     }
-  }, [boardStatus, dispatch, numMoves, stepIdx, steps]);
+  }, [boardState, dispatch, numMoves, stepIdx, steps]);
 
   const { boardHeight } = useContext(SizeContext);
   const buttonStyling = { position: 'absolute', width: '100%', left: 0 };
