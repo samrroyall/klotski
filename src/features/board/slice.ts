@@ -34,7 +34,10 @@ const resetReducer: CaseReducer<State> = (state) => {
   state.nextMoves = initialState.nextMoves;
 };
 
-const updateReducer: CaseReducer<State, PayloadAction<BoardResponse>> = (state, { payload }) => {
+const updateBoardReducer: CaseReducer<State, PayloadAction<BoardResponse>> = (
+  state,
+  { payload }
+) => {
   state.id = payload.id;
   state.state = boardStateToAppState(payload.state, state.state);
   state.blocks = payload.blocks.map(positionedBlockToBoardBlock);
@@ -73,12 +76,12 @@ const boardSlice = createSlice({
   initialState,
   reducers: {
     reset: resetReducer,
-    update: updateReducer,
     updateBlock: updateBlockReducer,
+    updateBoard: updateBoardReducer,
     updateBoardState: updateBoardStateReducer,
   },
 });
 
-export const { reset, update, updateBlock, updateBoardState } = boardSlice.actions;
+export const { reset, updateBoard, updateBlock, updateBoardState } = boardSlice.actions;
 
 export default boardSlice.reducer;

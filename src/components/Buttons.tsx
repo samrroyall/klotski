@@ -9,6 +9,7 @@ import {
   algoSolveBoard,
   nextStep,
   prevStep,
+  resetBoard,
   selectStepIdx,
   selectSteps,
 } from '../features/algoSolve';
@@ -39,7 +40,7 @@ const Buttons: FunctionComponent = () => {
       case AppState.AlgoSolving:
         setButtons(
           <>
-            <ButtonWrapper title="Start Over" onClick={() => dispatch(undoMoves())} />
+            <ButtonWrapper title="Start Over" onClick={() => dispatch(resetBoard())} />
             <ButtonWrapper
               title="Previous Step"
               onClick={() => dispatch(prevStep())}

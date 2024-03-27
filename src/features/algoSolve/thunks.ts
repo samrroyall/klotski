@@ -46,6 +46,30 @@ export const prevStep = createThunk<void, void>('algoSolve/prevStep', async (_, 
   }
 });
 
+export const resetBoard = createThunk<void, void>('algoSolve/reset', async (_, thunkAPI) => {
+  const state = thunkAPI.getState();
+  const steps = state.algoSolve.steps;
+  let stepIdx = state.algoSolve.stepIdx;
+
+  while (steps && stepIdx >= 0) {
+    const move = steps[stepIdx];
+
+    thunkAPI.dispatch(
+      updateBlock({
+        block_idx: move.block_idx,
+        row_diff: -move.row_diff,
+        col_diff: -move.col_diff,
+      })
+    );
+
+    thunkAPI.dispatch(decrementStep());
+
+    stepIdx = thunkAPI.getState().algoSolve.stepIdx;
+  }
+
+  thunkAPI.dispatch(updateBoardState(AppState.ReadyToSolve));
+});
+
 export const nextStep = createThunk<void, void>('algoSolve/nextStep', async (_, thunkAPI) => {
   const state = thunkAPI.getState();
   const steps = state.algoSolve.steps;

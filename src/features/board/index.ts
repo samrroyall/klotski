@@ -1,4 +1,4 @@
-import { reset, update, updateBoardState } from './slice';
+import { reset, updateBoard, updateBoardState } from './slice';
 import {
   selectBoardId,
   selectBoardState,
@@ -18,7 +18,7 @@ import {
 
 export {
   reset as resetBoard,
-  update as updateBoard,
+  updateBoard,
   updateBoardState,
   createEmptyBoard,
   createRandomBoard,
