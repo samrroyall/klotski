@@ -1,9 +1,10 @@
 import { ApiService } from '../../services/api';
 import { Block, BoardBlock, Position } from '../../models/api/game';
-import { resetBoard, updateBoard } from '.';
+import { resetBoard, updateBoard, updateBoardState } from '.';
 import { resetAlgoSolve } from '../algoSolve';
 import { resetManualSolve } from '../manualSolve';
 import { createThunk } from '../../store';
+import { AppState } from '../../models/ui';
 
 const _ = require('lodash/fp');
 
@@ -41,16 +42,20 @@ export const deleteBoard = createThunk<void, void>('board/deleteBoard', async (_
 });
 
 export const undoMoves = createThunk<void, void>('board/undoMoves', async (_, thunkAPI) => {
-  const boardId = thunkAPI.getState().board.id;
-  if (boardId) {
-    api.reset(boardId).then((response) => {
+  const state = thunkAPI.getState();
+  const moves = state.manualSolve.moves;
+  const boardId = state.board.id;
+
+  if (boardId && moves.length > 0) {
+    await api.reset(boardId).then((response) => {
       if (response) {
         thunkAPI.dispatch(updateBoard(response));
-        thunkAPI.dispatch(resetAlgoSolve());
-        thunkAPI.dispatch(resetManualSolve());
       }
     });
   }
+
+  thunkAPI.dispatch(resetManualSolve());
+  thunkAPI.dispatch(updateBoardState(AppState.ReadyToSolve));
 });
 
 export const addBlock = createThunk<{ block: Block; cell: Position }, void>(

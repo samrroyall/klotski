@@ -2,14 +2,14 @@ import { FunctionComponent, useEffect, useState } from 'react';
 import { Box, colors, useTheme } from '@mui/material';
 import MoveBlockSelector from './MoveBlockSelector';
 import { WINNING_COL, WINNING_ROW } from '../constants';
-import { addBlock, createEmptyBoard, selectBoardId, selectBoardStatus } from '../features/board';
+import { addBlock, createEmptyBoard, selectBoardId, selectBoardState } from '../features/board';
 import { useSelector } from 'react-redux';
 import {
   moveBlock,
   selectAvailableMinPositions,
   selectCurrentBlock,
 } from '../features/manualSolve';
-import { Status } from '../models/ui';
+import { AppState } from '../models/ui';
 import { RootState, useAppDispatch } from '../store';
 import { selectCurrentBlockMinPosition } from '../features/manualSolve/selectors';
 import { Block } from '../models/api/game';
@@ -28,7 +28,7 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   const [isAvailablePosition, setIsAvailablePosition] = useState(false);
 
   const boardId = useSelector(selectBoardId);
-  const boardStatus = useSelector(selectBoardStatus);
+  const boardState = useSelector(selectBoardState);
   const availableMinPositions = useSelector(selectAvailableMinPositions);
   const currentBlock = useSelector(selectCurrentBlock);
   const currentBlockPos = useSelector(selectCurrentBlockMinPosition);
@@ -57,7 +57,7 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   const winningCellHoverColor = colors.red[200];
 
   const cellColor = isWinningCell ? winningCellColor : theme.palette.action.hover;
-  const cellHoverColor = [Status.Start, Status.Building].includes(boardStatus)
+  const cellHoverColor = [AppState.Start, AppState.Building].includes(boardState)
     ? isWinningCell
       ? winningCellHoverColor
       : theme.palette.action.selected
@@ -65,9 +65,9 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
     ? winningCellColor
     : theme.palette.action.hover;
 
-  const cursor = [Status.Start, Status.Building].includes(boardStatus) ? 'pointer' : 'default';
+  const cursor = [AppState.Start, AppState.Building].includes(boardState) ? 'pointer' : 'default';
 
-  const pointerEvents = [Status.Start, Status.Building].includes(boardStatus) ? 'auto' : 'none';
+  const pointerEvents = [AppState.Start, AppState.Building].includes(boardState) ? 'auto' : 'none';
 
   const availablePositionBoxScaleFactor = 0.2;
 
@@ -78,13 +78,13 @@ const Cell: FunctionComponent<Props> = ({ row, col }) => {
   };
 
   const onClickCell = (e: any) => {
-    if (![Status.Start, Status.Building].includes(boardStatus)) {
+    if (![AppState.Start, AppState.Building].includes(boardState)) {
       e.stopPropagation();
       e.nativeEvent.stopImmediatePropagation();
       return;
     }
 
-    if (boardStatus === Status.Start) {
+    if (boardState === AppState.Start) {
       dispatch(createEmptyBoard()).then(() => {
         dispatch(addBlock({ block: Block.OneByOne, cell: { row, col } }));
       });

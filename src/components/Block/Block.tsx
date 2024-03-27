@@ -3,11 +3,11 @@ import { Paper, Box, useTheme } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { BoardBlock, Position } from '../../models/api/game';
 import { SizeContext } from '../../App';
-import { changeBlock, removeBlock, selectBoardStatus } from '../../features/board';
+import { changeBlock, removeBlock, selectBoardState } from '../../features/board';
 import { selectGrid, selectNextMoves } from '../../features/board/selectors';
 import { setCurrentBlock, setAvailableMinPositions } from '../../features/manualSolve';
 import { ChangeBlock, getNextChangeBlock } from './changeBlock';
-import { Status } from '../../models/ui';
+import { AppState } from '../../models/ui';
 import { BLOCK_COLOR } from '../../constants';
 import { RootState, useAppDispatch, useAppSelector } from '../../store';
 
@@ -23,7 +23,7 @@ const Block: FunctionComponent<Props> = ({ block }) => {
   const [hovering, setHovering] = useState(false);
   const [nextChangeBlock, setNextChangeBlock] = useState<ChangeBlock | null>(null);
 
-  const boardStatus = useAppSelector(selectBoardStatus);
+  const boardState = useAppSelector(selectBoardState);
   const grid = useAppSelector(selectGrid);
   const nextMoves = useAppSelector(selectNextMoves);
 
@@ -40,9 +40,9 @@ const Block: FunctionComponent<Props> = ({ block }) => {
   }, [block, grid]);
 
   const onClickBlock = () => {
-    if (boardStatus === Status.Building && nextChangeBlock) {
+    if (boardState === AppState.Building && nextChangeBlock) {
       dispatch(changeBlock({ idx: block.idx, ...nextChangeBlock }));
-    } else if (boardStatus === Status.ManualSolving) {
+    } else if (boardState === AppState.ManualSolving) {
       setIsMovable(nextMoves[block.idx].length > 0);
       dispatch(setCurrentBlock(block));
       dispatch(setAvailableMinPositions(minPositionsForBlock));
@@ -90,7 +90,7 @@ const Block: FunctionComponent<Props> = ({ block }) => {
         backgroundColor: BLOCK_COLOR(block.block)[
           theme.palette.mode === 'dark' ? (hovering ? 600 : 500) : hovering ? 700 : 600
         ],
-        cursor: boardStatus === Status.Building || isMovable ? 'pointer' : 'default',
+        cursor: boardState === AppState.Building || isMovable ? 'pointer' : 'default',
         zIndex: isMovable ? 3 : 2,
       }}
     >
@@ -101,7 +101,9 @@ const Block: FunctionComponent<Props> = ({ block }) => {
           right: 0,
           height: `${(closeButtonSize * 5) / 3}rem`,
           width: `${(closeButtonSize * 5) / 3}rem`,
-          display: [Status.Building, Status.ReadyToSolve].includes(boardStatus) ? 'flex' : 'none',
+          display: [AppState.Building, AppState.ReadyToSolve].includes(boardState)
+            ? 'flex'
+            : 'none',
           alignItems: 'flex-start',
           justifyContent: 'flex-end',
           padding: `0.1rem 0.1rem ${closeButtonSize / 3}rem ${closeButtonSize / 3}rem`,
@@ -128,9 +130,9 @@ const Block: FunctionComponent<Props> = ({ block }) => {
           zIndex: 1,
         }}
         onMouseEnter={() => {
-          if (boardStatus === Status.Building) {
+          if (boardState === AppState.Building) {
             setHovering(true);
-          } else if (boardStatus === Status.ManualSolving) {
+          } else if (boardState === AppState.ManualSolving) {
             setIsMovable(nextMoves[block.idx].length > 0);
           }
         }}

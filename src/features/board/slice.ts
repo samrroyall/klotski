@@ -8,11 +8,11 @@ import {
 } from '../../models/api/game';
 import { NUM_COLS, NUM_ROWS } from '../../constants';
 import { Board as BoardResponse } from '../../models/api/response';
-import { Status, boardStateToStatus } from '../../models/ui';
+import { AppState, boardStateToAppState } from '../../models/ui';
 
 interface State {
   id: number | null;
-  status: Status;
+  state: AppState;
   blocks: BoardBlock[];
   grid: (Block | null)[];
   nextMoves: Move[][];
@@ -20,7 +20,7 @@ interface State {
 
 const initialState: State = {
   id: null,
-  status: 'start' as Status,
+  state: AppState.Start,
   blocks: [],
   grid: new Array(NUM_ROWS * NUM_COLS).fill(null),
   nextMoves: [],
@@ -28,15 +28,18 @@ const initialState: State = {
 
 const resetReducer: CaseReducer<State> = (state) => {
   state.id = initialState.id;
-  state.status = initialState.status;
+  state.state = initialState.state;
   state.blocks = initialState.blocks;
   state.grid = initialState.grid;
   state.nextMoves = initialState.nextMoves;
 };
 
-const updateReducer: CaseReducer<State, PayloadAction<BoardResponse>> = (state, { payload }) => {
+const updateBoardReducer: CaseReducer<State, PayloadAction<BoardResponse>> = (
+  state,
+  { payload }
+) => {
   state.id = payload.id;
-  state.status = boardStateToStatus(payload.state, state.status);
+  state.state = boardStateToAppState(payload.state, state.state);
   state.blocks = payload.blocks.map(positionedBlockToBoardBlock);
   state.grid = payload.grid;
   state.nextMoves = payload.next_moves;
@@ -61,8 +64,11 @@ const updateBlockReducer: CaseReducer<State, PayloadAction<BlockMove>> = (state,
   ];
 };
 
-const updateStatusReducer: CaseReducer<State, PayloadAction<Status>> = (state, { payload }) => {
-  state.status = payload;
+const updateBoardStateReducer: CaseReducer<State, PayloadAction<AppState>> = (
+  state,
+  { payload }
+) => {
+  state.state = payload;
 };
 
 const boardSlice = createSlice({
@@ -70,12 +76,12 @@ const boardSlice = createSlice({
   initialState,
   reducers: {
     reset: resetReducer,
-    update: updateReducer,
     updateBlock: updateBlockReducer,
-    updateBoardStatus: updateStatusReducer,
+    updateBoard: updateBoardReducer,
+    updateBoardState: updateBoardStateReducer,
   },
 });
 
-export const { reset, update, updateBlock, updateBoardStatus } = boardSlice.actions;
+export const { reset, updateBoard, updateBlock, updateBoardState } = boardSlice.actions;
 
 export default boardSlice.reducer;

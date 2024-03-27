@@ -25,9 +25,11 @@ export type AppDispatch = typeof store.dispatch;
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
+type ThunkApiConfig = { state: RootState; dispatch: AppDispatch };
+
 export const createThunk = <T, U>(
   key: string,
-  func: AsyncThunkPayloadCreator<U, T, { state: RootState; dispatch: AppDispatch }>
+  func: AsyncThunkPayloadCreator<U, T, ThunkApiConfig>
 ) => createAsyncThunk<U, T, { state: RootState; dispatch: AppDispatch }>(key, func);
 
 export default store;

@@ -3,7 +3,6 @@ import {
   AddBlock as AddBlockRequest,
   AlterBlock as AlterBlockRequest,
   AlterBoard as AlterBoardRequest,
-  NewBoard as NewBoardRequest,
 } from '../models/api/request';
 import { Board as BoardResponse, Solve as SolveResponse } from '../models/api/response';
 import { Block, BoardState } from '../models/api/game';
@@ -17,11 +16,17 @@ export class ApiService {
     this.baseUrl = process.env.REACT_APP_API_URL! + '/api';
   }
 
-  private makeRequest<T, U>(method: Method, path: string, data?: T): Promise<U | null> {
+  private makeRequest<T, U>(
+    method: Method,
+    path: string,
+    data?: T,
+    params?: { [key: string]: any }
+  ): Promise<U | null> {
     const request: AxiosRequestConfig<T> = {
       method,
       url: `${this.baseUrl}${path}`,
       data,
+      params,
     };
 
     return axios
@@ -33,16 +38,16 @@ export class ApiService {
       });
   }
 
-  newBoard(body: NewBoardRequest): Promise<BoardResponse | null> {
-    return this.makeRequest<NewBoardRequest, BoardResponse>('POST', '/board', body);
+  newBoard(randomize: boolean): Promise<BoardResponse | null> {
+    return this.makeRequest<undefined, BoardResponse>('POST', '/board', undefined, { randomize });
   }
 
   emptyBoard(): Promise<BoardResponse | null> {
-    return this.newBoard({ type: 'empty' });
+    return this.newBoard(false);
   }
 
   randomBoard(): Promise<BoardResponse | null> {
-    return this.newBoard({ type: 'random' });
+    return this.newBoard(true);
   }
 
   private alterBoard(boardId: number, body: AlterBoardRequest): Promise<BoardResponse | null> {
