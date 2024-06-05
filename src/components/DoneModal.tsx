@@ -1,29 +1,29 @@
-import { Box, colors, Modal } from '@mui/material';
+import { Box, Modal, useTheme } from '@mui/material';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import { FunctionComponent, useContext, useEffect, useState } from 'react';
-import { Status } from '../state/appSlice';
-import { useAppSelector } from '../state/hooks';
 import { SizeContext } from '../App';
+import { AppState } from '../models/ui';
+import { selectBoardState } from '../features/board';
+import { useAppSelector } from '../store';
+import { selectNumMoves, selectNumOptimalMoves } from '../features/manualSolve';
 
 const DoneModal: FunctionComponent = () => {
-  // State
-  const status = useAppSelector((state) => state.app.status);
-  const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
-  const optimalMoves = useAppSelector((state) => state.manualSolve.optimalMoves);
+  const theme = useTheme();
   const [open, setOpen] = useState(false);
 
+  const boardState = useAppSelector(selectBoardState);
+  const numMoves = useAppSelector(selectNumMoves);
+  const numOptimalMoves = useAppSelector(selectNumOptimalMoves);
+
   useEffect(() => {
-    if ([Status.Done, Status.DoneOptimal].includes(status)) {
+    if ([AppState.Solved, AppState.SolvedOptimally].includes(boardState)) {
       setOpen(true);
     } else {
       setOpen(false);
     }
-  }, [status]);
+  }, [boardState]);
 
-  // Styling
   const { isMobile, cellSize, boardWidth } = useContext(SizeContext);
-  const redText = { display: 'inline', color: colors.red[300] };
-  const greenText = { display: 'inline', color: colors.green[600] };
 
   return (
     <Modal
@@ -44,8 +44,8 @@ const DoneModal: FunctionComponent = () => {
           height: `${isMobile ? 12 : 20}rem`,
           width: `calc(${isMobile ? boardWidth : `${boardWidth} + ${cellSize}`})`,
           padding: `${isMobile ? 2 : 5}rem`,
-          bgcolor: 'background.paper',
-          borderRadius: '0.5rem',
+          border: `1px solid ${theme.palette.text.primary}`,
+          bgcolor: theme.palette.background.default,
           boxShadow: 24,
         }}
       >
@@ -54,14 +54,11 @@ const DoneModal: FunctionComponent = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            fontSize: `${isMobile ? 1 : 1.3}rem`,
           }}
         >
           <Box
             sx={{
-              display: 'flex',
               alignItems: 'center',
-              color: colors.amber[200],
               fontSize: `${isMobile ? 3 : 5}rem`,
             }}
           >
@@ -70,17 +67,22 @@ const DoneModal: FunctionComponent = () => {
           <Box
             sx={{
               marginTop: `${isMobile ? 0.5 : 1}rem`,
+              fontSize: `${isMobile ? 0.8 : 1}rem`,
               textAlign: 'center',
             }}
           >
-            Congratulations! You solved the board in
-            <Box sx={greenText}> {moveIdx} </Box> moves.{' '}
-            {status === Status.DoneOptimal ? (
-              <span>That is the fewest moves possible.</span>
+            <span>
+              {'Congratulations! You solved the board in '}
+              <b>{numMoves}</b>
+              {numMoves > 1 ? ' moves. ' : ' move. '}
+            </span>
+            {boardState === AppState.SolvedOptimally ? (
+              <span>{'That is the fewest possible moves!'}</span>
             ) : (
               <span>
-                This board can be solved in as few as
-                <Box sx={redText}> {optimalMoves?.length || 0} </Box> moves.
+                {'This board can be solved in as few as '}
+                <b>{numOptimalMoves || 0}</b>
+                {numMoves > 1 ? ' moves.' : ' move.'}
               </span>
             )}
           </Box>

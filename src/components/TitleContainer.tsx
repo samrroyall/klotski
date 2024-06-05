@@ -6,31 +6,54 @@ import {
   Tooltip,
   tooltipClasses,
   TooltipProps,
+  useTheme,
 } from '@mui/material';
 import { FunctionComponent, useContext, useState } from 'react';
 import { SizeContext } from '../App';
 import { NUM_COLS } from '../constants';
 
 const TitleContainer: FunctionComponent = () => {
-  // State
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
-  // Styling
+  const theme = useTheme();
   const { isMobile, isTablet, cellSize } = useContext(SizeContext);
+
   const helpText = (
     <Box
       sx={{
         padding: `${isMobile ? 0.3 : isTablet ? 0.5 : 1}rem`,
-        fontSize: '1rem',
+        fontSize: `${isMobile ? 0.8 : 1}rem`,
       }}
     >
-      Click on a cell to add a block. Click the '⟲' icon to change the block, and click the '×' icon
-      to remove the block. A valid board contains
-      <b> exactly one </b> 2×2 block and <b> exactly two </b> free spaces. You can also click{' '}
-      <em> Create Board For Me </em> to get a random board. Move the 2×2 block to the red area at
-      the bottom of the board to win!
+      <Box style={{ marginBottom: '0.1rem' }}>
+        <b>Building a Board:</b>
+        <ul style={{ margin: '0' }}>
+          <li>Click on an empty cell to add a block</li>
+          <li>Click on a block to change its size</li>
+          <li>
+            Click the <b>×</b> icon to remove the block
+          </li>
+          <li>
+            A valid board contains <em>exactly one</em> 2×2 block and <em>exactly two</em> free
+            spaces
+          </li>
+        </ul>
+      </Box>
+      <Box style={{ marginBottom: '0.1rem' }}>
+        <b>
+          <em>Note: </em>
+        </b>
+        You can also click the <em>Create Board For Me</em> button to get a random board
+      </Box>
+      <Box style={{ marginBottom: '0.1rem' }}>
+        <b style={{ display: 'block' }}>How to win:</b>
+        <ul style={{ margin: '0' }}>
+          <li>Move the 2×2 block to the red area at the bottom of the board </li>
+        </ul>
+      </Box>
     </Box>
   );
+
   const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
     <ClickAwayListener onClickAway={() => setTooltipOpen(false)}>
       <Tooltip {...props} classes={{ popper: className }} />
@@ -39,6 +62,13 @@ const TitleContainer: FunctionComponent = () => {
     [`& .${tooltipClasses.tooltip}`]: {
       maxWidth: `calc(${NUM_COLS} * ${cellSize} + ${isMobile ? '1rem' : cellSize})`,
       marginTop: '0.25rem !important',
+      backgroundColor: theme.palette.background.default,
+      border: `1px solid ${theme.palette.text.primary}`,
+      color: theme.palette.text.primary,
+    },
+    [`& .${tooltipClasses.arrow}::before`]: {
+      backgroundColor: theme.palette.background.default,
+      border: `1px solid ${theme.palette.text.primary}`,
     },
   });
 
@@ -71,16 +101,15 @@ const TitleContainer: FunctionComponent = () => {
           }}
         >
           <HelpOutlineOutlined
-            color="inherit"
             sx={{
               verticalAlign: 'end',
               fontSize: `${isMobile ? 14 : 16}px`,
+              [`& svg`]: {
+                fill: theme.palette.text.primary,
+              },
+              cursor: 'pointer',
             }}
-            onClick={() => {
-              if (isMobile) setTooltipOpen(!tooltipOpen);
-            }}
-            onMouseEnter={() => setTooltipOpen(true)}
-            onMouseLeave={() => setTooltipOpen(false)}
+            onClick={() => setTooltipOpen(!tooltipOpen)}
           />
         </Box>
       </Box>

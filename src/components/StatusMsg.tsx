@@ -1,46 +1,55 @@
-import { FunctionComponent, useContext } from 'react';
+import { FunctionComponent, useContext, useEffect, useState } from 'react';
 import { SizeContext } from '../App';
-import { Status } from '../state/appSlice';
-import { useAppSelector } from '../state/hooks';
+import { selectBoardState } from '../features/board';
+import { selectNumMoves, selectNumOptimalMoves } from '../features/manualSolve';
+import { selectNumSteps, selectStepIdx } from '../features/algoSolve/selectors';
+import { AppState } from '../models/ui';
+import { useAppSelector } from '../store';
 
 const StatusMsg: FunctionComponent<{}> = () => {
-  // State
-  const status = useAppSelector((state) => state.app.status);
-  const moveIdx = useAppSelector((state) => state.manualSolve.moveIdx);
-  const numOptimalMoves = useAppSelector((state) =>
-    state.manualSolve.optimalMoves ? state.manualSolve.optimalMoves.length : null
-  );
-  const numSteps = useAppSelector((state) =>
-    state.algoSolve.steps ? state.algoSolve.steps.length : null
-  );
-  const stepIdx = useAppSelector((state) => state.algoSolve.stepIdx);
-
-  // Styling
   const { isMobile } = useContext(SizeContext);
+  const [msg, setMsg] = useState<JSX.Element>(<span> </span>);
 
-  // Status Messages
-  const msgText: { [k in Status]?: JSX.Element } = {
-    alreadySolved: <span>Oops! It looks like the board is already solved</span>,
-    failed: <span>No Solution Found :(</span>,
-    manualBuild: <span>A valid board has exactly one 2×2 block and two empty cells</span>,
-    manualSolve: (
-      <span>
-        Current Moves: <strong>{moveIdx}</strong>
-        <span style={{ marginLeft: '1rem' }}>
-          Fewest Possible Moves: <strong>{numOptimalMoves}</strong>
-        </span>
-      </span>
-    ),
-    readyToSolve: <span>Move the 2×2 block to the red area at the bottom to win</span>,
-    start: <span>Click on a cell to add a block</span>,
-    stepThrough: (
-      <span>
-        <strong>{numSteps ? numSteps - stepIdx - 1 : -1}</strong>/<strong>{numSteps || -1}</strong>
-      </span>
-    ),
-    done: <span>Great job!</span>,
-    doneOptimal: <span>Wow!</span>,
-  };
+  const boardState = useAppSelector(selectBoardState);
+  const numMoves = useAppSelector(selectNumMoves);
+  const numOptimalMoves = useAppSelector(selectNumOptimalMoves);
+  const numSteps = useAppSelector(selectNumSteps);
+  const stepIdx = useAppSelector(selectStepIdx);
+
+  const fontSize = `${isMobile ? 0.8 : 1}rem`;
+
+  useEffect(() => {
+    switch (boardState) {
+      case AppState.AlreadySolved:
+        setMsg(<span>{'The board is already solved'}</span>);
+        break;
+      case AppState.ManualSolving:
+        setMsg(
+          <>
+            <span>{'Current Moves: '}</span>
+            <strong>{numMoves}</strong>
+            <span style={{ marginLeft: '1rem' }}>{'Fewest Possible Moves: '}</span>
+            <strong>{numOptimalMoves || '-'}</strong>
+          </>
+        );
+        break;
+      case AppState.AlgoSolving:
+        setMsg(
+          <>
+            <strong>{stepIdx + 1}</strong>
+            <span>{'/'}</span>
+            <strong>{numSteps || '-'}</strong>
+          </>
+        );
+        break;
+      case AppState.UnableToSolve:
+        setMsg(<span>{'The board has no solution'}</span>);
+        break;
+      default:
+        setMsg(<span> </span>);
+        break;
+    }
+  }, [boardState, numMoves, numOptimalMoves, numSteps, stepIdx]);
 
   return (
     <p
@@ -48,12 +57,13 @@ const StatusMsg: FunctionComponent<{}> = () => {
         display: 'block',
         marginTop: 0,
         marginBottom: '0.5rem',
+        minHeight: fontSize,
         textAlign: 'center',
-        fontSize: `${isMobile ? 0.8 : 1}rem`,
+        fontSize,
         lineHeight: 1,
       }}
     >
-      {status in msgText ? msgText[status] : <></>}
+      {msg}
     </p>
   );
 };

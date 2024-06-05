@@ -1,13 +1,20 @@
 import { FunctionComponent, useEffect, useState } from 'react';
 import { Box, colors, useTheme } from '@mui/material';
-import { useAppDispatch, useAppSelector } from '../state/hooks';
-import { Status, changeStatus } from '../state/appSlice';
-import { addBlock, moveBlockToPos } from '../state/boardSlice';
-import { doMove, clearAvailablePositions, clearBlockToMove } from '../state/manualSolveSlice';
-import { Block, boardIsSolved, boardIsValid } from '../models/global';
-import { WINNING_COL, WINNING_ROW } from '../constants';
-import store, { RootState } from '../state/store';
 import MoveBlockSelector from './MoveBlockSelector';
+import { WINNING_COL, WINNING_ROW } from '../constants';
+import { addBlock, createEmptyBoard, selectBoardId, selectBoardState } from '../features/board';
+import { useSelector } from 'react-redux';
+import {
+  moveBlock,
+  selectAvailableMinPositions,
+  selectCurrentBlock,
+} from '../features/manualSolve';
+import { AppState } from '../models/ui';
+import { RootState, useAppDispatch } from '../store';
+import { selectCurrentBlockMinPosition } from '../features/manualSolve/selectors';
+import { Block } from '../models/api/game';
+
+const _ = require('lodash/fp');
 
 interface Props {
   row: number;
@@ -15,82 +22,88 @@ interface Props {
 }
 
 const Cell: FunctionComponent<Props> = ({ row, col }) => {
-  // State
   const dispatch = useAppDispatch();
-  const status = useAppSelector((state) => state.app.status);
-  const availablePositions = useAppSelector((state) => state.manualSolve.availablePositions);
-  const blockToMove = useAppSelector((state) => state.manualSolve.blockToMove);
-  const getBoardIsSolved = (state: RootState) => boardIsSolved(state.board);
-  const getBoardIsValid = (state: RootState) => boardIsValid(state.board);
   const theme = useTheme();
+
   const [isAvailablePosition, setIsAvailablePosition] = useState(false);
 
-  // Helpers
-  const isWinningCell =
-    (row === WINNING_ROW || row === WINNING_ROW + 1) &&
-    (col === WINNING_COL || col === WINNING_COL + 1);
-  const ONE_BY_ONE: Block = { rows: 1, cols: 1 };
+  const boardId = useSelector(selectBoardId);
+  const boardState = useSelector(selectBoardState);
+  const availableMinPositions = useSelector(selectAvailableMinPositions);
+  const currentBlock = useSelector(selectCurrentBlock);
+  const currentBlockPos = useSelector(selectCurrentBlockMinPosition);
 
   useEffect(() => {
     setIsAvailablePosition(
-      availablePositions.filter((pos) => pos.row === row && pos.col === col).length > 0
+      availableMinPositions.filter((pos) => _.isEqual(pos, { row, col })).length > 0
     );
-  }, [col, row, availablePositions, setIsAvailablePosition]);
+  }, [availableMinPositions, setIsAvailablePosition, row, col]);
 
-  // Handlers
+  const associatedMove = useSelector((state: RootState) =>
+    currentBlock && currentBlockPos
+      ? state.board.nextMoves[currentBlock.idx].find(({ row_diff, col_diff }) =>
+          _.isEqual(
+            { row, col },
+            { row: currentBlockPos.row + row_diff, col: currentBlockPos.col + col_diff }
+          )
+        ) || null
+      : null
+  );
+
+  const isWinningCell =
+    [WINNING_ROW, WINNING_ROW + 1].includes(row) && [WINNING_COL, WINNING_COL + 1].includes(col);
+
+  const winningCellColor = colors.red[100];
+  const winningCellHoverColor = colors.red[200];
+
+  const cellColor = isWinningCell ? winningCellColor : theme.palette.action.hover;
+  const cellHoverColor = [AppState.Start, AppState.Building].includes(boardState)
+    ? isWinningCell
+      ? winningCellHoverColor
+      : theme.palette.action.selected
+    : isWinningCell
+    ? winningCellColor
+    : theme.palette.action.hover;
+
+  const cursor = [AppState.Start, AppState.Building].includes(boardState) ? 'pointer' : 'default';
+
+  const pointerEvents = [AppState.Start, AppState.Building].includes(boardState) ? 'auto' : 'none';
+
+  const availablePositionBoxScaleFactor = 0.2;
+
   const onClickMoveBlockSelector = () => {
-    if (isAvailablePosition && blockToMove) {
-      dispatch(moveBlockToPos({ pb: { ...blockToMove }, newPos: { row, col } }));
-      dispatch(doMove({ pb: { ...blockToMove }, newPos: { row, col } }));
-      dispatch(clearAvailablePositions());
-      dispatch(clearBlockToMove());
-
-      const state = store.getState();
-      if (getBoardIsSolved(state)) {
-        const moveIdx = state.manualSolve.moveIdx;
-        const numOptimalMoves = state.manualSolve.optimalMoves?.length;
-        dispatch(changeStatus(moveIdx === numOptimalMoves ? Status.DoneOptimal : Status.Done));
-      }
+    if (currentBlock && associatedMove) {
+      dispatch(moveBlock({ block_idx: currentBlock.idx, ...associatedMove }));
     }
   };
 
   const onClickCell = (e: any) => {
-    if (![Status.Start, Status.ManualBuild].includes(status)) {
+    if (![AppState.Start, AppState.Building].includes(boardState)) {
       e.stopPropagation();
       e.nativeEvent.stopImmediatePropagation();
       return;
     }
-    if (status === Status.Start) {
-      dispatch(changeStatus(Status.ManualBuild));
-    }
-    dispatch(addBlock({ block: ONE_BY_ONE, pos: { row, col } }));
-    if (getBoardIsValid(store.getState())) {
-      dispatch(changeStatus(Status.ReadyToSolve));
+
+    if (boardState === AppState.Start) {
+      dispatch(createEmptyBoard()).then(() => {
+        dispatch(addBlock({ block: Block.OneByOne, cell: { row, col } }));
+      });
+    } else if (boardId) {
+      dispatch(addBlock({ block: Block.OneByOne, cell: { row, col } }));
     }
   };
-
-  // Styling
-  const availablePositionBoxScaleFactor = 0.2;
-  const winningCellDefaut = theme.palette.mode === 'dark' ? colors.red[200] : colors.red[100];
-  const winningCellHover = theme.palette.mode === 'dark' ? colors.red[100] : colors.red[200];
 
   return (
     <Box
       sx={{
         height: '100%',
         width: '100%',
-        backgroundColor: isWinningCell ? winningCellDefaut : theme.palette.action.hover,
+        backgroundColor: cellColor,
         '&:hover': {
-          backgroundColor: [Status.Start, Status.ManualBuild].includes(status)
-            ? isWinningCell
-              ? winningCellHover
-              : theme.palette.action.selected
-            : isWinningCell
-            ? winningCellDefaut
-            : theme.palette.action.hover,
+          backgroundColor: cellHoverColor,
         },
-        cursor: [Status.Start, Status.ManualBuild].includes(status) ? 'pointer' : 'default',
-        pointerEvents: [Status.Start, Status.ManualBuild].includes(status) ? 'auto' : 'none',
+        cursor,
+        pointerEvents,
       }}
       onClick={onClickCell}
     >

@@ -6,6 +6,33 @@ import {
   NUM_ROWS,
   TABLET_CELL_SIZE,
 } from '../constants';
+import { BoardState } from './api/game';
+
+export enum AppState {
+  Start = 'start',
+  Building = 'building',
+  AlreadySolved = 'already_solved',
+  ReadyToSolve = 'ready_to_solve',
+  ManualSolving = 'manual_solving',
+  AlgoSolving = 'algo_solving',
+  Solved = 'solved',
+  SolvedOptimally = 'solved_optimally',
+  UnableToSolve = 'unable_to_solve',
+  Solving = 'Solving',
+}
+
+export const boardStateToAppState = (state: BoardState, defaultAppState: AppState): AppState => {
+  switch (state) {
+    case BoardState.Building:
+      return AppState.Building;
+    case BoardState.ReadyToSolve:
+      return AppState.ReadyToSolve;
+    case BoardState.Solved:
+      return AppState.Solved;
+    default:
+      return defaultAppState;
+  }
+};
 
 export interface Sizes {
   isMobile: boolean;

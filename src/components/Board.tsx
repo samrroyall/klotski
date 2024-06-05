@@ -1,36 +1,37 @@
 import { FunctionComponent, useState, useEffect, useContext } from 'react';
-import { Box, useTheme } from '@mui/material';
-import Block from './Block';
+import { Box } from '@mui/material';
+import Block from './Block/Block';
 import Cell from './Cell';
-import { useAppSelector } from '../state/hooks';
 import { NUM_COLS, NUM_ROWS } from '../constants';
 import { SizeContext } from '../App';
+import { useSelector } from 'react-redux';
+import { selectBlocks } from '../features/board';
 
 const Board: FunctionComponent = () => {
-  // State
-  const theme = useTheme();
-  const blocks = useAppSelector((state) => state.board.blocks);
   const [uiBlocks, setUiBlocks] = useState<JSX.Element[]>([]);
 
+  const blocks = useSelector(selectBlocks);
+
   useEffect(() => {
-    const newUiBlocks = blocks.map(({ block, pos }, idx) => (
-      <Block key={`block-${idx}`} block={block} pos={pos} />
-    ));
-    setUiBlocks(newUiBlocks);
+    setUiBlocks(blocks.map((block) => <Block key={`block-${block.idx}`} block={block} />));
   }, [blocks]);
 
-  // Styling
   const { borderSize, boardHeight, boardWidth, cellSize } = useContext(SizeContext);
+
   const boardPositioning = { position: 'absolute', top: 0, left: 0 };
+
+  const boardMargin = `calc(0.5 * (100% - ${boardWidth}))`;
+
   const boardSizing = {
     height: `calc(${boardHeight})`,
     width: `calc(${boardWidth})`,
   };
+
   const cellStyles = {
     height: `calc(${cellSize} + ${borderSize})`,
     width: `calc(${cellSize} + ${borderSize})`,
     border: `${borderSize} solid`,
-    borderColor: theme.palette.text.primary,
+    borderColor: 'black',
     padding: 0,
   };
 
@@ -38,7 +39,7 @@ const Board: FunctionComponent = () => {
     <Box
       sx={{
         position: 'absolute',
-        marginLeft: `calc(0.5 * (100% - ${boardWidth}))`,
+        marginLeft: boardMargin,
         ...boardSizing,
       }}
     >

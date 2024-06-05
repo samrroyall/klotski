@@ -1,5 +1,12 @@
-import { createContext, FunctionComponent, useEffect, useState } from 'react';
-import { Box, createTheme, CssBaseline, ThemeProvider, useMediaQuery } from '@mui/material';
+import { createContext, FunctionComponent, useEffect, useMemo, useState } from 'react';
+import {
+  Box,
+  createTheme,
+  CssBaseline,
+  PaletteMode,
+  ThemeProvider,
+  useMediaQuery,
+} from '@mui/material';
 import Board from './components/Board';
 import Buttons from './components/Buttons';
 import StatusMsg from './components/StatusMsg';
@@ -8,29 +15,50 @@ import DoneModal from './components/DoneModal';
 import { MOBILE_CUTOFF, TABLET_CUTOFF } from './constants';
 import { getSizes, Sizes } from './models/global';
 import {
-  Brightness4Rounded as DarkMode,
-  Brightness7Rounded as LightMode,
+  Brightness4Rounded as DarkModeIcon,
+  Brightness7Rounded as LightModeIcon,
 } from '@mui/icons-material';
+import * as Sentry from '@sentry/react';
+
+Sentry.init({
+  environment: process.env.NODE_ENV,
+  dsn: process.env.REACT_APP_SENTRY_DSN,
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration({
+      maskAllText: false,
+      blockAllMedia: false,
+    }),
+  ],
+  tracesSampleRate: 1.0,
+  tracePropagationTargets: ['localhost'],
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+});
 
 export const SizeContext = createContext<Sizes>(getSizes(false, false));
 
 const App: FunctionComponent = () => {
-  // State
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF})`);
   const isTablet = useMediaQuery(`(max-width:${TABLET_CUTOFF})`);
-  const [theme, setTheme] = useState(
-    createTheme({
-      palette: {
-        mode: 'light',
-      },
-    })
-  );
+
+  if (!localStorage.getItem('theme')) {
+    localStorage.setItem('theme', 'light');
+  }
+
+  const [mode, setMode] = useState(localStorage.getItem('theme') as PaletteMode);
+
+  const theme = useMemo(() => {
+    localStorage.setItem('theme', mode);
+    return createTheme({ palette: { mode } });
+  }, [mode]);
+
   const [sizes, setSizes] = useState(getSizes(isMobile, isTablet));
+
   useEffect(() => {
     setSizes(getSizes(isMobile, isTablet));
   }, [isMobile, isTablet]);
 
-  // Styling
   const containerStyle = {
     height: '100vh',
     display: 'flex',
@@ -41,6 +69,7 @@ const App: FunctionComponent = () => {
     touchAction: 'manipulation',
     userSelect: 'none',
   };
+
   const mobileHeights = [
     { height: 'fill-available' },
     { height: '-webkit-fill-available' },
@@ -55,15 +84,9 @@ const App: FunctionComponent = () => {
           <Box sx={isMobile ? [containerStyle, ...mobileHeights] : [containerStyle]}>
             <Box sx={{ position: 'absolute', top: '1rem', right: '1rem' }}>
               {theme.palette.mode === 'light' ? (
-                <DarkMode
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => setTheme(createTheme({ palette: { mode: 'dark' } }))}
-                />
+                <DarkModeIcon sx={{ cursor: 'pointer' }} onClick={() => setMode('dark')} />
               ) : (
-                <LightMode
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => setTheme(createTheme({ palette: { mode: 'light' } }))}
-                />
+                <LightModeIcon sx={{ cursor: 'pointer' }} onClick={() => setMode('light')} />
               )}
             </Box>
             <TitleContainer />
