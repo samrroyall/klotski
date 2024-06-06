@@ -31,7 +31,7 @@ The latest version offloads much of the app’s logic to an API developed using 
 
 ## Usage
 
-In order to run the front end locally, you must first follow the instructions to run the backend API locally. Those instructions can be found [here](https://github.com/samrroyall/klotski-api/blob/main/README.md).
+In order to run the frontend locally, you must first follow the instructions to run the backend API locally. Those instructions can be found [here](https://github.com/samrroyall/klotski-api/blob/main/README.md).
 
 Once the backend is successfully running, navigate to the root of the frontend repo's directory and run `cp .env.template .env` and minimally fill in the address to the backend API (e.g. `http://localhost:8081`).
 
