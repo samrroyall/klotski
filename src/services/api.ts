@@ -13,10 +13,14 @@ export class ApiService {
   baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.REACT_APP_API_URL! + '/api';
+    if (!process.env.REACT_APP_API_URL) {
+      throw new Error('No value provided for REACT_APP_API_URL');
+    }
+
+    this.baseUrl = process.env.REACT_APP_API_URL + '/api';
   }
 
-  private makeRequest<T, U>(
+  private async makeRequest<T, U>(
     method: Method,
     path: string,
     data?: T,
