@@ -20,25 +20,33 @@ import {
 } from '@mui/icons-material';
 import * as Sentry from '@sentry/react';
 
-Sentry.init({
-  environment: process.env.NODE_ENV,
-  dsn: process.env.REACT_APP_SENTRY_DSN,
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration({
-      maskAllText: false,
-      blockAllMedia: false,
-    }),
-  ],
-  tracesSampleRate: 1.0,
-  tracePropagationTargets: ['localhost'],
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-});
-
 export const SizeContext = createContext<Sizes>(getSizes(false, false));
 
 const App: FunctionComponent = () => {
+  if (!process.env.NODE_ENV) {
+    throw new Error('No value provided for NODE_ENV');
+  }
+
+  if (!process.env.REACT_APP_SENTRY_DSN) {
+    throw new Error('No value provided for REACT_APP_SENTRY_DSN');
+  }
+
+  Sentry.init({
+    environment: process.env.NODE_ENV,
+    dsn: process.env.REACT_APP_SENTRY_DSN,
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration({
+        maskAllText: false,
+        blockAllMedia: false,
+      }),
+    ],
+    tracesSampleRate: 1.0,
+    tracePropagationTargets: ['localhost'],
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+  });
+
   const isMobile = useMediaQuery(`(max-width:${MOBILE_CUTOFF})`);
   const isTablet = useMediaQuery(`(max-width:${TABLET_CUTOFF})`);
 

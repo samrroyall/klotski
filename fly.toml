@@ -9,7 +9,8 @@ primary_region = 'ord'
 [build]
 
 [env]
-  NODE_ENV = 'development'
+  REACT_APP_API_URL = 'https://klotski-api.internal'
+  REACT_APP_SENTRY_DSN = 'https://a977ecdf115d89dd65c9bbefce9b8931@o4505959535280128.ingest.us.sentry.io/4506888878161920'
 
 [http_service]
   internal_port = 80
