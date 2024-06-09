@@ -4,14 +4,13 @@
 # Build stage
 
 ARG NODE_VERSION=20.14.0
-ARG REACT_APP_API_URL
-ARG REACT_APP_SENTRY_DSN
 
 FROM node:${NODE_VERSION}-alpine as build
 WORKDIR /app
 
-ENV REACT_APP_API_URL=${REACT_APP_API_URL}
-ENV REACT_APP_SENTRY_DSN=${REACT_APP_SENTRY_DSN}
+ENV REACT_APP_API_URL=https://klotski-api.fly.dev
+ENV REACT_APP_SENTRY_DSN=https://a977ecdf115d89dd65c9bbefce9b8931@o4505959535280128.ingest.us.sentry.io/4506888878161920
+
 
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=package-lock.json,target=package-lock.json \
